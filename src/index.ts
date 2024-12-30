@@ -124,7 +124,7 @@ class FirebaseDataManager<T extends object> implements DataManager<T> {
         this.collection.doc(id).update({[FIRESTORE_DELETE_KEY]: true})
     }
     public async update(id: string, data: T): Promise<void> {
-        await this.collection.doc(id).update({...data})
+        await this.collection.doc(id).update(data)
     }
     public getRef(id: string): IdentifiableReference<WithMetadata<T>> {
         return new FirestoreReference(this.collection.doc(id), {})
@@ -186,6 +186,7 @@ class FirestoreReference<T> implements Reference<T> {
 }
 
 
+// TODO define this as a json schema doc
 interface Product {
     name: string
     desciption: string
@@ -213,9 +214,9 @@ const main = async () => {
     });
     const db = firestore()
     const productDatamanger = new FirebaseDataManager<Product>(db as any, 'products', productConverter)
-    const ref = productDatamanger.getRef("apples")
-    const product = await ref.resolve();
-    // const product = await productDatamanger.read("QQ2Wtq9OxS8RkqC6Tl0b");
+    // const ref = productDatamanger.getRef("apples")
+    // const product = await ref.resolve();
+    const product = await productDatamanger.create({name: ""});
     console.log(product)
 }
 main();
