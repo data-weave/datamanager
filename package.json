@@ -6,6 +6,7 @@
     "start:dev": "npx nodemon",
     "build": "rimraf ./build && tsc",
     "start": "npm run build && node build/index.js",
+    "start-test-file": "npm run build && node build/testfile.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

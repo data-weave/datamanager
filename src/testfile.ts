@@ -8,10 +8,13 @@ interface Product {
     desciption: string
 }
 
+// TODO: setup a way for the serialization type to pick up on the
+// interface's props.
 const productConverter: FirestoreDataConverter<Product> = {
     toFirestore: function (modelObject: Product): DocumentData {
         return {
-            name: modelObject.name
+            name: modelObject.name,
+            description: modelObject.desciption
         }
     },
     fromFirestore: function (snapshot: QueryDocumentSnapshot, options: SnapshotOptions): Product {
@@ -29,9 +32,10 @@ const main = async () => {
         // databaseURL: 'https://<DATABASE_NAME>.firebaseio.com'
     });
     const db = firestore()
-    const productDatamanger = new FirebaseDataManager<Product>(db as any, 'products', productConverter)
-    const ref = productDatamanger.getRef("apples")
-    const product = await ref.resolve();
-    console.log(product)
+    const productDatamanger = new FirebaseDataManager<Product>(db as any, 'temp', productConverter)
+    // const ref = productDatamanger.getRef("apples")
+    productDatamanger.create({name: 'fsdfsm;', desciption: "fasdfs"})
+    // const product = await ref.resolve();
+    // console.log(product)
 }
 main();
