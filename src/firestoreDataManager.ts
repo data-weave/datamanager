@@ -3,7 +3,7 @@ import { FIRESTORE_DELETE_KEY, FirestoreMetadata, FirestoreMetadataConverter } f
 import { CreateOptions, DataManager } from "./dataManager"
 import { mergeConverters } from "./utils"
 import { IdentifiableReference } from "./reference"
-import { FirestoreReference } from "./firestoreReferece"
+import { FirestoreReference } from "./firestoreReference"
 
 
 interface FirebaseDataManagerOptions {
