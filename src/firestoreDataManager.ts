@@ -1,5 +1,5 @@
 import { FirebaseFirestore, CollectionReference, DocumentData, FirestoreDataConverter } from "@firebase/firestore-types"
-import { FIRESTORE_DELETE_KEY, FirestoreMetadata, FirestoreMetadataConverter } from "./firestoreMetadata"
+import { FIRESTORE_DELETE_KEY, FIRESTORE_UPDATED_AT_KEY, FirestoreMetadata, FirestoreMetadataConverter } from "./firestoreMetadata"
 import { CreateOptions, DataManager } from "./dataManager"
 import { mergeConverters } from "./utils"
 import { IdentifiableReference } from "./reference"
@@ -20,7 +20,7 @@ export class FirebaseDataManager<T extends object> implements DataManager<T> {
     constructor(
         private readonly firestore: FirebaseFirestore,
         collectionPath: string,
-        converter: FirestoreDataConverter<T>,
+        private converter: FirestoreDataConverter<T>,
         readonly options?: FirebaseDataManagerOptions
     ) {
         const mergedConverter = new mergeConverters(converter, new FirestoreMetadataConverter())
@@ -56,7 +56,7 @@ export class FirebaseDataManager<T extends object> implements DataManager<T> {
         this.collection.doc(id).update({[FIRESTORE_DELETE_KEY]: true})
     }
     public async update(id: string, data: T): Promise<void> {
-        await this.collection.doc(id).update(data)
+        await this.collection.doc(id).update({...data, [FIRESTORE_UPDATED_AT_KEY]: new Date()})
     }
     public getRef(id: string): IdentifiableReference<WithMetadata<T>> {
         return new FirestoreReference(this.collection.doc(id), {})
