@@ -1,10 +1,5 @@
-import {
-    DocumentData,
-    FirestoreDataConverter,
-    QueryDocumentSnapshot,
-    SetOptions,
-    SnapshotOptions,
-} from '@firebase/firestore-types'
+import { DocumentData, SetOptions, SnapshotOptions } from '@firebase/firestore'
+import { FirestoreDataConverter, QueryDocumentSnapshot } from './firestoreAppCompatTypes'
 
 export const FIRESTORE_DELETE_KEY = '__deleted'
 export const FIRESTORE_CREATED_AT_KEY = '__createdAt'

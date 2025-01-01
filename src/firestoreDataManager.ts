@@ -1,4 +1,3 @@
-import { FirebaseFirestore, CollectionReference, DocumentData, FirestoreDataConverter } from '@firebase/firestore-types'
 import {
     FIRESTORE_DELETE_KEY,
     FIRESTORE_UPDATED_AT_KEY,
@@ -9,6 +8,7 @@ import { CreateOptions, DataManager } from './dataManager'
 import { mergeConverters } from './utils'
 import { IdentifiableReference } from './reference'
 import { FirestoreReference } from './firestoreReference'
+import { CollectionReference, Firestore, FirestoreDataConverter } from './firestoreAppCompatTypes'
 
 interface FirebaseDataManagerOptions {
     idResolver?: () => string
@@ -17,12 +17,12 @@ interface FirebaseDataManagerOptions {
 type WithMetadata<T> = T & FirestoreMetadata
 
 export class FirebaseDataManager<T extends object> implements DataManager<T> {
-    private collection: CollectionReference<WithMetadata<T>, DocumentData>
+    private collection: CollectionReference<WithMetadata<T>>
 
     constructor(
-        private readonly firestore: FirebaseFirestore,
-        collectionPath: string,
-        private converter: FirestoreDataConverter<T>,
+        readonly firestore: Firestore,
+        readonly collectionPath: string,
+        readonly converter: FirestoreDataConverter<T>,
         readonly options?: FirebaseDataManagerOptions
     ) {
         const mergedConverter = new mergeConverters(converter, new FirestoreMetadataConverter())

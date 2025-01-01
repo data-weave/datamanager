@@ -34,7 +34,6 @@
         "typescript-eslint": "^8.19.0"
     },
     "dependencies": {
-        "@firebase/firestore-types": "^3.0.3",
         "firebase": "^11.1.0",
         "firebase-admin": "^13.0.2",
         "inversify": "^6.2.1",
