@@ -20,7 +20,7 @@ export interface FirestoreMetadata {
 }
 
 export class FirestoreMetadataConverter implements FirestoreDataConverter<FirestoreMetadata> {
-    toFirestore(data: FirestoreMetadata, options?: SetOptions): DocumentData {
+    toFirestore(data: FirestoreMetadata, _options?: SetOptions): DocumentData {
         return {
             [FIRESTORE_UPDATED_AT_KEY]: data.updatedAt,
             [FIRESTORE_CREATED_AT_KEY]: data.createdAt,

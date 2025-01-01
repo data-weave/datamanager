@@ -27,11 +27,12 @@ const productConverter: FirestoreDataConverter<Product> = {
 }
 
 const main = async () => {
-    const app = initializeApp({
+    initializeApp({
         credential: applicationDefault(),
         // databaseURL: 'https://<DATABASE_NAME>.firebaseio.com'
     })
     const db = firestore()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const productDatamanger = new FirebaseDataManager<Product>(db as any, 'temp', productConverter)
     // const ref = productDatamanger.getRef("apples")
     productDatamanger.create({ name: 'fsdfsm;', desciption: 'fasdfs' })
