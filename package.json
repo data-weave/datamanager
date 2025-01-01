@@ -1,30 +1,43 @@
 {
-  "name": "datamanger",
-  "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "start:dev": "npx nodemon",
-    "build": "rimraf ./build && tsc",
-    "start": "npm run build && node build/index.js",
-    "start-test-file": "npm run build && node build/testfile.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "devDependencies": {
-    "@types/node": "^22.10.2",
-    "nodemon": "^3.1.9",
-    "rimraf": "^6.0.1",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.7.2"
-  },
-  "dependencies": {
-    "@firebase/firestore-types": "^3.0.3",
-    "firebase": "^11.1.0",
-    "firebase-admin": "^13.0.2",
-    "inversify": "^6.2.1",
-    "reflect-metadata": "^0.2.2"
-  }
+    "name": "datamanger",
+    "version": "1.0.0",
+    "main": "index.js",
+    "scripts": {
+        "compile": "tsc --noEmit",
+        "lint": "eslint ./src",
+        "start:dev": "npx nodemon",
+        "build": "rimraf ./build && tsc",
+        "start": "npm run build && node build/index.js",
+        "start-test-file": "npm run build && node build/testfile.js",
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "prepare": "husky"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "devDependencies": {
+        "@eslint/js": "^9.17.0",
+        "@types/node": "^22.10.2",
+        "eslint": "^8.57.1",
+        "eslint-config-standard": "^17.1.0",
+        "eslint-plugin-import": "^2.31.0",
+        "eslint-plugin-n": "^16.6.2",
+        "eslint-plugin-promise": "^6.6.0",
+        "husky": "^9.1.7",
+        "lint-staged": "^15.3.0",
+        "nodemon": "^3.1.9",
+        "prettier": "^3.4.2",
+        "rimraf": "^6.0.1",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.7.2",
+        "typescript-eslint": "^8.19.0"
+    },
+    "dependencies": {
+        "@firebase/firestore-types": "^3.0.3",
+        "firebase": "^11.1.0",
+        "firebase-admin": "^13.0.2",
+        "inversify": "^6.2.1",
+        "reflect-metadata": "^0.2.2"
+    }
 }
