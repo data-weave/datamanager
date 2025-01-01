@@ -1,20 +1,23 @@
-import { DocumentData, SetOptions, SnapshotOptions, WithFieldValue } from '@firebase/firestore'
+import { DocumentData, SetOptions, SnapshotOptions } from '@firebase/firestore'
 import { FirestoreDataConverter, QueryDocumentSnapshot } from './firestoreAppCompatTypes'
 
-
 export enum FIRESTORE_INTERAL_KEYS {
-    DELETE = '__deleted',
+    DELETED = '__deleted',
     CREATED_AT = '__createdAt',
     UPDATED_AT = '__updatedAt',
 }
 
-const
+export enum FIRESTORE_KEYS {
+    DELETE = 'deleted',
+    CREATED_AT = 'createdAt',
+    UPDATED_AT = 'updatedAt',
+}
 
-export const FIRESTORE_DELETE_KEY = '__deleted'
-export const FIRESTORE_CREATED_AT_KEY = '__createdAt'
-export const FIRESTORE_UPDATED_AT_KEY = '__updatedAt'
-
-const FIRESTORE_METADATA_KEYS = [FIRESTORE_DELETE_KEY, FIRESTORE_CREATED_AT_KEY, FIRESTORE_UPDATED_AT_KEY] as const
+const Mapping: Record<FIRESTORE_INTERAL_KEYS, FIRESTORE_KEYS> = {
+    [FIRESTORE_INTERAL_KEYS.DELETED]: FIRESTORE_KEYS.DELETE,
+    [FIRESTORE_INTERAL_KEYS.CREATED_AT]: FIRESTORE_KEYS.CREATED_AT,
+    [FIRESTORE_INTERAL_KEYS.UPDATED_AT]: FIRESTORE_KEYS.UPDATED_AT,
+}
 
 export interface FirestoreMetadata {
     readonly id: string
@@ -27,24 +30,21 @@ export interface FirestoreMetadata {
 
 export class FirestoreMetadataConverter implements FirestoreDataConverter<FirestoreMetadata> {
     toFirestore(data: FirestoreMetadata, _options?: SetOptions): DocumentData {
-
-        const toInsert: Partial<Record<FIRESTORE_INTERAL_KEYS, any>> = {}
-        FIRESTORE_METADATA_KEYS.forEach(key => {
-            toInsert[key] = data[key]
+        const toInsert: DocumentData = {}
+        Object.values(FIRESTORE_INTERAL_KEYS).forEach(key => {
+            toInsert[key] = data[Mapping[key]]
         })
 
-        return {
-            [FIRESTORE_UPDATED_AT_KEY]: data.updatedAt,
-            [FIRESTORE_CREATED_AT_KEY]: data.createdAt,
-        }
+        return toInsert
     }
     fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): FirestoreMetadata {
         const data = snapshot.data(options)
         return {
             id: snapshot.id,
-            createdAt: data[FIRESTORE_CREATED_AT_KEY].toDate(),
-            updatedAt: data[FIRESTORE_UPDATED_AT_KEY].toDate(),
-            deleted: data[FIRESTORE_DELETE_KEY],
+            // TODO: add warning in case data type is not as expected
+            createdAt: data[FIRESTORE_INTERAL_KEYS.CREATED_AT].toDate(),
+            updatedAt: data[FIRESTORE_INTERAL_KEYS.UPDATED_AT].toDate(),
+            deleted: data[FIRESTORE_INTERAL_KEYS.DELETED],
         }
     }
 }
