@@ -9,6 +9,7 @@ export interface FirestoreMetadata {
     createdAt: Date
     updatedAt: Date
     deleted: boolean
+    temp: bndfd
     // TODO: Consider adding versioning ot this
     // firestoreDataManagerVersion: string
 }
