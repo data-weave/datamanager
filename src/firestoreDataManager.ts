@@ -1,9 +1,4 @@
-import {
-    FIRESTORE_DELETE_KEY,
-    FIRESTORE_UPDATED_AT_KEY,
-    FirestoreMetadata,
-    FirestoreMetadataConverter,
-} from './firestoreMetadata'
+import { FIRESTORE_INTERAL_KEYS, FirestoreMetadata, FirestoreMetadataConverter } from './firestoreMetadata'
 import { CreateOptions, DataManager } from './dataManager'
 import { mergeConverters } from './utils'
 import { IdentifiableReference } from './reference'
@@ -32,7 +27,7 @@ export class FirebaseDataManager<T extends object> implements DataManager<T> {
         const ref = this.getRef(id)
         return await ref.resolve()
     }
-    public async create(data: T, createOptions?: CreateOptions): Promise<void> {
+    public async create(data: T, createOptions?: CreateOptions) {
         let id: string | undefined = undefined
         if (createOptions?.id) {
             id = createOptions?.id
@@ -54,12 +49,13 @@ export class FirebaseDataManager<T extends object> implements DataManager<T> {
             },
             { merge: createOptions?.merge }
         )
+        return this.getRef(docRef.id)
     }
     public async delete(id: string): Promise<void> {
-        this.collection.doc(id).update({ [FIRESTORE_DELETE_KEY]: true })
+        this.collection.doc(id).update({ [FIRESTORE_INTERAL_KEYS.DELETED]: true })
     }
-    public async update(id: string, data: T): Promise<void> {
-        await this.collection.doc(id).update({ ...data, [FIRESTORE_UPDATED_AT_KEY]: new Date() })
+    public async update(id: string, data: Partial<T>): Promise<void> {
+        await this.collection.doc(id).update({ ...data, [FIRESTORE_INTERAL_KEYS.UPDATED_AT]: new Date() })
     }
     public getRef(id: string): IdentifiableReference<WithMetadata<T>> {
         return new FirestoreReference(this.collection.doc(id), {})

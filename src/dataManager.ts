@@ -1,3 +1,4 @@
+import { WithMetadata } from 'typescript'
 import { IdentifiableReference } from './reference'
 
 export interface CreateOptions {
@@ -7,7 +8,7 @@ export interface CreateOptions {
 
 export abstract class DataManager<T> {
     public abstract read(id: string): Promise<T | undefined>
-    public abstract create(data: T, options?: CreateOptions): Promise<void>
+    public abstract create(data: T, options?: CreateOptions): Promise<IdentifiableReference<WithMetadata<T>>>
     public abstract delete(id: string): Promise<void>
     public abstract update(id: string, data: T): Promise<void>
 
