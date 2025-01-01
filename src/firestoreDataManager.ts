@@ -9,6 +9,7 @@ import { mergeConverters } from './utils'
 import { IdentifiableReference } from './reference'
 import { FirestoreReference } from './firestoreReference'
 import { CollectionReference, Firestore, FirestoreDataConverter } from './firestoreAppCompatTypes'
+import { WithFieldValue } from '@firebase/firestore'
 
 interface FirebaseDataManagerOptions {
     idResolver?: () => string
@@ -58,7 +59,7 @@ export class FirebaseDataManager<T extends object> implements DataManager<T> {
     public async delete(id: string): Promise<void> {
         this.collection.doc(id).update({ [FIRESTORE_DELETE_KEY]: true })
     }
-    public async update(id: string, data: T): Promise<void> {
+    public async update(id: string, data: WithFieldValue<T>): Promise<void> {
         await this.collection.doc(id).update({ ...data, [FIRESTORE_UPDATED_AT_KEY]: new Date() })
     }
     public getRef(id: string): IdentifiableReference<WithMetadata<T>> {

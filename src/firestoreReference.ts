@@ -1,7 +1,7 @@
 import { DocumentReference } from './firestoreAppCompatTypes'
 import { Reference } from './reference'
 
-interface FirestoreReferenceOptions {
+export interface FirestoreReferenceOptions {
     mode?: 'realtime' | 'static'
     onUpdate?: () => void
 }
@@ -25,9 +25,7 @@ export class FirestoreReference<T> implements Reference<T> {
             this.unsubscribeFromSnapshot = this.doc.onSnapshot(documentSnapshot => {
                 const data = documentSnapshot.data()
                 this.setValue(data)
-                if (this.options.onUpdate) {
-                    this.options.onUpdate()
-                }
+                this.options.onUpdate?.()
             })
         } else {
             const doc = await this.doc.get()
@@ -37,12 +35,10 @@ export class FirestoreReference<T> implements Reference<T> {
     }
 
     public unSubscribe() {
-        if (this.unsubscribeFromSnapshot) {
-            this.unsubscribeFromSnapshot()
-        }
+        this.unsubscribeFromSnapshot?.()
     }
 
-    private setValue(value: T | undefined) {
+    protected setValue(value: T | undefined) {
         this.value = value
         this.resolved = true
     }

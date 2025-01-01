@@ -1,17 +1,21 @@
-import { FirestoreDataConverter, QueryDocumentSnapshot, DocumentData, SnapshotOptions } from '@firebase/firestore-types'
 import { initializeApp, applicationDefault } from 'firebase-admin/app'
 import { firestore } from 'firebase-admin'
 import { FirebaseDataManager } from './firestoreDataManager'
+import { DocumentData, FirestoreDataConverter, QueryDocumentSnapshot, SnapshotOptions } from './firestoreAppCompatTypes'
+import firebase from 'firebase/compat/app'
+
+
 
 interface Product {
     name: string
     desciption: string
+    qty: number
 }
 
 // TODO: setup a way for the serialization type to pick up on the
 // interface's props.
-const productConverter: FirestoreDataConverter<Product> = {
-    toFirestore: function (modelObject: Product): DocumentData {
+const productConverter: FirestoreDataConverter<Product, Product> = {
+    toFirestore: function (modelObject: Product): Product {
         return {
             name: modelObject.name,
             description: modelObject.desciption,
@@ -36,6 +40,7 @@ const main = async () => {
     const productDatamanger = new FirebaseDataManager<Product>(db as any, 'temp', productConverter)
     // const ref = productDatamanger.getRef("apples")
     productDatamanger.create({ name: 'fsdfsm;', desciption: 'fasdfs' })
+    productDatamanger.update('apples', { name: 'test', desciption: 'test'})
     // const product = await ref.resolve();
     // console.log(product)
 }

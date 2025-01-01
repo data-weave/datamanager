@@ -7,3 +7,4 @@ export type DocumentReference<T = DocumentData> = firebase.firestore.DocumentRef
 export type CollectionReference<T = DocumentData> = firebase.firestore.CollectionReference<T>
 export type FirestoreDataConverter<T> = firebase.firestore.FirestoreDataConverter<T>
 export type Firestore = firebase.firestore.Firestore
+export type SnapshotOptions = firebase.firestore.SnapshotOptions
