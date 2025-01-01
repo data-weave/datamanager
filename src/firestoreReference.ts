@@ -1,4 +1,4 @@
-import { DocumentReference } from '@firebase/firestore-types'
+import { DocumentReference } from './firestoreAppCompatTypes'
 import { Reference } from './reference'
 
 interface FirestoreReferenceOptions {
