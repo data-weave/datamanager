@@ -2,26 +2,34 @@ import { FIRESTORE_INTERAL_KEYS, FirestoreMetadata, FirestoreMetadataConverter }
 import { CreateOptions, DataManager } from './dataManager'
 import { mergeConverters } from './utils'
 import { IdentifiableReference } from './reference'
-import { FirestoreReference } from './firestoreReference'
+import { FirestoreReference, FirestoreReferenceReadMode } from './firestoreReference'
 import { CollectionReference, Firestore, FirestoreDataConverter } from './firestoreAppCompatTypes'
 
-interface FirebaseDataManagerOptions {
+export interface FirebaseDataManagerOptions {
     idResolver?: () => string
+    referenceReadMode?: FirestoreReferenceReadMode
+    ReferenceClass?: typeof FirestoreReference
+}
+
+const defaultFirebaseDataManagerOptions: FirebaseDataManagerOptions = {
+    referenceReadMode: 'static',
+    ReferenceClass: FirestoreReference,
 }
 
 type WithMetadata<T> = T & FirestoreMetadata
 
 export class FirebaseDataManager<T extends object> implements DataManager<T> {
     private collection: CollectionReference<WithMetadata<T>>
-
+    private options: FirebaseDataManagerOptions
     constructor(
         readonly firestore: Firestore,
         readonly collectionPath: string,
         readonly converter: FirestoreDataConverter<T>,
-        readonly options?: FirebaseDataManagerOptions
+        readonly opts?: FirebaseDataManagerOptions
     ) {
         const mergedConverter = new mergeConverters(converter, new FirestoreMetadataConverter())
         this.collection = firestore.collection(collectionPath).withConverter(mergedConverter)
+        this.options = Object.assign(defaultFirebaseDataManagerOptions, opts)
     }
     public async read(id: string): Promise<WithMetadata<T> | undefined> {
         const ref = this.getRef(id)
@@ -58,7 +66,10 @@ export class FirebaseDataManager<T extends object> implements DataManager<T> {
         await this.collection.doc(id).update({ ...data, [FIRESTORE_INTERAL_KEYS.UPDATED_AT]: new Date() })
     }
     public getRef(id: string): IdentifiableReference<WithMetadata<T>> {
-        return new FirestoreReference(this.collection.doc(id), {})
+        if (!this.options.ReferenceClass) throw new Error('ReferenceClass not defined')
+        return new this.options.ReferenceClass(this.collection.doc(id), {
+            mode: this.options.referenceReadMode,
+        })
     }
     public async upsert(id: string, data: T): Promise<void> {
         this.create(data, { id, merge: true })

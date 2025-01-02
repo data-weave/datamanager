@@ -1,14 +1,17 @@
+import { transaction } from 'mobx'
 import { DocumentReference } from './firestoreAppCompatTypes'
 import { Reference } from './reference'
 
+export type FirestoreReferenceReadMode = 'realtime' | 'static'
+
 export interface FirestoreReferenceOptions {
-    mode?: 'realtime' | 'static'
+    mode?: FirestoreReferenceReadMode
     onUpdate?: () => void
 }
 
 export class FirestoreReference<T> implements Reference<T> {
-    public value: T | undefined
-    public resolved: boolean = false
+    public _value: T | undefined
+    public _resolved: boolean = false
     private unsubscribeFromSnapshot: undefined | (() => void)
 
     constructor(
@@ -18,6 +21,14 @@ export class FirestoreReference<T> implements Reference<T> {
 
     public get id(): string {
         return this.doc.id
+    }
+
+    public get value(): T | undefined {
+        return this._value
+    }
+
+    public get resolved() {
+        return this._resolved
     }
 
     public async resolve(): Promise<T | undefined> {
@@ -30,8 +41,8 @@ export class FirestoreReference<T> implements Reference<T> {
         } else {
             const doc = await this.doc.get()
             this.setValue(await doc.data())
-            return this.value
         }
+        return this.value
     }
 
     public unSubscribe() {
@@ -39,7 +50,9 @@ export class FirestoreReference<T> implements Reference<T> {
     }
 
     protected setValue(value: T | undefined) {
-        this.value = value
-        this.resolved = true
+        transaction(() => {
+            this._value = value
+            this._resolved = true
+        })
     }
 }
