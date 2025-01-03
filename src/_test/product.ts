@@ -1,4 +1,4 @@
-import { FirebaseDataManager } from '../firestoreDataManager'
+import { FirebaseDataManager, FirebaseDataManagerOptions } from '../firestoreDataManager'
 import { Firestore, FirestoreDataConverter, QueryDocumentSnapshot, SnapshotOptions } from '../firestoreAppCompatTypes'
 import { WithMetadata } from 'typescript'
 import { IdentifiableReference, Reference } from '../reference'
@@ -44,9 +44,10 @@ export class FirebaseProductModel implements ProductModel {
 
     constructor(
         private readonly db: Firestore,
-        converter: FirestoreDataConverter<Product>
+        converter: FirestoreDataConverter<Product>,
+        options?: FirebaseDataManagerOptions
     ) {
-        this.datamanager = new FirebaseDataManager<Product>(db, 'products', converter)
+        this.datamanager = new FirebaseDataManager<Product>(db, 'products', converter, options)
     }
 
     createProduct(p: Product) {
