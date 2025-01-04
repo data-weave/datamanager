@@ -1,22 +1,19 @@
-import { transaction } from 'mobx'
-import { DocumentReference } from './firestoreAppCompatTypes'
+import { DocumentReference, FirestoreReadMode } from './firestoreAppCompatTypes'
 import { Reference } from './reference'
 
-export type FirestoreReferenceReadMode = 'realtime' | 'static'
-
-export interface FirestoreReferenceOptions {
-    mode?: FirestoreReferenceReadMode
-    onUpdate?: () => void
+export interface FirestoreReferenceOptions<T> {
+    readMode?: FirestoreReadMode
+    onUpdate?: (newValue: T | undefined) => void
 }
 
 export class FirestoreReference<T> implements Reference<T> {
-    public _value: T | undefined
-    public _resolved: boolean = false
+    protected _value: T | undefined
+    protected _resolved: boolean = false
     private unsubscribeFromSnapshot: undefined | (() => void)
 
     constructor(
         private readonly doc: DocumentReference<T>,
-        private readonly options: FirestoreReferenceOptions
+        private readonly options: FirestoreReferenceOptions<T>
     ) {}
 
     public get id(): string {
@@ -32,17 +29,17 @@ export class FirestoreReference<T> implements Reference<T> {
     }
 
     public async resolve(): Promise<T | undefined> {
-        if (this.options?.mode === 'realtime') {
+        if (this.options?.readMode === 'realtime') {
             this.unsubscribeFromSnapshot = this.doc.onSnapshot(documentSnapshot => {
                 const data = documentSnapshot.data()
                 this.setValue(data)
-                this.options.onUpdate?.()
+                this.options.onUpdate?.(this._value)
             })
         } else {
             const doc = await this.doc.get()
             this.setValue(await doc.data())
         }
-        return this.value
+        return this._value
     }
 
     public unSubscribe() {
@@ -50,9 +47,10 @@ export class FirestoreReference<T> implements Reference<T> {
     }
 
     protected setValue(value: T | undefined) {
-        transaction(() => {
-            this._value = value
-            this._resolved = true
-        })
+        this._value = value
+        this._resolved = true
+        this.onValueChange()
     }
+
+    protected onValueChange(): void {}
 }

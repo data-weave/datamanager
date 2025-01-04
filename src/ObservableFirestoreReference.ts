@@ -5,7 +5,7 @@ import { IAtom, createAtom, when } from 'mobx'
 export class ObservableFirestoreRefence<T> extends FirestoreReference<T> {
     private readonly _atom: IAtom
 
-    constructor(doc: DocumentReference<T>, options: FirestoreReferenceOptions) {
+    constructor(doc: DocumentReference<T>, options: FirestoreReferenceOptions<T>) {
         super(doc, options)
         this._atom = createAtom(
             'ObservableFirestoreRefence',
@@ -23,11 +23,6 @@ export class ObservableFirestoreRefence<T> extends FirestoreReference<T> {
         this.unSubscribe()
     }
 
-    protected setValue(value: T | undefined) {
-        super.setValue(value)
-        this._atom.reportChanged()
-    }
-
     public get value(): T | undefined {
         this._atom.reportObserved()
         return this._value
@@ -41,5 +36,9 @@ export class ObservableFirestoreRefence<T> extends FirestoreReference<T> {
     public async resolve(): Promise<T | undefined> {
         await when(() => this.resolved)
         return this._value
+    }
+
+    protected onValueChange() {
+        this._atom.reportChanged()
     }
 }

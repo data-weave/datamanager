@@ -18,8 +18,8 @@ beforeAll(() => {
     const db = firestore()
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    productModel = new FirebaseProductModel(db as any, productConverter, {
-        referenceReadMode: 'realtime',
+    productModel = new FirebaseProductModel(db as any, firestore.FieldValue, productConverter, {
+        readMode: 'realtime',
         ReferenceClass: ObservableFirestoreRefence,
     })
 })
@@ -48,6 +48,20 @@ describe('Firebase tests', () => {
 
         // unresolve on unobserve
         expect(productRef.resolved).toEqual(false)
+
+        // also resolve if observed for value
+        const dispose2 = autorun(function () {
+            return productRef.value
+        })
+
+        await sleep(1000)
+        expect(productRef.resolved).toEqual(true)
+        dispose2()
+
+        // unresolve on unobserve
+        expect(productRef.resolved).toEqual(false)
+        // value should remain
+        expect(productRef.value).toEqual(product)
     })
 
     test('Reference realtime updates', async () => {

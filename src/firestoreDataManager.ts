@@ -1,77 +1,167 @@
-import { FIRESTORE_INTERAL_KEYS, FirestoreMetadata, FirestoreMetadataConverter } from './firestoreMetadata'
-import { CreateOptions, DataManager } from './dataManager'
-import { mergeConverters } from './utils'
+import { FIRESTORE_KEYS, FirestoreMetadata, FirestoreMetadataConverter, queryNotDeleted } from './firestoreMetadata'
+import { CreateOptions, DataManager, GetListOptions } from './dataManager'
+import { MergeConverters } from './utils'
 import { IdentifiableReference } from './reference'
-import { FirestoreReference, FirestoreReferenceReadMode } from './firestoreReference'
-import { CollectionReference, Firestore, FirestoreDataConverter } from './firestoreAppCompatTypes'
+import { FirestoreReference } from './firestoreReference'
+import {
+    CollectionReference,
+    DocumentReference,
+    FieldValue,
+    Firestore,
+    FirestoreDataConverter,
+    WithFieldValue,
+    FirestoreReadMode,
+    Query,
+    OrderBy,
+    FilterBy,
+} from './firestoreAppCompatTypes'
+import { List } from './List'
+import { FirestoreList } from './FirestoreList'
+
+export type FirebaseDataManagerDeleteMode = 'soft' | 'hard'
 
 export interface FirebaseDataManagerOptions {
     idResolver?: () => string
-    referenceReadMode?: FirestoreReferenceReadMode
+    deleteMode?: FirebaseDataManagerDeleteMode
+    readMode?: FirestoreReadMode
+    preventOverwriteOnCreate?: boolean
     ReferenceClass?: typeof FirestoreReference
-}
-
-const defaultFirebaseDataManagerOptions: FirebaseDataManagerOptions = {
-    referenceReadMode: 'static',
-    ReferenceClass: FirestoreReference,
+    ListClass?: typeof FirestoreList
 }
 
 type WithMetadata<T> = T & FirestoreMetadata
 
-export class FirebaseDataManager<T extends object> implements DataManager<T> {
+const defaultFirebaseDataManagerOptions: FirebaseDataManagerOptions = {
+    deleteMode: 'soft',
+    preventOverwriteOnCreate: false,
+    readMode: 'static',
+    ReferenceClass: FirestoreReference,
+    ListClass: FirestoreList,
+}
+
+export interface QueryParams<T> {
+    filters?: Array<FilterBy<T>>
+    orderBy?: Array<OrderBy<T>>
+    limit?: number
+}
+
+export class FirebaseDataManager<T extends object, S extends object = T> implements DataManager<T> {
+    private mergedConverter: MergeConverters<T, FirestoreMetadata>
     private collection: CollectionReference<WithMetadata<T>>
+    private collectionQuery: Query<WithMetadata<T>>
     private options: FirebaseDataManagerOptions
+    private refMap: Map<string, IdentifiableReference<WithMetadata<T>>> = new Map()
+    private listMap: Map<string, List<WithMetadata<T>>> = new Map()
+
     constructor(
-        readonly firestore: Firestore,
+        readonly Firestore: Firestore,
+        readonly FieldValue: FieldValue,
         readonly collectionPath: string,
-        readonly converter: FirestoreDataConverter<T>,
+        readonly converter: FirestoreDataConverter<T, S>,
         readonly opts?: FirebaseDataManagerOptions
     ) {
-        const mergedConverter = new mergeConverters(converter, new FirestoreMetadataConverter())
-        this.collection = firestore.collection(collectionPath).withConverter(mergedConverter)
+        this.mergedConverter = new MergeConverters(converter, new FirestoreMetadataConverter())
         this.options = Object.assign(defaultFirebaseDataManagerOptions, opts)
+        this.collection = Firestore.collection(collectionPath).withConverter(this.mergedConverter)
+        this.collectionQuery = this.options.deleteMode === 'soft' ? queryNotDeleted(this.collection) : this.collection
     }
     public async read(id: string): Promise<WithMetadata<T> | undefined> {
         const ref = this.getRef(id)
         return await ref.resolve()
     }
-    public async create(data: T, createOptions?: CreateOptions) {
+    public async create(data: WithFieldValue<T>, createOptions?: CreateOptions) {
         let id: string | undefined = undefined
         if (createOptions?.id) {
             id = createOptions?.id
         } else if (this.options?.idResolver) {
             id = this.options.idResolver()
         }
-        // TODO: Check if doc exists and if it does then what?
+
         let docRef = this.collection.doc()
         if (id) {
             docRef = this.collection.doc(id)
+            await this.preventOverwriteOnCreate(docRef, createOptions)
         }
-        // TODO: Use server timestamp
+
         await docRef.set(
             {
                 ...data,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-                deleted: false,
+                [FIRESTORE_KEYS.CREATED_AT]: this.FieldValue.serverTimestamp(),
+                [FIRESTORE_KEYS.UPDATED_AT]: this.FieldValue.serverTimestamp(),
+                [FIRESTORE_KEYS.DELETED]: false,
             },
             { merge: createOptions?.merge }
         )
         return this.getRef(docRef.id)
     }
-    public async delete(id: string): Promise<void> {
-        this.collection.doc(id).update({ [FIRESTORE_INTERAL_KEYS.DELETED]: true })
+
+    private async _update(id: string, data: Partial<WithFieldValue<T> | Partial<FirestoreMetadata>>): Promise<void> {
+        await this.collection.doc(id).update(
+            this.mergedConverter.toFirestore({
+                ...data,
+                [FIRESTORE_KEYS.UPDATED_AT]: this.FieldValue.serverTimestamp(),
+            } as WithMetadata<T>)
+        )
     }
-    public async update(id: string, data: Partial<T>): Promise<void> {
-        await this.collection.doc(id).update({ ...data, [FIRESTORE_INTERAL_KEYS.UPDATED_AT]: new Date() })
+
+    public async update(id: string, data: Partial<WithFieldValue<T>>): Promise<void> {
+        await this._update(id, data)
     }
-    public getRef(id: string): IdentifiableReference<WithMetadata<T>> {
-        if (!this.options.ReferenceClass) throw new Error('ReferenceClass not defined')
-        return new this.options.ReferenceClass(this.collection.doc(id), {
-            mode: this.options.referenceReadMode,
-        })
-    }
+
     public async upsert(id: string, data: T): Promise<void> {
         this.create(data, { id, merge: true })
+    }
+
+    public async delete(id: string): Promise<void> {
+        await this._update(id, { [FIRESTORE_KEYS.DELETED]: true })
+    }
+
+    public getRef(id: string): IdentifiableReference<WithMetadata<T>> {
+        if (!this.options.ReferenceClass) throw new Error('ReferenceClass not defined')
+
+        // TODO: Consider a proper cache
+        if (this.refMap.has(id)) {
+            return this.refMap.get(id)!
+        }
+        const newRef = new this.options.ReferenceClass(this.collection.doc(id), {
+            readMode: this.options.readMode,
+        })
+        this.refMap.set(id, newRef)
+        return newRef
+    }
+
+    public getList(params?: QueryParams<T>): List<WithMetadata<T>> {
+        if (!this.options.ListClass) throw new Error('ListClass not defined')
+        // TODO: Consider a proper cache
+        let compoundQuery = this.collectionQuery
+
+        params?.filters?.forEach(filter => {
+            compoundQuery = compoundQuery.where(filter[0], filter[1], filter[2])
+        })
+
+        params?.orderBy?.forEach(orderBy => {
+            compoundQuery = compoundQuery.orderBy(orderBy[0], orderBy[1])
+        })
+
+        if (params?.limit) {
+            compoundQuery = compoundQuery.limit(params.limit)
+        }
+
+        const key = JSON.stringify(params || {})
+        if (this.listMap.has(key)) {
+            return this.listMap.get(key)!
+        }
+        const newList = new this.options.ListClass(compoundQuery, { readMode: this.options.readMode })
+        this.listMap.set(key, newList)
+        return newList
+    }
+
+    private async preventOverwriteOnCreate(docRef: DocumentReference, createOptions?: CreateOptions): Promise<void> {
+        if (this.options.preventOverwriteOnCreate && !createOptions?.merge) {
+            const doc = await docRef.get()
+            if (doc.exists) {
+                throw new Error('Document already exists')
+            }
+        }
     }
 }

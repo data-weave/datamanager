@@ -6,7 +6,7 @@ import {
     SnapshotOptions,
 } from '@firebase/firestore-types'
 
-export class mergeConverters<T, G> implements FirestoreDataConverter<T & G> {
+export class MergeConverters<T, G> implements FirestoreDataConverter<T & G> {
     constructor(
         private converter1: FirestoreDataConverter<T>,
         private converter2: FirestoreDataConverter<G>

@@ -1,20 +1,21 @@
 import { DocumentData, SetOptions, SnapshotOptions } from '@firebase/firestore'
-import { FirestoreDataConverter, QueryDocumentSnapshot } from './firestoreAppCompatTypes'
+import { FirestoreDataConverter, Query, QueryDocumentSnapshot } from './firestoreAppCompatTypes'
+import { WithMetadata } from 'typescript'
 
-export enum FIRESTORE_INTERAL_KEYS {
+enum FIRESTORE_INTERAL_KEYS {
     DELETED = '__deleted',
     CREATED_AT = '__createdAt',
     UPDATED_AT = '__updatedAt',
 }
 
 export enum FIRESTORE_KEYS {
-    DELETE = 'deleted',
+    DELETED = 'deleted',
     CREATED_AT = 'createdAt',
     UPDATED_AT = 'updatedAt',
 }
 
 const Mapping: Record<FIRESTORE_INTERAL_KEYS, FIRESTORE_KEYS> = {
-    [FIRESTORE_INTERAL_KEYS.DELETED]: FIRESTORE_KEYS.DELETE,
+    [FIRESTORE_INTERAL_KEYS.DELETED]: FIRESTORE_KEYS.DELETED,
     [FIRESTORE_INTERAL_KEYS.CREATED_AT]: FIRESTORE_KEYS.CREATED_AT,
     [FIRESTORE_INTERAL_KEYS.UPDATED_AT]: FIRESTORE_KEYS.UPDATED_AT,
 }
@@ -48,3 +49,6 @@ export class FirestoreMetadataConverter implements FirestoreDataConverter<Firest
         }
     }
 }
+
+export const queryNotDeleted = <T>(query: Query<WithMetadata<T>>) =>
+    query.where(FIRESTORE_INTERAL_KEYS.DELETED, '==', false)
