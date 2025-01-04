@@ -10,8 +10,9 @@ export interface CreateOptions {
 export type OrderByOption = 'asc' | 'desc'
 
 export interface GetListOptions {
-    filterBy?: Record<string, unknown>
-    orderBy?: Record<string, unknown>
+    filterBy?: unknown
+    orderBy?: unknown
+    limit?: number
 }
 
 export abstract class DataManager<T> {
@@ -21,6 +22,6 @@ export abstract class DataManager<T> {
     public abstract update(id: string, data: T): Promise<void>
 
     public abstract getRef(id: string): IdentifiableReference<T>
-    public abstract getList(options?: GetListOptions): List<T>
+    public abstract getList(params?: GetListOptions): List<T>
     public abstract upsert(id: string, data: T): Promise<void>
 }

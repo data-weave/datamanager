@@ -1,4 +1,4 @@
-import { FirebaseDataManager, FirebaseDataManagerOptions } from '../firestoreDataManager'
+import { FirebaseDataManager, FirebaseDataManagerOptions, QueryParams } from '../firestoreDataManager'
 import {
     FieldValue,
     Firestore,
@@ -65,8 +65,8 @@ export class FirebaseProductModel implements ProductModel {
         return this.datamanager.getRef(id)
     }
 
-    getProductList() {
-        return this.datamanager.getList()
+    getProductList(params?: QueryParams<Product>) {
+        return this.datamanager.getList(params)
     }
 
     updateProduct(id: string, params: UpdateProductParams) {

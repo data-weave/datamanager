@@ -1,5 +1,5 @@
 import { FIRESTORE_KEYS, FirestoreMetadata, FirestoreMetadataConverter, queryNotDeleted } from './firestoreMetadata'
-import { CreateOptions, DataManager } from './dataManager'
+import { CreateOptions, DataManager, GetListOptions } from './dataManager'
 import { MergeConverters } from './utils'
 import { IdentifiableReference } from './reference'
 import { FirestoreReference } from './firestoreReference'
@@ -12,6 +12,8 @@ import {
     WithFieldValue,
     FirestoreReadMode,
     Query,
+    OrderBy,
+    FilterBy,
 } from './firestoreAppCompatTypes'
 import { List } from './List'
 import { FirestoreList } from './FirestoreList'
@@ -35,6 +37,12 @@ const defaultFirebaseDataManagerOptions: FirebaseDataManagerOptions = {
     readMode: 'static',
     ReferenceClass: FirestoreReference,
     ListClass: FirestoreList,
+}
+
+export interface QueryParams<T> {
+    filters?: Array<FilterBy<T>>
+    orderBy?: Array<OrderBy<T>>
+    limit?: number
 }
 
 export class FirebaseDataManager<T extends object, S extends object = T> implements DataManager<T> {
@@ -122,15 +130,28 @@ export class FirebaseDataManager<T extends object, S extends object = T> impleme
         return newRef
     }
 
-    public getList(filters?: object): List<WithMetadata<T>> {
+    public getList(params?: QueryParams<T>): List<WithMetadata<T>> {
         if (!this.options.ListClass) throw new Error('ListClass not defined')
-
         // TODO: Consider a proper cache
-        const key = JSON.stringify(filters || {})
+        let compoundQuery = this.collectionQuery
+
+        params?.filters?.forEach(filter => {
+            compoundQuery = compoundQuery.where(filter[0], filter[1], filter[2])
+        })
+
+        params?.orderBy?.forEach(orderBy => {
+            compoundQuery = compoundQuery.orderBy(orderBy[0], orderBy[1])
+        })
+
+        if (params?.limit) {
+            compoundQuery = compoundQuery.limit(params.limit)
+        }
+
+        const key = JSON.stringify(params || {})
         if (this.listMap.has(key)) {
             return this.listMap.get(key)!
         }
-        const newList = new this.options.ListClass(this.collectionQuery, { readMode: this.options.readMode })
+        const newList = new this.options.ListClass(compoundQuery, { readMode: this.options.readMode })
         this.listMap.set(key, newList)
         return newList
     }

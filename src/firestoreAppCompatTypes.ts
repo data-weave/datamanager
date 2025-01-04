@@ -13,6 +13,8 @@ export type Firestore = firebase.firestore.Firestore
 export type SnapshotOptions = firebase.firestore.SnapshotOptions
 export type SetOptions = firebase.firestore.SetOptions
 export type FieldValue = typeof firebase.firestore.FieldValue
+export type WhereFilterOp = firebase.firestore.WhereFilterOp
+export type OrderByDirection = firebase.firestore.OrderByDirection
 
 export { WithFieldValue }
 
@@ -44,16 +46,16 @@ export type FilterableFields<T, IsNested = false, K extends keyof T = keyof T> =
     ? `${IsNested extends true ? `.${K}` : K}${T[K] extends unknown[] ? never : T[K] extends object ? FilterableFields<T[K], true> : ''}`
     : never
 
-// type GetValue<T, K extends string> = K extends `${infer L}.${infer R}`
-//     ? L extends keyof T
-//         ? GetValue<T[L], R>
-//         : never
-//     : K extends keyof T
-//       ? T[K]
-//       : never
+type GetValue<T, K extends string> = K extends `${infer L}.${infer R}`
+    ? L extends keyof T
+        ? GetValue<T[L], R>
+        : never
+    : K extends keyof T
+      ? T[K]
+      : never
 
-// TODO: For now allow any values - typing is a bit more complex based on combination of fields and operators selected
-// replace unknown with GetValue<T, key>
-export type FilterableValues<T, Fields extends string = FilterableFields<T>> = {
-    [key in Fields]: unknown
-}
+export type FilterBy<T, Fields extends string = FilterableFields<T>> = Fields extends string
+    ? [Fields, WhereFilterOp, GetValue<T, Fields>]
+    : never
+
+export type OrderBy<T, Fields extends string = FilterableFields<T>> = [Fields, OrderByDirection]

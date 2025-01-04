@@ -53,4 +53,18 @@ describe('Firebase tests', () => {
         const product = await productRef.resolve()
         expect(product?.deleted).toEqual(true)
     })
+
+    test('Product query', async () => {
+        await productModel.createProduct({ name: 'test', desciption: 'test', qty: 55 })
+
+        const listRef = productModel.getProductList({ filters: [['qty', '==', 55]] })
+        await listRef.resolve()
+
+        expect(listRef.values.length).toEqual(1)
+        await productModel.createProduct({ name: 'test', desciption: 'test', qty: 55 })
+        await productModel.createProduct({ name: 'test', desciption: 'test', qty: 55 })
+
+        await listRef.resolve()
+        expect(listRef.values.length).toEqual(3)
+    })
 })
