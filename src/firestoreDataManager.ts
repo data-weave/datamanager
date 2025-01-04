@@ -1,6 +1,6 @@
 import { FIRESTORE_KEYS, FirestoreMetadata, FirestoreMetadataConverter, queryNotDeleted } from './firestoreMetadata'
 import { CreateOptions, DataManager } from './dataManager'
-import { mergeConverters } from './utils'
+import { MergeConverters } from './utils'
 import { IdentifiableReference } from './reference'
 import { FirestoreReference } from './firestoreReference'
 import {
@@ -38,9 +38,12 @@ const defaultFirebaseDataManagerOptions: FirebaseDataManagerOptions = {
 }
 
 export class FirebaseDataManager<T extends object, S extends object = T> implements DataManager<T> {
+    private mergedConverter: MergeConverters<T, FirestoreMetadata>
     private collection: CollectionReference<WithMetadata<T>>
     private collectionQuery: Query<WithMetadata<T>>
     private options: FirebaseDataManagerOptions
+    private refMap: Map<string, IdentifiableReference<WithMetadata<T>>> = new Map()
+    private listMap: Map<string, List<WithMetadata<T>>> = new Map()
 
     constructor(
         readonly Firestore: Firestore,
@@ -49,9 +52,9 @@ export class FirebaseDataManager<T extends object, S extends object = T> impleme
         readonly converter: FirestoreDataConverter<T, S>,
         readonly opts?: FirebaseDataManagerOptions
     ) {
-        const mergedConverter = new mergeConverters(converter, new FirestoreMetadataConverter())
+        this.mergedConverter = new MergeConverters(converter, new FirestoreMetadataConverter())
         this.options = Object.assign(defaultFirebaseDataManagerOptions, opts)
-        this.collection = Firestore.collection(collectionPath).withConverter(mergedConverter)
+        this.collection = Firestore.collection(collectionPath).withConverter(this.mergedConverter)
         this.collectionQuery = this.options.deleteMode === 'soft' ? queryNotDeleted(this.collection) : this.collection
     }
     public async read(id: string): Promise<WithMetadata<T> | undefined> {
@@ -84,32 +87,52 @@ export class FirebaseDataManager<T extends object, S extends object = T> impleme
         return this.getRef(docRef.id)
     }
 
-    public async delete(id: string): Promise<void> {
-        this.collection.doc(id).update({ [FIRESTORE_KEYS.DELETED]: true })
+    private async _update(id: string, data: Partial<WithFieldValue<T> | Partial<FirestoreMetadata>>): Promise<void> {
+        await this.collection.doc(id).update(
+            this.mergedConverter.toFirestore({
+                ...data,
+                [FIRESTORE_KEYS.UPDATED_AT]: this.FieldValue.serverTimestamp(),
+            } as WithMetadata<T>)
+        )
     }
 
     public async update(id: string, data: Partial<WithFieldValue<T>>): Promise<void> {
-        await this.collection.doc(id).update({
-            ...data,
-            [FIRESTORE_KEYS.UPDATED_AT]: this.FieldValue.serverTimestamp(),
-        })
+        await this._update(id, data)
     }
 
     public async upsert(id: string, data: T): Promise<void> {
         this.create(data, { id, merge: true })
     }
 
-    public getRef(id: string): IdentifiableReference<WithMetadata<T>> {
-        if (!this.options.ReferenceClass) throw new Error('ReferenceClass not defined')
-        return new this.options.ReferenceClass(this.collection.doc(id), {
-            readMode: this.options.readMode,
-        })
+    public async delete(id: string): Promise<void> {
+        await this._update(id, { [FIRESTORE_KEYS.DELETED]: true })
     }
 
-    public getList(): List<WithMetadata<T>> {
+    public getRef(id: string): IdentifiableReference<WithMetadata<T>> {
+        if (!this.options.ReferenceClass) throw new Error('ReferenceClass not defined')
+
+        // TODO: Consider a proper cache
+        if (this.refMap.has(id)) {
+            return this.refMap.get(id)!
+        }
+        const newRef = new this.options.ReferenceClass(this.collection.doc(id), {
+            readMode: this.options.readMode,
+        })
+        this.refMap.set(id, newRef)
+        return newRef
+    }
+
+    public getList(filters?: object): List<WithMetadata<T>> {
         if (!this.options.ListClass) throw new Error('ListClass not defined')
 
-        return new this.options.ListClass(this.collectionQuery, { readMode: this.options.readMode })
+        // TODO: Consider a proper cache
+        const key = JSON.stringify(filters || {})
+        if (this.listMap.has(key)) {
+            return this.listMap.get(key)!
+        }
+        const newList = new this.options.ListClass(this.collectionQuery, { readMode: this.options.readMode })
+        this.listMap.set(key, newList)
+        return newList
     }
 
     private async preventOverwriteOnCreate(docRef: DocumentReference, createOptions?: CreateOptions): Promise<void> {

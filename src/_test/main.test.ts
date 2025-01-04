@@ -2,6 +2,7 @@ import { describe, test, expect } from '@jest/globals'
 import { firestore, apps } from 'firebase-admin'
 import { initializeApp, applicationDefault } from 'firebase-admin/app'
 import { FirebaseProductModel, productConverter } from './product'
+import { sleep } from './utils'
 
 let productModel: FirebaseProductModel
 
@@ -13,6 +14,7 @@ beforeAll(() => {
     }
 
     const db = firestore()
+    db.settings({ ignoreUndefinedProperties: true })
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     productModel = new FirebaseProductModel(db as any, firestore.FieldValue, productConverter)
@@ -44,6 +46,8 @@ describe('Firebase tests', () => {
 
     test('Product delete', async () => {
         const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+
+        await sleep(1000)
         await productModel.deleteProduct(productRef.id)
 
         const product = await productRef.resolve()
