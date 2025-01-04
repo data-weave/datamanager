@@ -15,7 +15,7 @@ beforeAll(() => {
     const db = firestore()
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    productModel = new FirebaseProductModel(db as any, productConverter)
+    productModel = new FirebaseProductModel(db as any, firestore.FieldValue, productConverter)
 })
 
 describe('Firebase tests', () => {

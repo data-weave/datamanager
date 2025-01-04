@@ -1,5 +1,11 @@
 import { FirebaseDataManager, FirebaseDataManagerOptions } from '../firestoreDataManager'
-import { Firestore, FirestoreDataConverter, QueryDocumentSnapshot, SnapshotOptions } from '../firestoreAppCompatTypes'
+import {
+    FieldValue,
+    Firestore,
+    FirestoreDataConverter,
+    QueryDocumentSnapshot,
+    SnapshotOptions,
+} from '../firestoreAppCompatTypes'
 import { WithMetadata } from 'typescript'
 import { IdentifiableReference, Reference } from '../reference'
 
@@ -12,7 +18,7 @@ interface Product {
 // TODO: setup a way for the serialization type to pick up on the
 // interface's props.
 export const productConverter: FirestoreDataConverter<Product> = {
-    toFirestore: function (modelObject: Product): Product {
+    toFirestore: function (modelObject: Product) {
         //NOTE: this can be any return type
         return {
             name: modelObject.name,
@@ -20,7 +26,7 @@ export const productConverter: FirestoreDataConverter<Product> = {
             qty: modelObject.qty,
         }
     },
-    fromFirestore: function (snapshot: QueryDocumentSnapshot, options: SnapshotOptions): Product {
+    fromFirestore: function (snapshot: QueryDocumentSnapshot, options: SnapshotOptions) {
         const data = snapshot.data(options)
         return {
             name: data.name,
@@ -43,11 +49,12 @@ export class FirebaseProductModel implements ProductModel {
     private datamanager: FirebaseDataManager<Product>
 
     constructor(
-        private readonly db: Firestore,
-        converter: FirestoreDataConverter<Product>,
-        options?: FirebaseDataManagerOptions
+        readonly db: Firestore,
+        readonly FieldValue: FieldValue,
+        readonly converter: FirestoreDataConverter<Product>,
+        readonly options?: FirebaseDataManagerOptions
     ) {
-        this.datamanager = new FirebaseDataManager<Product>(db, 'products', converter, options)
+        this.datamanager = new FirebaseDataManager<Product>(db, FieldValue, 'products', converter, options)
     }
 
     createProduct(p: Product) {
@@ -56,6 +63,10 @@ export class FirebaseProductModel implements ProductModel {
 
     getProduct(id: string) {
         return this.datamanager.getRef(id)
+    }
+
+    getProductList() {
+        return this.datamanager.getList()
     }
 
     updateProduct(id: string, params: UpdateProductParams) {
