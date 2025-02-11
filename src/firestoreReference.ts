@@ -1,4 +1,10 @@
-import { DocumentReference, FirestoreReadMode } from './firestoreAppCompatTypes'
+import {
+    DocumentData,
+    DocumentReference,
+    DocumentSnapshot,
+    FirestoreDataConverter,
+    FirestoreReadMode,
+} from './FirestoreTypes'
 import { Reference } from './reference'
 
 export interface FirestoreReferenceOptions<T> {
@@ -12,8 +18,9 @@ export class FirestoreReference<T> implements Reference<T> {
     private unsubscribeFromSnapshot: undefined | (() => void)
 
     constructor(
-        private readonly doc: DocumentReference<T>,
-        private readonly options: FirestoreReferenceOptions<T>
+        private readonly doc: DocumentReference<DocumentData>,
+        private readonly options: FirestoreReferenceOptions<T>,
+        private readonly converter: FirestoreDataConverter<T>
     ) {}
 
     public get id(): string {
@@ -30,14 +37,16 @@ export class FirestoreReference<T> implements Reference<T> {
 
     public async resolve(): Promise<T | undefined> {
         if (this.options?.readMode === 'realtime') {
-            this.unsubscribeFromSnapshot = this.doc.onSnapshot(documentSnapshot => {
-                const data = documentSnapshot.data()
-                this.setValue(data)
-                this.options.onUpdate?.(this._value)
+            return new Promise<T | undefined>((resolve, reject) => {
+                this.unsubscribeFromSnapshot = this.doc.onSnapshot(documentSnapshot => {
+                    this.setValue(documentSnapshot)
+                    this.options.onUpdate?.(this._value)
+                    resolve(this._value)
+                }, reject)
             })
         } else {
             const doc = await this.doc.get()
-            this.setValue(await doc.data())
+            this.setValue(doc)
         }
         return this._value
     }
@@ -46,8 +55,19 @@ export class FirestoreReference<T> implements Reference<T> {
         this.unsubscribeFromSnapshot?.()
     }
 
-    protected setValue(value: T | undefined) {
-        this._value = value
+    protected setValue(value: DocumentSnapshot<DocumentData>) {
+        if (value.exists) {
+            try {
+                // @ts-expect-error DocumentSnapshot has DocumentData
+                // optional if doesn't exist, see "value.exists" check
+                this._value = this.converter.fromFirestore(value)
+            } catch (error) {
+                console.warn('Error desirializing value', error, value)
+                this._value = undefined
+            }
+        } else {
+            this._value = undefined
+        }
         this._resolved = true
         this.onValueChange()
     }

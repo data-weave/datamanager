@@ -1,4 +1,11 @@
-import { DocumentChange, FirestoreReadMode, Query } from './firestoreAppCompatTypes'
+import {
+    DocumentChange,
+    DocumentData,
+    FirestoreDataConverter,
+    FirestoreReadMode,
+    Query,
+    QueryDocumentSnapshot,
+} from './FirestoreTypes'
 import { List } from './List'
 
 export interface FirestoreListOptions<T> {
@@ -12,8 +19,9 @@ export class FirestoreList<T> implements List<T> {
     private unsubscribeFromSnapshot: undefined | (() => void)
 
     constructor(
-        private readonly query: Query<T>,
-        private readonly options: FirestoreListOptions<T>
+        private readonly query: Query<DocumentData>,
+        private readonly options: FirestoreListOptions<T>,
+        private readonly converter: FirestoreDataConverter<T>
     ) {}
 
     public get values() {
@@ -27,34 +35,37 @@ export class FirestoreList<T> implements List<T> {
     public async resolve() {
         if (this.options?.readMode === 'realtime') {
             let initialLoad = true
-            this.unsubscribeFromSnapshot = this.query.onSnapshot(querySnapshot => {
-                if (initialLoad) {
-                    initialLoad = false
-                    this.handleInitialDataChange(querySnapshot.docs.map(doc => doc.data()))
-                } else {
-                    this.handleSubsequentDataChanges(querySnapshot.docChanges())
-                }
-                this.options.onUpdate?.(this._values)
+            return new Promise<T[]>((resolve, reject) => {
+                this.unsubscribeFromSnapshot = this.query.onSnapshot(querySnapshot => {
+                    if (initialLoad) {
+                        initialLoad = false
+                        this.handleInitialDataChange(querySnapshot.docs)
+                    } else {
+                        this.handleSubsequentDataChanges(querySnapshot.docChanges())
+                    }
+                    this.options.onUpdate?.(this._values)
+                    resolve(this._values)
+                }, reject)
             })
         } else {
             const snapshot = await this.query.get()
-            this.handleInitialDataChange(snapshot.docs.map(doc => doc.data()))
+            this.handleInitialDataChange(snapshot.docs)
+            return this._values
         }
-        return this._values
     }
 
-    protected handleInitialDataChange(values: T[]) {
-        this._values.splice(0, this._values.length, ...values)
+    protected handleInitialDataChange(values: QueryDocumentSnapshot<DocumentData>[]) {
+        this._values.splice(0, this._values.length, ...values.map(v => this.converter.fromFirestore(v, {})))
         this._resolved = true
         this.onValuesChange()
     }
 
-    protected handleSubsequentDataChanges(changes: DocumentChange<T>[]) {
+    protected handleSubsequentDataChanges(changes: DocumentChange<DocumentData>[]) {
         changes.forEach(change => {
             if (change.type === 'added') {
-                this._values.splice(change.newIndex, 0, change.doc.data())
+                this._values.splice(change.newIndex, 0, this.converter.fromFirestore(change.doc, {}))
             } else if (change.type === 'modified') {
-                this._values.splice(change.newIndex, 1, change.doc.data())
+                this._values.splice(change.newIndex, 1, this.converter.fromFirestore(change.doc, {}))
             } else if (change.type === 'removed') {
                 this._values.splice(change.oldIndex, 1)
             }

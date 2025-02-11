@@ -1,6 +1,12 @@
-import { DocumentData, SetOptions, SnapshotOptions } from '@firebase/firestore'
-import { FirestoreDataConverter, Query, QueryDocumentSnapshot } from './firestoreAppCompatTypes'
-import { WithMetadata } from 'typescript'
+import { Metadata } from './dataManager'
+import {
+    DocumentData,
+    FirestoreDataConverter,
+    Query,
+    QueryDocumentSnapshot,
+    SetOptions,
+    SnapshotOptions,
+} from './FirestoreTypes'
 
 enum FIRESTORE_INTERAL_KEYS {
     DELETED = '__deleted',
@@ -20,17 +26,8 @@ const Mapping: Record<FIRESTORE_INTERAL_KEYS, FIRESTORE_KEYS> = {
     [FIRESTORE_INTERAL_KEYS.UPDATED_AT]: FIRESTORE_KEYS.UPDATED_AT,
 }
 
-export interface FirestoreMetadata {
-    readonly id: string
-    readonly createdAt: Date
-    readonly updatedAt: Date
-    readonly deleted: boolean
-    // TODO: Consider adding versioning ot this
-    // firestoreDataManagerVersion: string
-}
-
-export class FirestoreMetadataConverter implements FirestoreDataConverter<FirestoreMetadata> {
-    toFirestore(data: FirestoreMetadata, _options?: SetOptions): DocumentData {
+export class FirestoreMetadataConverter implements FirestoreDataConverter<Metadata> {
+    toFirestore(data: Metadata, _options?: SetOptions): DocumentData {
         const toInsert: DocumentData = {}
         Object.values(FIRESTORE_INTERAL_KEYS).forEach(key => {
             toInsert[key] = data[Mapping[key]]
@@ -38,7 +35,7 @@ export class FirestoreMetadataConverter implements FirestoreDataConverter<Firest
 
         return toInsert
     }
-    fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): FirestoreMetadata {
+    fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions) {
         const data = snapshot.data(options)
         return {
             id: snapshot.id,
@@ -50,5 +47,4 @@ export class FirestoreMetadataConverter implements FirestoreDataConverter<Firest
     }
 }
 
-export const queryNotDeleted = <T>(query: Query<WithMetadata<T>>) =>
-    query.where(FIRESTORE_INTERAL_KEYS.DELETED, '==', false)
+export const queryNotDeleted = <T>(query: Query<T>) => query.where(FIRESTORE_INTERAL_KEYS.DELETED, '==', false)

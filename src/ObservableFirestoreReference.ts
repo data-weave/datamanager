@@ -1,12 +1,17 @@
-import { DocumentReference } from './firestoreAppCompatTypes'
+import { createAtom, IAtom, when } from 'mobx'
+
+import { DocumentReference, FirestoreDataConverter } from './FirestoreTypes'
 import { FirestoreReference, FirestoreReferenceOptions } from './firestoreReference'
-import { IAtom, createAtom, when } from 'mobx'
 
 export class ObservableFirestoreRefence<T> extends FirestoreReference<T> {
     private readonly _atom: IAtom
 
-    constructor(doc: DocumentReference<T>, options: FirestoreReferenceOptions<T>) {
-        super(doc, options)
+    constructor(
+        doc: DocumentReference<DocumentReference>,
+        options: FirestoreReferenceOptions<T>,
+        converter: FirestoreDataConverter<T>
+    ) {
+        super(doc, options, converter)
         this._atom = createAtom(
             'ObservableFirestoreRefence',
             this._onBecomeObserved.bind(this),
