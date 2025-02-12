@@ -201,7 +201,7 @@ export class FirestoreDataManager<T extends object> implements DataManager<T> {
     }
 
     private async preventOverwriteOnCreate(docRef: DocumentReference, createOptions?: CreateOptions) {
-        if (this.managerOptions.preventOverwriteOnCreate || createOptions?.merge === false) {
+        if (this.managerOptions.preventOverwriteOnCreate && createOptions?.merge !== true) {
             const doc = await docRef.get()
             if (doc.exists) {
                 throw new Error('Document already exists')
