@@ -3,7 +3,7 @@ import { createAtom, IAtom, when } from 'mobx'
 import { DocumentReference, FirestoreDataConverter } from './FirestoreTypes'
 import { FirestoreReference, FirestoreReferenceOptions } from './firestoreReference'
 
-export class ObservableFirestoreRefence<T> extends FirestoreReference<T> {
+export class ObservableFirestoreReference<T> extends FirestoreReference<T> {
     private readonly _atom: IAtom
 
     constructor(
@@ -13,7 +13,7 @@ export class ObservableFirestoreRefence<T> extends FirestoreReference<T> {
     ) {
         super(doc, options, converter)
         this._atom = createAtom(
-            'ObservableFirestoreRefence',
+            'ObservableFirestoreReference',
             this._onBecomeObserved.bind(this),
             this._onBecomeUnobserved.bind(this)
         )
