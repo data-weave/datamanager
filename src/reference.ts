@@ -12,3 +12,5 @@ export interface Reference<T> extends Resolvable<T | undefined> {
 }
 
 export type IdentifiableReference<T> = Reference<T> & Identifiable
+
+export type WithoutId<T> = Omit<T, 'id'>

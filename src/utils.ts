@@ -1,10 +1,5 @@
-import {
-    DocumentData,
-    FirestoreDataConverter,
-    QueryDocumentSnapshot,
-    SetOptions,
-    SnapshotOptions,
-} from '@firebase/firestore-types'
+import { DocumentData, QueryDocumentSnapshot, SetOptions, SnapshotOptions } from '@firebase/firestore-types'
+import { FirestoreDataConverter } from './FirestoreTypes'
 
 export class MergeConverters<T, G> implements FirestoreDataConverter<T & G> {
     constructor(

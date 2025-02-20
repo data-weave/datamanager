@@ -1,15 +1,13 @@
-import { createAtom, IAtom, IObservableArray, observable, when } from 'mobx'
-import { Query } from './firestoreAppCompatTypes'
+import { createAtom, IAtom, when } from 'mobx'
+
 import { FirestoreList, FirestoreListOptions } from './FirestoreList'
+import { DocumentData, FirestoreDataConverter, Query } from './FirestoreTypes'
 
 export class ObservableFirestoreList<T> extends FirestoreList<T> {
     private readonly _atom: IAtom
-    protected readonly _values: IObservableArray<T> = observable.array([], {
-        deep: false,
-    })
 
-    constructor(query: Query<T>, options: FirestoreListOptions<T>) {
-        super(query, options)
+    constructor(query: Query<DocumentData>, options: FirestoreListOptions<T>, converter: FirestoreDataConverter<T>) {
+        super(query, options, converter)
         this._atom = createAtom(
             'ObservableFirestoreList',
             this._onBecomeObserved.bind(this),
