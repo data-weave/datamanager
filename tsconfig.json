@@ -1,5 +1,6 @@
 {
-    "include": ["*/**.ts"],
+    "include": ["src/**/*.ts"],
+    "exclude": ["src/**/*.test.ts", "src/_test/**/*"],
     "compilerOptions": {
         "target": "es2016",
         "lib": ["es6"],
@@ -7,6 +8,8 @@
         "resolveJsonModule": true,
         "allowJs": true,
         "outDir": "build",
+        "declaration": true,
+        "declarationDir": "build/types",
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
         "strict": true,
