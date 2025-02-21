@@ -4,7 +4,7 @@ import { initializeApp, applicationDefault } from 'firebase-admin/app'
 import { FirebaseProductModel, productConverter } from './product'
 import { sleep } from './utils'
 import { autorun } from 'mobx'
-import { ObservableFirestoreRefence } from '../ObservableFirestoreReference'
+import { ObservableFirestoreReference } from '../ObservableFirestoreReference'
 
 let productModel: FirebaseProductModel
 
@@ -20,7 +20,7 @@ beforeAll(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     productModel = new FirebaseProductModel(db as any, firestore.FieldValue, productConverter, {
         readMode: 'realtime',
-        ReferenceClass: ObservableFirestoreRefence,
+        ReferenceClass: ObservableFirestoreReference,
     })
 })
 
