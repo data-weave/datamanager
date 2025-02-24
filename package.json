@@ -1,12 +1,13 @@
 {
     "name": "datamanger",
     "version": "1.0.0",
-    "main": "src/index.ts",
+    "main": "build/index.js",
     "types": "src/index.ts",
     "files": [
         "src/**/*"
     ],
     "scripts": {
+        "postinstall": "npm run build",
         "compile": "tsc --noEmit",
         "lint": "eslint ./src",
         "start:dev": "npx nodemon",
