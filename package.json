@@ -4,7 +4,8 @@
     "main": "build/index.js",
     "types": "src/index.ts",
     "files": [
-        "src/**/*"
+        "src/**/*",
+        "tsconfig.json"
     ],
     "scripts": {
         "postinstall": "npm run build",
