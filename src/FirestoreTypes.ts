@@ -66,15 +66,16 @@ export const converterSnapshotToData = <T>(snapshot: QueryDocumentSnapshot, opti
 }
 
 // Parser for data fields that can be used to filter queries
-export type FilterableFields<T, IsNested = false, K extends keyof T = keyof T> = K extends string
-    ? K extends `${infer F}Ref`
-        ? `${IsNested extends true ? `.${F}Id` : `${F}Id`}`
-        : `${IsNested extends true ? `.${K}` : K}${T[K] extends unknown[]
-              ? never
-              : T[K] extends object
-                ? FilterableFields<T[K], true>
-                : ''}`
-    : never
+export type FilterableFields<T> = {
+    [K in keyof T]: T[K] extends string | number | boolean | Date | null | undefined
+        ? K
+        : T[K] extends Array<any>
+          ? never
+          : T[K] extends object
+            ? never
+            : K
+}[keyof T] &
+    string
 
 type GetValue<T, K extends string> = K extends `${infer L}.${infer R}`
     ? L extends keyof T

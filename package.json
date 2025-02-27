@@ -1,18 +1,20 @@
 {
-    "name": "datamanger",
-    "version": "1.0.0",
+    "name": "@payce/datamanager",
+    "version": "1.0.4",
     "main": "build/index.js",
     "types": "src/index.ts",
     "files": [
         "src/**/*",
-        "tsconfig.json"
+        "tsconfig.json",
+        "build"
     ],
     "scripts": {
-        "postinstall": "npm run build",
+        "artifactregistry-login": "npx google-artifactregistry-auth",
         "compile": "tsc --noEmit",
         "lint": "eslint ./src",
         "start:dev": "npx nodemon",
-        "build": "rimraf ./build && tsc",
+        "build": "rm -Rf ./build && tsc",
+        "prepublish": "npm run build",
         "start": "npm run build && node build/index.js",
         "test": "export GOOGLE_APPLICATION_CREDENTIALS='./serviceAccount.json' && jest",
         "test:watch": "export GOOGLE_APPLICATION_CREDENTIALS='./serviceAccount.json' && jest --watch",
@@ -36,7 +38,6 @@
         "lint-staged": "^15.3.0",
         "nodemon": "^3.1.9",
         "prettier": "^3.4.2",
-        "rimraf": "^6.0.1",
         "ts-node": "^10.9.2",
         "typescript": "^5.7.2",
         "typescript-eslint": "^8.19.0"
