@@ -14,7 +14,7 @@ export interface FirestoreListOptions<T> {
 }
 
 export class FirestoreList<T> implements List<T> {
-    protected readonly _values: T[] = []
+    protected _values: T[] = []
     protected _resolved: boolean = false
     private unsubscribeFromSnapshot: undefined | (() => void)
 
