@@ -55,16 +55,14 @@ export class FirestoreList<T> implements List<T> {
     }
 
     protected handleInitialDataChange(values: QueryDocumentSnapshot<DocumentData>[]) {
-        // Clear the array first
         this._values = []
-        // Then add the new values
         this._values = values.map(v => this.converter.fromFirestore(v, {}))
         this._resolved = true
         this.onValuesChange()
     }
 
     protected handleSubsequentDataChanges(changes: DocumentChange<DocumentData>[]) {
-        let newValues = [...this._values]
+        const newValues = [...this._values]
 
         changes.forEach(change => {
             if (change.type === 'added') {
