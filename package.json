@@ -1,6 +1,6 @@
 {
     "name": "@payce/datamanager",
-    "version": "1.0.4",
+    "version": "1.0.10",
     "main": "build/index.js",
     "types": "src/index.ts",
     "files": [
@@ -44,10 +44,12 @@
     },
     "dependencies": {
         "@types/jest": "^29.5.14",
-        "firebase": "^11.1.0",
-        "inversify": "^6.2.1",
-        "mobx": "^6.13.5",
-        "reflect-metadata": "^0.2.2",
         "ts-jest": "^29.2.5"
+    },
+    "peerDependencies": {
+        "firebase": "^11.6.0",
+        "mobx": "^6.13.7",
+        "inversify": "^6.2.1",
+        "reflect-metadata": "^0.2.2"
     }
 }

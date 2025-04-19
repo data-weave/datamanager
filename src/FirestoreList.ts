@@ -55,21 +55,28 @@ export class FirestoreList<T> implements List<T> {
     }
 
     protected handleInitialDataChange(values: QueryDocumentSnapshot<DocumentData>[]) {
-        this._values.splice(0, this._values.length, ...values.map(v => this.converter.fromFirestore(v, {})))
+        // Clear the array first
+        this._values = []
+        // Then add the new values
+        this._values = values.map(v => this.converter.fromFirestore(v, {}))
         this._resolved = true
         this.onValuesChange()
     }
 
     protected handleSubsequentDataChanges(changes: DocumentChange<DocumentData>[]) {
+        let newValues = [...this._values]
+
         changes.forEach(change => {
             if (change.type === 'added') {
-                this._values.splice(change.newIndex, 0, this.converter.fromFirestore(change.doc, {}))
+                newValues.splice(change.newIndex, 0, this.converter.fromFirestore(change.doc, {}))
             } else if (change.type === 'modified') {
-                this._values.splice(change.newIndex, 1, this.converter.fromFirestore(change.doc, {}))
+                newValues.splice(change.newIndex, 1, this.converter.fromFirestore(change.doc, {}))
             } else if (change.type === 'removed') {
-                this._values.splice(change.oldIndex, 1)
+                newValues.splice(change.oldIndex, 1)
             }
         })
+
+        this._values = newValues
         this.onValuesChange()
     }
 
