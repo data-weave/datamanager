@@ -3,6 +3,13 @@
     "version": "1.0.10",
     "main": "build/index.js",
     "types": "src/index.ts",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/js-state-reactity-models/datamanger.git"
+    },
+    "publishConfig": {
+        "registry": "https://npm.pkg.github.com"
+    },
     "files": [
         "src/**/*",
         "tsconfig.json",

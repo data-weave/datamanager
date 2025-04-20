@@ -1,10 +1,14 @@
-# @payce/datamanager
+# @js-state-reactivity-models/datamanager
 
 A data management library for JavaScript applications.
 
 ## Installation
 
 ```bash
+# Configure npm to use GitHub Packages
+echo "@js-state-reactivity-models:registry=https://npm.pkg.github.com" >> .npmrc
+
+# Install the package
 npm install @js-state-reactivity-models/datamanager
 ```
 
@@ -21,38 +25,33 @@ npm run start:dev
 npm test
 ```
 
-## Publishing to npm
+## Publishing to GitHub Packages
 
-This package is automatically published to npm via GitHub Actions when changes are pushed to the master branch.
+This package is automatically published to GitHub Packages via GitHub Actions when changes are pushed to the master branch.
 
 ### Manual Publishing
 
 To publish manually:
 
 1. Bump the version (choose one):
-
-    ```bash
-    npm run version:patch  # For bug fixes
-    npm run version:minor  # For new features
-    npm run version:major  # For breaking changes
-    ```
+   ```bash
+   npm run version:patch  # For bug fixes
+   npm run version:minor  # For new features
+   npm run version:major  # For breaking changes
+   ```
 
 2. Push changes including the new version tag:
-    ```bash
-    git push --follow-tags
-    ```
+   ```bash
+   git push --follow-tags
+   ```
 
 ## GitHub Actions Setup
 
-For automated publishing, you need to add an NPM_TOKEN secret to your GitHub repository:
+For automated publishing, the workflow uses the built-in `GITHUB_TOKEN` which is automatically available in GitHub Actions. No manual setup of tokens is required.
 
-1. Generate an npm access token:
+To consume this package in another project, you may need to authenticate with GitHub. Create a personal access token with the appropriate scopes (`read:packages`) and add it to your project's `.npmrc` file:
 
-    - Go to npmjs.com
-    - Navigate to your profile → Access Tokens
-    - Create a new token with publish access
-
-2. Add the token to GitHub:
-    - Go to your GitHub repository
-    - Navigate to Settings → Secrets and variables → Actions
-    - Create a new repository secret named `NPM_TOKEN` with your npm token value
+```
+//npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN
+@js-state-reactivity-models:registry=https://npm.pkg.github.com
+```
