@@ -69,7 +69,8 @@ export const converterSnapshotToData = <T>(snapshot: QueryDocumentSnapshot, opti
 export type FilterableFields<T> = {
     [K in keyof T]: T[K] extends string | number | boolean | Date | null | undefined
         ? K
-        : T[K] extends Array<unknown>
+        : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          T[K] extends Array<any>
           ? never
           : T[K] extends object
             ? never
