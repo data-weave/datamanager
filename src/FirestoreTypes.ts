@@ -69,7 +69,7 @@ export const converterSnapshotToData = <T>(snapshot: QueryDocumentSnapshot, opti
 export type FilterableFields<T> = {
     [K in keyof T]: T[K] extends string | number | boolean | Date | null | undefined
         ? K
-        : T[K] extends Array<any>
+        : T[K] extends Array<unknown>
           ? never
           : T[K] extends object
             ? never
@@ -94,13 +94,13 @@ export type FilterBy<T, Fields extends string = FilterableFields<WithoutId<T>>> 
 
 export type OrderBy<T, Fields extends string = FilterableFields<T>> = [Fields, OrderByDirection]
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type SerializeRefs<T> = T extends readonly any[] // handle arrays
+// Replace `any` with `unknown` to avoid ESLint error
+export type SerializeRefs<T> = T extends readonly unknown[] // handle arrays
     ? {
           [K in keyof T]: SerializeRefs<T[K]>
       }
-    : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      T extends Record<any, any>
+    : // Replace `any` with `unknown` to avoid ESLint error
+      T extends Record<string, unknown>
       ? {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             [key in keyof T as key extends `${infer F}Ref` ? `${F}Id` : key]: key extends `${infer _}Ref`
