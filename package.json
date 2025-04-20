@@ -1,6 +1,6 @@
 {
     "name": "@js-state-reactivity-models/datamanager",
-    "version": "1.0.10",
+    "version": "0.0.10",
     "main": "build/index.js",
     "types": "src/index.ts",
     "repository": {
