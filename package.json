@@ -1,20 +1,16 @@
 {
     "name": "@js-state-reactivity-models/datamanager",
-    "version": "0.0.10",
+    "version": "0.0.11",
     "main": "build/index.js",
     "types": "src/index.ts",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/js-state-reactity-models/datamanger.git"
-    },
-    "publishConfig": {
-        "registry": "https://npm.pkg.github.com"
-    },
     "files": [
         "src/**/*",
         "tsconfig.json",
         "build"
     ],
+    "publishConfig": {
+        "registry": "https://us-central1-npm.pkg.dev/payce-dev-b41d4/datamanager/"
+    },
     "scripts": {
         "artifactregistry-login": "npx google-artifactregistry-auth",
         "compile": "tsc --noEmit",
