@@ -1,8 +1,9 @@
 import { describe, test, expect } from '@jest/globals'
-import { firestore, apps } from 'firebase-admin'
+import admin, { firestore, apps } from 'firebase-admin'
 import { initializeApp, applicationDefault } from 'firebase-admin/app'
 import { FirebaseProductModel, productConverter } from './product'
 import { sleep } from './utils'
+import { FirestoreNamespaced } from '../FirestoreTypes'
 
 let productModel: FirebaseProductModel
 
@@ -16,8 +17,7 @@ beforeAll(() => {
     const db = firestore()
     db.settings({ ignoreUndefinedProperties: true })
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    productModel = new FirebaseProductModel(db as any, firestore.FieldValue, productConverter)
+    productModel = new FirebaseProductModel(new FirestoreNamespaced(db, admin.firestore.FieldValue), productConverter)
 })
 
 describe('Firebase tests', () => {

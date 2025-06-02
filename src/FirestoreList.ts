@@ -1,31 +1,29 @@
-import {
-    DocumentChange,
-    DocumentData,
-    FirestoreDataConverter,
-    FirestoreReadMode,
-    Query,
-    QueryDocumentSnapshot,
-} from './FirestoreTypes'
-import { List } from './List'
+import { DocumentData, Firestore, FirestoreReadMode, FirestoreTypes } from './FirestoreTypes'
+import { List, ListPaginationParams } from './List'
 
 export interface FirestoreListOptions<T> {
     readMode?: FirestoreReadMode
     onUpdate?: (newValues: T[]) => void
 }
 
-export class FirestoreList<T> implements List<T> {
+export class FirestoreList<T extends DocumentData, S extends DocumentData> implements List<T> {
     protected _values: T[] = []
     protected _resolved: boolean = false
+    protected _hasError: boolean = false
     private unsubscribeFromSnapshot: undefined | (() => void)
 
     constructor(
-        private readonly query: Query<DocumentData>,
-        private readonly options: FirestoreListOptions<T>,
-        private readonly converter: FirestoreDataConverter<T>
+        private readonly firestore: Firestore,
+        private readonly query: FirestoreTypes.Query<T, S>,
+        private readonly options: FirestoreListOptions<T> & ListPaginationParams
     ) {}
 
     public get values() {
         return this._values
+    }
+
+    public get hasError() {
+        return this._hasError
     }
 
     public get resolved() {
@@ -36,44 +34,55 @@ export class FirestoreList<T> implements List<T> {
         if (this.options?.readMode === 'realtime') {
             let initialLoad = true
             return new Promise<T[]>((resolve, reject) => {
-                this.unsubscribeFromSnapshot = this.query.onSnapshot(querySnapshot => {
-                    if (initialLoad) {
-                        initialLoad = false
-                        this.handleInitialDataChange(querySnapshot.docs)
-                    } else {
-                        this.handleSubsequentDataChanges(querySnapshot.docChanges())
+                this.unsubscribeFromSnapshot = this.firestore.onSnapshot(
+                    this.query,
+                    querySnapshot => {
+                        try {
+                            if (initialLoad) {
+                                initialLoad = false
+                                this.handleInitialDataChange(querySnapshot.docs)
+                            } else {
+                                this.handleSubsequentDataChanges(querySnapshot.docChanges())
+                            }
+                            this.options.onUpdate?.(this._values)
+                            resolve(this._values)
+                        } catch (error) {
+                            this.updateError(error)
+                            reject(error)
+                        }
+                    },
+                    error => {
+                        this._hasError = true
+                        this.onValuesChange()
+                        reject(error)
                     }
-                    this.options.onUpdate?.(this._values)
-                    resolve(this._values)
-                }, reject)
+                )
             })
         } else {
-            const snapshot = await this.query.get()
+            const snapshot = await this.firestore.getDocs(this.query)
             this.handleInitialDataChange(snapshot.docs)
             return this._values
         }
     }
 
-    protected handleInitialDataChange(values: QueryDocumentSnapshot<DocumentData>[]) {
+    protected handleInitialDataChange(values: FirestoreTypes.QueryDocumentSnapshot<T, S>[]) {
         this._values = []
-        this._values = values.map(v => this.converter.fromFirestore(v, {}))
+        this._values = values.map(v => v.data())
         this._resolved = true
         this.onValuesChange()
     }
 
-    protected handleSubsequentDataChanges(changes: DocumentChange<DocumentData>[]) {
+    protected handleSubsequentDataChanges(changes: FirestoreTypes.DocumentChange<T, S>[]) {
         const newValues = [...this._values]
-
         changes.forEach(change => {
             if (change.type === 'added') {
-                newValues.splice(change.newIndex, 0, this.converter.fromFirestore(change.doc, {}))
+                newValues.splice(change.newIndex, 0, change.doc.data())
             } else if (change.type === 'modified') {
-                newValues.splice(change.newIndex, 1, this.converter.fromFirestore(change.doc, {}))
+                newValues.splice(change.newIndex, 1, change.doc.data())
             } else if (change.type === 'removed') {
                 newValues.splice(change.oldIndex, 1)
             }
         })
-
         this._values = newValues
         this.onValuesChange()
     }
@@ -83,4 +92,14 @@ export class FirestoreList<T> implements List<T> {
     }
 
     protected onValuesChange(): void {}
+
+    private updateError(error: unknown) {
+        // Try to provide useful collection details using internal properties
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        console.error(`FirestoreList Collection: ${(this.query as any)?._collectionPath?.id} error`, error)
+        this._hasError = true
+        this._values = []
+        this._resolved = true
+        this.onValuesChange()
+    }
 }

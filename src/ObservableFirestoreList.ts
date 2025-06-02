@@ -1,13 +1,13 @@
 import { createAtom, IAtom, when } from 'mobx'
 
 import { FirestoreList, FirestoreListOptions } from './FirestoreList'
-import { DocumentData, FirestoreDataConverter, Query } from './FirestoreTypes'
+import { DocumentData, Firestore, FirestoreTypes } from './FirestoreTypes'
 
-export class ObservableFirestoreList<T> extends FirestoreList<T> {
+export class ObservableFirestoreList<T extends DocumentData, S extends DocumentData> extends FirestoreList<T, S> {
     private readonly _atom: IAtom
 
-    constructor(query: Query<DocumentData>, options: FirestoreListOptions<T>, converter: FirestoreDataConverter<T>) {
-        super(query, options, converter)
+    constructor(firestore: Firestore, query: FirestoreTypes.Query<T, S>, options: FirestoreListOptions<T>) {
+        super(firestore, query, options)
         this._atom = createAtom(
             'ObservableFirestoreList',
             this._onBecomeObserved.bind(this),
@@ -32,6 +32,11 @@ export class ObservableFirestoreList<T> extends FirestoreList<T> {
     public get resolved() {
         this._atom.reportObserved()
         return this._resolved
+    }
+
+    public get hasError() {
+        this._atom.reportObserved()
+        return this._hasError
     }
 
     public async resolve() {

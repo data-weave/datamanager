@@ -1,13 +1,8 @@
 import { FirebaseDataManagerOptions, FirestoreDataManager, QueryParams } from '../firestoreDataManager'
-import {
-    FieldValue,
-    FirebaseFirestore,
-    FirestoreDataConverter,
-    QueryDocumentSnapshot,
-    SnapshotOptions,
-} from '../FirestoreTypes'
-import { IdentifiableReference, Reference } from '../reference'
-import { WithMetadata } from '../dataManager'
+import { Firestore, FirestoreDataConverter } from '../FirestoreTypes'
+
+import { IdentifiableReference, Reference } from '../Reference'
+import { WithMetadata } from '../DataManager'
 
 interface Product {
     name: string
@@ -15,18 +10,17 @@ interface Product {
     qty: number
 }
 
-// TODO: setup a way for the serialization type to pick up on the
-// interface's props.
-export const productConverter: FirestoreDataConverter<Product> = {
+type SerializedProduct = Product
+
+export const productConverter: FirestoreDataConverter<Product, SerializedProduct> = {
     toFirestore: function (modelObject: Product) {
-        //NOTE: this can be any return type
         return {
             name: modelObject.name,
             desciption: modelObject.desciption,
             qty: modelObject.qty,
         }
     },
-    fromFirestore: function (snapshot: QueryDocumentSnapshot, options: SnapshotOptions) {
+    fromFirestore: function (snapshot, options) {
         const data = snapshot.data(options)
         return {
             name: data.name,
@@ -46,15 +40,14 @@ abstract class ProductModel<T = WithMetadata<Product>> {
 }
 
 export class FirebaseProductModel implements ProductModel {
-    private datamanager: FirestoreDataManager<Product>
+    private datamanager: FirestoreDataManager<Product, SerializedProduct>
 
     constructor(
-        readonly db: FirebaseFirestore,
-        readonly FieldValue: FieldValue,
-        readonly converter: FirestoreDataConverter<Product>,
+        readonly db: Firestore,
+        readonly converter: FirestoreDataConverter<Product, SerializedProduct>,
         readonly options?: FirebaseDataManagerOptions
     ) {
-        this.datamanager = new FirestoreDataManager<Product>(db, FieldValue, 'products', converter, options)
+        this.datamanager = new FirestoreDataManager<Product, SerializedProduct>(db, 'products', converter, options)
     }
 
     createProduct(p: Product) {

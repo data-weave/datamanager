@@ -46,14 +46,16 @@
         "prettier": "^3.4.2",
         "ts-node": "^10.9.2",
         "typescript": "^5.7.2",
-        "typescript-eslint": "^8.19.0"
+        "typescript-eslint": "^8.19.0",
+        "firebase": "^11.8.1",
+        "inversify": "^6.2.1",
+        "mobx": "^6.13.7"
     },
     "dependencies": {
         "@types/jest": "^29.5.14",
         "ts-jest": "^29.2.5"
     },
     "peerDependencies": {
-        "firebase": "^11.6.0",
         "mobx": "^6.13.7",
         "inversify": "^6.2.1",
         "reflect-metadata": "^0.2.2"

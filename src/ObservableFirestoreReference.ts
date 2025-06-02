@@ -1,17 +1,20 @@
 import { createAtom, IAtom, when } from 'mobx'
 
-import { DocumentReference, FirestoreDataConverter } from './FirestoreTypes'
-import { FirestoreReference, FirestoreReferenceOptions } from './firestoreReference'
+import { FirestoreReference, FirestoreReferenceOptions } from './FirestoreReference'
+import { DocumentData, Firestore, FirestoreTypes } from './FirestoreTypes'
 
-export class ObservableFirestoreReference<T> extends FirestoreReference<T> {
+export class ObservableFirestoreReference<T extends DocumentData, S extends DocumentData> extends FirestoreReference<
+    T,
+    S
+> {
     private readonly _atom: IAtom
 
     constructor(
-        doc: DocumentReference<DocumentReference>,
-        options: FirestoreReferenceOptions<T>,
-        converter: FirestoreDataConverter<T>
+        firestore: Firestore,
+        doc: FirestoreTypes.DocumentReference<T, S>,
+        options: FirestoreReferenceOptions<T>
     ) {
-        super(doc, options, converter)
+        super(firestore, doc, options)
         this._atom = createAtom(
             'ObservableFirestoreReference',
             this._onBecomeObserved.bind(this),
@@ -28,17 +31,22 @@ export class ObservableFirestoreReference<T> extends FirestoreReference<T> {
         this.unSubscribe()
     }
 
-    public get value(): T | undefined {
+    public get value() {
         this._atom.reportObserved()
         return this._value
     }
 
-    public get resolved(): boolean {
+    public get resolved() {
         this._atom.reportObserved()
         return this._resolved
     }
 
-    public async resolve(): Promise<T | undefined> {
+    public get hasError() {
+        this._atom.reportObserved()
+        return this._hasError
+    }
+
+    public async resolve() {
         await when(() => this.resolved)
         return this._value
     }

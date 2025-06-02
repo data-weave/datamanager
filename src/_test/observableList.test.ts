@@ -1,11 +1,12 @@
 import { describe, test, expect } from '@jest/globals'
-import { firestore, apps } from 'firebase-admin'
+import admin, { firestore, apps } from 'firebase-admin'
 import { initializeApp, applicationDefault } from 'firebase-admin/app'
 import { FirebaseProductModel, productConverter } from './product'
 import { sleep } from './utils'
 import { autorun } from 'mobx'
-import { ObservableFirestoreReference } from '../ObservableFirestoreReference'
 import { ObservableFirestoreList } from '../ObservableFirestoreList'
+import { FirestoreNamespaced } from '../FirestoreTypes'
+import { ObservableFirestoreReference } from '../ObservableFirestoreReference'
 
 let productModel: FirebaseProductModel
 
@@ -18,8 +19,7 @@ beforeAll(() => {
 
     const db = firestore()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    productModel = new FirebaseProductModel(db as any, firestore.FieldValue, productConverter, {
+    productModel = new FirebaseProductModel(new FirestoreNamespaced(db, admin.firestore.FieldValue), productConverter, {
         readMode: 'realtime',
         ReferenceClass: ObservableFirestoreReference,
         ListClass: ObservableFirestoreList,
