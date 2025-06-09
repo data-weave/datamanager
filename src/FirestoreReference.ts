@@ -1,5 +1,6 @@
-import { DocumentData, Firestore, FirestoreReadMode, FirestoreTypes } from './FirestoreTypes'
+import { DocumentData, Firestore, FirestoreReadMode, FirestoreTypes } from './firestoreTypes'
 import { Reference } from './Reference'
+import { checkIfReferenceExists } from './utils'
 
 export interface FirestoreReferenceOptions<T> {
     readMode?: FirestoreReadMode
@@ -71,7 +72,7 @@ export class FirestoreReference<T extends DocumentData, S extends DocumentData> 
     }
 
     protected updateValue(docSnapshot: FirestoreTypes.DocumentSnapshot<T, S>) {
-        if (!docSnapshot.exists()) throw new Error(`Document does not exist ${this.docRef.path}`)
+        if (!checkIfReferenceExists(docSnapshot)) throw new Error(`Document does not exist ${this.docRef.path}`)
         this._value = docSnapshot.data()
         this._resolved = true
         this.onValueChange()

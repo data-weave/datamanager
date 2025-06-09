@@ -1,7 +1,7 @@
 import { createAtom, IAtom, when } from 'mobx'
 
 import { FirestoreReference, FirestoreReferenceOptions } from './FirestoreReference'
-import { DocumentData, Firestore, FirestoreTypes } from './FirestoreTypes'
+import { DocumentData, Firestore, FirestoreTypes } from './firestoreTypes'
 
 export class ObservableFirestoreReference<T extends DocumentData, S extends DocumentData> extends FirestoreReference<
     T,

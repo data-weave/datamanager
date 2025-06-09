@@ -1,7 +1,7 @@
 import { createAtom, IAtom, when } from 'mobx'
 
 import { FirestoreList, FirestoreListOptions } from './FirestoreList'
-import { DocumentData, Firestore, FirestoreTypes } from './FirestoreTypes'
+import { DocumentData, Firestore, FirestoreTypes } from './firestoreTypes'
 
 export class ObservableFirestoreList<T extends DocumentData, S extends DocumentData> extends FirestoreList<T, S> {
     private readonly _atom: IAtom

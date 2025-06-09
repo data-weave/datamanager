@@ -1,26 +1,14 @@
 import { describe, test, expect } from '@jest/globals'
-import admin, { firestore, apps } from 'firebase-admin'
-import { initializeApp, applicationDefault } from 'firebase-admin/app'
-import { FirebaseProductModel, productConverter } from './product'
-import { sleep } from './utils'
-import { FirestoreNamespaced } from '../FirestoreTypes'
-
-let productModel: FirebaseProductModel
-
-beforeAll(() => {
-    if (apps.length === 0) {
-        initializeApp({
-            credential: applicationDefault(),
-        })
-    }
-
-    const db = firestore()
-    db.settings({ ignoreUndefinedProperties: true })
-
-    productModel = new FirebaseProductModel(new FirestoreNamespaced(db, admin.firestore.FieldValue), productConverter)
-})
+import { FirebaseProductModel, productConverter } from '../product'
+import { sleep } from '../utils'
+import { FirestoreNamespacedConverter } from '../../utils'
+import { initializeAdmin_SDK } from './initialize'
 
 describe('Firebase tests', () => {
+    const adminSdk = initializeAdmin_SDK()
+    const namespacedConverter = new FirestoreNamespacedConverter(adminSdk.db, adminSdk.fieldValue)
+    const productModel = new FirebaseProductModel(namespacedConverter, productConverter)
+
     test('Product creation', async () => {
         const productRef = await productModel!.createProduct({ name: 'test', desciption: 'test', qty: 1 })
         const product = await productRef.resolve()
@@ -54,15 +42,32 @@ describe('Firebase tests', () => {
         expect(product?.deleted).toEqual(true)
     })
 
-    test('Product query', async () => {
-        await productModel.createProduct({ name: 'test', desciption: 'test', qty: 55 })
+    test('Product delete hard', async () => {
+        const productModelHardDelete = new FirebaseProductModel(namespacedConverter, productConverter, {
+            deleteMode: 'hard',
+        })
 
-        const listRef = productModel.getProductList({ filters: [['qty', '==', 55]] })
+        const productRef = await productModelHardDelete.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        await sleep(200)
+        const productBeforeDelete = await productRef.resolve()
+        expect(productBeforeDelete).not.toBeUndefined()
+
+        await productModelHardDelete.deleteProduct(productRef.id)
+
+        // expect error
+        await expect(productRef.resolve()).rejects.toThrow()
+    })
+
+    test('Product query', async () => {
+        const qty = Math.floor(Math.random() * 1000000) // random number
+        await productModel.createProduct({ name: 'test', desciption: 'test', qty })
+
+        const listRef = productModel.getProductList({ filters: [['qty', '==', qty]] })
         await listRef.resolve()
 
         expect(listRef.values.length).toEqual(1)
-        await productModel.createProduct({ name: 'test', desciption: 'test', qty: 55 })
-        await productModel.createProduct({ name: 'test', desciption: 'test', qty: 55 })
+        await productModel.createProduct({ name: 'test', desciption: 'test', qty })
+        await productModel.createProduct({ name: 'test', desciption: 'test', qty })
 
         await listRef.resolve()
         expect(listRef.values.length).toEqual(3)

@@ -30,6 +30,7 @@ export interface Metadata {
     readonly deleted: boolean
 }
 
+// Copy of Firestore DocumentData definition
 type DocumentData = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [field: string]: any

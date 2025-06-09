@@ -9,6 +9,7 @@ import {
 } from './FirestoreMetadata'
 import { FirestoreReference } from './FirestoreReference'
 import {
+    DocumentData,
     FilterBy,
     FirebaseCreateOptions,
     Firestore,
@@ -20,8 +21,8 @@ import {
     InternalFirestoreDataConverter,
     OrderBy,
     WithFieldValue,
-} from './FirestoreTypes'
-import { MergeConverters } from './utils'
+} from './firestoreTypes'
+import { checkIfReferenceExists, MergeConverters } from './utils'
 import { CreateOptions, DataManager, Metadata, WithMetadata } from './DataManager'
 import { IdentifiableReference, WithoutId } from './Reference'
 import { List, ListPaginationParams } from './List'
@@ -67,20 +68,18 @@ export class FirestoreDataManager<
     private listMap: Map<string, List<WithMetadata<T>>> = new Map()
 
     constructor(
-        readonly firestore: Firestore,
-        readonly collectionPath: string,
-        readonly converter: FirestoreDataConverter<T, SerializedT>,
-        readonly opts?: FirebaseDataManagerOptions
+        private readonly firestore: Firestore,
+        private readonly collectionPath: string,
+        private readonly converter: FirestoreDataConverter<T, SerializedT>,
+        private readonly opts?: FirebaseDataManagerOptions
     ) {
         // @ts-expect-error - Force merge FirestoreDataConverter and InternalFirestoreDataConverter
-        this.mergedConverter = new MergeConverters(converter, new FirestoreMetadataConverter())
-        this.managerOptions = Object.assign(defaultFirebaseDataManagerOptions, opts)
+        this.mergedConverter = new MergeConverters(this.converter, new FirestoreMetadataConverter())
+        this.managerOptions = Object.assign(defaultFirebaseDataManagerOptions, this.opts)
 
         this.collection = this.firestore
             .collection(this.firestore.app, this.collectionPath)
             .withConverter(this.mergedConverter)
-
-        console.log('collection', this.collection)
 
         this.collectionQuery =
             this.managerOptions.deleteMode === 'soft'
@@ -94,9 +93,10 @@ export class FirestoreDataManager<
         const ref = this.getRef(id)
 
         if (options?.transaction) {
-            const snapshot = await options.transaction.get(this.firestore.doc(this.collection, id))
-            if (!snapshot.exists()) return undefined
-            // @ts-expect-error - TODO:
+            const snapshot = await options.transaction.get<WithMetadata<T>, DocumentData>(
+                this.firestore.doc(this.collection, id)
+            )
+            if (!checkIfReferenceExists(snapshot)) return undefined
             return snapshot.data()
         }
         return await ref.resolve()
@@ -110,15 +110,19 @@ export class FirestoreDataManager<
             id = this.managerOptions.idResolver()
         }
 
-        let docRef = this.firestore.doc(this.collection)
+        let docRef: FirestoreTypes.DocumentReference
+        let docExists: boolean = false
+
         if (id) {
             docRef = this.firestore.doc(this.collection, id)
-            await this.preventOverwriteOnCreate(docRef, options)
+            docExists = await this.preventOverwriteOnCreate(docRef, options)
+        } else {
+            docRef = this.firestore.doc(this.collection)
         }
 
-        const extendedData = {
+        const docDataWithMetadata = {
             ...data,
-            [FIRESTORE_KEYS.CREATED_AT]: this.firestore.serverTimestamp(),
+            [FIRESTORE_KEYS.CREATED_AT]: docExists ? undefined : this.firestore.serverTimestamp(),
             [FIRESTORE_KEYS.UPDATED_AT]: this.firestore.serverTimestamp(),
             [FIRESTORE_KEYS.DELETED]: false,
         }
@@ -126,32 +130,35 @@ export class FirestoreDataManager<
         const firebaseOptions = { merge: options?.merge }
 
         if (options?.transaction) {
-            options?.transaction.set(docRef, extendedData, firebaseOptions)
+            options?.transaction.set(docRef, docDataWithMetadata, firebaseOptions)
         } else {
-            await this.firestore.setDoc(docRef, extendedData, firebaseOptions)
+            await this.firestore.setDoc(docRef, docDataWithMetadata, firebaseOptions)
         }
 
         return this.getRef(docRef.id)
     }
 
-    private async _update(id: string, data: Partial<WithFieldValue<WithoutId<T>>>, options?: FirestoreWriteOptions) {
+    private async _update(
+        id: string,
+        data: WithoutId<Partial<WithFieldValue<T & Metadata>>>,
+        options?: FirestoreWriteOptions
+    ) {
         const extendedData = {
             ...data,
             [FIRESTORE_KEYS.UPDATED_AT]: this.firestore.serverTimestamp(),
-        } as Partial<WithFieldValue<WithoutId<T & Metadata>>>
-
+        }
+        // Firestore update method doesn't call converter like setDoc does, so we need to serialize the data manually.
         const serializedData = this.mergedConverter.toFirestore(extendedData)
 
         const ref = this.firestore.doc(this.collection, id)
 
         if (options?.transaction) {
-            // @ts-expect-error - TODO: Investigate type discrepancy between updateDoc and setDoc above
-            return options.transaction.update(ref, serializedData)
+            return options.transaction.update<DocumentData, DocumentData>(ref, serializedData)
         }
         return this.firestore.updateDoc(ref, serializedData)
     }
 
-    public async update(id: string, data: Partial<WithFieldValue<WithoutId<T>>>, options?: FirestoreWriteOptions) {
+    public async update(id: string, data: WithoutId<Partial<WithFieldValue<T>>>, options?: FirestoreWriteOptions) {
         await this._update(id, data, options)
     }
 
@@ -160,7 +167,18 @@ export class FirestoreDataManager<
     }
 
     public async delete(id: string, options?: FirestoreWriteOptions) {
-        await this._update(id, {}, options)
+        if (this.managerOptions.deleteMode === 'soft') {
+            await this._update(
+                id,
+                {
+                    ...({} as Partial<T>),
+                    [FIRESTORE_KEYS.DELETED]: true,
+                },
+                options
+            )
+            return
+        }
+        return this.firestore.deleteDoc(this.firestore.doc(this.collection, id))
     }
 
     public getRef(id: string) {
@@ -210,11 +228,11 @@ export class FirestoreDataManager<
     }
 
     private async preventOverwriteOnCreate(docRef: FirestoreTypes.DocumentReference, createOptions?: CreateOptions) {
-        if (this.managerOptions.preventOverwriteOnCreate && createOptions?.merge !== true) {
-            const doc = await this.firestore.getDoc(docRef)
-            if (doc.exists()) {
-                throw new Error(`Document already exists - ${doc.ref.path}`)
-            }
+        const doc = await this.firestore.getDoc(docRef)
+        const docExists = checkIfReferenceExists(doc)
+        if (docExists && this.managerOptions.preventOverwriteOnCreate && createOptions?.merge !== true) {
+            throw new Error(`Document already exists - ${doc.ref.path}`)
         }
+        return docExists
     }
 }

@@ -1,4 +1,4 @@
-import { DocumentData, Firestore, FirestoreReadMode, FirestoreTypes } from './FirestoreTypes'
+import { DocumentData, Firestore, FirestoreReadMode, FirestoreTypes } from './firestoreTypes'
 import { List, ListPaginationParams } from './List'
 
 export interface FirestoreListOptions<T> {

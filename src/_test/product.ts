@@ -1,5 +1,5 @@
-import { FirebaseDataManagerOptions, FirestoreDataManager, QueryParams } from '../firestoreDataManager'
-import { Firestore, FirestoreDataConverter } from '../FirestoreTypes'
+import { FirebaseDataManagerOptions, FirestoreDataManager, QueryParams } from '../FirestoreDataManager'
+import { Firestore, FirestoreDataConverter } from '../firestoreTypes'
 
 import { IdentifiableReference, Reference } from '../Reference'
 import { WithMetadata } from '../DataManager'
@@ -21,7 +21,7 @@ export const productConverter: FirestoreDataConverter<Product, SerializedProduct
         }
     },
     fromFirestore: function (snapshot, options) {
-        const data = snapshot.data(options)
+        const data = snapshot.data(options) as SerializedProduct
         return {
             name: data.name,
             desciption: data.desciption,
@@ -63,7 +63,7 @@ export class FirebaseProductModel implements ProductModel {
     }
 
     updateProduct(id: string, params: UpdateProductParams) {
-        return this.datamanager.update(id, { ...params })
+        return this.datamanager.update(id, params)
     }
 
     deleteProduct(id: string) {

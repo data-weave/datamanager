@@ -6,7 +6,7 @@ import {
     FirestoreWhere,
     InternalFirestoreDataConverter,
     WithFieldValue,
-} from './FirestoreTypes'
+} from './firestoreTypes'
 import { WithoutId } from './Reference'
 
 enum FIRESTORE_INTERAL_KEYS {

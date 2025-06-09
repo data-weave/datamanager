@@ -1,34 +1,26 @@
 import { describe, test, expect } from '@jest/globals'
-import admin, { firestore, apps } from 'firebase-admin'
-import { initializeApp, applicationDefault } from 'firebase-admin/app'
-import { FirebaseProductModel, productConverter } from './product'
-import { sleep } from './utils'
+import { FirebaseProductModel, productConverter } from '../product'
+import { sleep } from '../utils'
 import { autorun } from 'mobx'
-import { ObservableFirestoreList } from '../ObservableFirestoreList'
-import { FirestoreNamespaced } from '../FirestoreTypes'
-import { ObservableFirestoreReference } from '../ObservableFirestoreReference'
-
-let productModel: FirebaseProductModel
-
-beforeAll(() => {
-    if (apps.length === 0) {
-        initializeApp({
-            credential: applicationDefault(),
-        })
-    }
-
-    const db = firestore()
-
-    productModel = new FirebaseProductModel(new FirestoreNamespaced(db, admin.firestore.FieldValue), productConverter, {
-        readMode: 'realtime',
-        ReferenceClass: ObservableFirestoreReference,
-        ListClass: ObservableFirestoreList,
-    })
-})
+import { ObservableFirestoreList } from '../../ObservableFirestoreList'
+import { FirestoreNamespacedConverter } from '../../utils'
+import { ObservableFirestoreReference } from '../../ObservableFirestoreReference'
+import { initializeAdmin_SDK } from './initialize'
 
 describe('Firebase tests', () => {
+    const adminSdk = initializeAdmin_SDK()
+    const productModel = new FirebaseProductModel(
+        new FirestoreNamespacedConverter(adminSdk.db, adminSdk.fieldValue),
+        productConverter,
+        {
+            readMode: 'realtime',
+            ReferenceClass: ObservableFirestoreReference,
+            ListClass: ObservableFirestoreList,
+        }
+    )
+
     test('List initialization', async () => {
-        const productList = await productModel.getProductList()
+        const productList = productModel.getProductList()
         // it should not resolve, if just checking the value
         expect(productList.resolved).toEqual(false)
         await sleep(1000)
