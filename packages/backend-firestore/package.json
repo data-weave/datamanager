@@ -1,0 +1,27 @@
+{
+    "name": "@js-state-reactivity-models/backend-firestore",
+    "version": "0.1.0",
+    "author": "",
+    "main": "lib/index.js",
+    "types": "lib/index.d.ts",
+    "scripts": {
+        "build": "genversion --semi lib/version.js",
+        "build:clean": "rimraf android/build && rimraf ios/build",
+        "prepare": "npm run build"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/js-state-reactivity-models/datamanager/tree/main/packages/backend-firestore"
+    },
+    "publishConfig": {
+        "access": "private",
+        "registry": "https://us-central1-npm.pkg.dev/payce-dev-b41d4/backend-firestore/"
+    },
+    "dependencies": {
+        "firebase": "^11.9.0",
+        "firebase-admin": "^13.0.2"
+    },
+    "peerDependencies": {
+        "@js-state-reactivity-models/datamanager": "0.2.0"
+    }
+}

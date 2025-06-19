@@ -1,5 +1,5 @@
+import { Reference } from '@js-state-reactivity-models/datamanager'
 import { DocumentData, Firestore, FirestoreReadMode, FirestoreTypes } from './firestoreTypes'
-import { Reference } from './Reference'
 import { checkIfReferenceExists } from './utils'
 
 export interface FirestoreReferenceOptions<T> {

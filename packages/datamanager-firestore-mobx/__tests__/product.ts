@@ -1,8 +1,11 @@
-import { FirebaseDataManagerOptions, FirestoreDataManager, QueryParams } from '../FirestoreDataManager'
-import { Firestore, FirestoreDataConverter } from '../firestoreTypes'
-
-import { IdentifiableReference, Reference } from '../Reference'
-import { WithMetadata } from '../DataManager'
+import {
+    FirebaseDataManagerOptions,
+    Firestore,
+    FirestoreDataConverter,
+    FirestoreDataManager,
+    QueryParams,
+} from '@js-state-reactivity-models/backend-firestore'
+import { IdentifiableReference, Reference, WithMetadata } from '@js-state-reactivity-models/datamanager'
 
 interface Product {
     name: string

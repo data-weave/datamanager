@@ -1,5 +1,5 @@
+import { List, ListPaginationParams } from '@js-state-reactivity-models/datamanager'
 import { DocumentData, Firestore, FirestoreReadMode, FirestoreTypes } from './firestoreTypes'
-import { List, ListPaginationParams } from './List'
 
 export interface FirestoreListOptions<T> {
     readMode?: FirestoreReadMode

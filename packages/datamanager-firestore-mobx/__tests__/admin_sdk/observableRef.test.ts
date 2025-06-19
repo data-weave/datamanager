@@ -1,21 +1,28 @@
-import { describe, test, expect } from '@jest/globals'
+import { describe, expect, test } from '@jest/globals'
+import { FirestoreNamespacedConverter } from '@js-state-reactivity-models/backend-firestore'
+import {} from 'firebase-admin/firestore'
+import { autorun } from 'mobx'
+import { ObservableFirestoreReference } from '../../lib'
 import { FirebaseProductModel, productConverter } from '../product'
 import { sleep } from '../utils'
-import { autorun } from 'mobx'
-import { ObservableFirestoreReference } from '../../ObservableFirestoreReference'
-import { initializeJS_SDK } from './intitialize'
+import { initializeAdmin_SDK } from './initialize'
 
 describe('Firebase tests', () => {
-    const productModel = new FirebaseProductModel(initializeJS_SDK(), productConverter, {
-        readMode: 'realtime',
-        ReferenceClass: ObservableFirestoreReference,
-    })
+    const adminSdk = initializeAdmin_SDK()
+    const productModel = new FirebaseProductModel(
+        new FirestoreNamespacedConverter(adminSdk.db, adminSdk.fieldValue),
+        productConverter,
+        {
+            readMode: 'realtime',
+            ReferenceClass: ObservableFirestoreReference,
+        }
+    )
 
     test('Reference initialization', async () => {
         const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
         // it should not resolve, if just checking the value
         expect(productRef.resolved).toEqual(false)
-        await sleep(500)
+        await sleep(1000)
         expect(productRef.resolved).toEqual(false)
 
         // it should not resolve - observed only for the duration of resolve() call
@@ -28,7 +35,7 @@ describe('Firebase tests', () => {
             return productRef.resolved
         })
 
-        await sleep(500)
+        await sleep(1000)
         expect(productRef.resolved).toEqual(true)
         dispose()
 
@@ -40,7 +47,7 @@ describe('Firebase tests', () => {
             return productRef.value
         })
 
-        await sleep(500)
+        await sleep(1000)
         expect(productRef.resolved).toEqual(true)
         dispose2()
 
@@ -55,11 +62,11 @@ describe('Firebase tests', () => {
         const dispose = autorun(function () {
             return productRef.value
         })
-        await sleep(500)
+        await sleep(1000)
         expect(productRef.value?.qty).toEqual(1)
 
         await productModel.updateProduct(productRef.id, { qty: 2 })
-        await sleep(500)
+        await sleep(1000)
 
         expect(productRef.value?.qty).toEqual(2)
         dispose()

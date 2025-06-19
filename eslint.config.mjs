@@ -1,8 +1,14 @@
-import eslint from '@eslint/js'
 import tseslint from 'typescript-eslint'
 
 /** @type {import('eslint').Linter.Config[]} */
-export default tseslint.config(eslint.configs.recommended, tseslint.configs.recommended, {
+export default tseslint.config({
+    extends: [
+        'eslint:recommended',
+        'plugin:@typescript-eslint/eslint-recommended',
+        'prettier',
+        'plugin:prettier/recommended',
+    ],
+    ignores: ['**/version.js', '**/node_modules/**/*'],
     rules: {
         '@typescript-eslint/no-unused-vars': [
             'error',
@@ -16,5 +22,6 @@ export default tseslint.config(eslint.configs.recommended, tseslint.configs.reco
                 ignoreRestSiblings: true,
             },
         ],
+        'no-console': 'warn',
     },
 })

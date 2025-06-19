@@ -1,7 +1,7 @@
-import { describe, test, expect } from '@jest/globals'
+import { describe, expect, test } from '@jest/globals'
+import { FirestoreNamespacedConverter } from '@js-state-reactivity-models/backend-firestore'
 import { FirebaseProductModel, productConverter } from '../product'
 import { sleep } from '../utils'
-import { FirestoreNamespacedConverter } from '../../utils'
 import { initializeAdmin_SDK } from './initialize'
 
 describe('Firebase tests', () => {

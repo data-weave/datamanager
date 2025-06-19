@@ -1,4 +1,4 @@
-import { Metadata } from './DataManager'
+import { Metadata, WithoutId } from '@js-state-reactivity-models/datamanager'
 import {
     DocumentData,
     FirestoreQuery,
@@ -7,7 +7,6 @@ import {
     InternalFirestoreDataConverter,
     WithFieldValue,
 } from './firestoreTypes'
-import { WithoutId } from './Reference'
 
 enum FIRESTORE_INTERAL_KEYS {
     DELETED = '__deleted',

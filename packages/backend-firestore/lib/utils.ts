@@ -1,3 +1,4 @@
+import { WithoutId } from '@js-state-reactivity-models/datamanager'
 import {
     DocumentData,
     FieldValues,
@@ -5,10 +6,9 @@ import {
     FirestoreApp,
     FirestoreTypes,
     InternalFirestoreDataConverter,
-    WithFieldValue,
     Transaction,
+    WithFieldValue,
 } from './firestoreTypes'
-import { WithoutId } from './Reference'
 
 export class MergeConverters<
     T extends DocumentData,

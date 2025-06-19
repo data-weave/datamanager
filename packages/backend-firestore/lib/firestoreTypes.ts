@@ -1,14 +1,14 @@
 import type FirestoreTypes from '@firebase/firestore'
 import type { WithFieldValue as FirestoreWithFieldValue } from '@firebase/firestore'
 import type { HttpsCallable, HttpsCallableOptions } from '@firebase/functions-types'
+import { FieldValue, Transaction } from '@google-cloud/firestore'
+import { WithoutId } from '@js-state-reactivity-models/datamanager'
 import { injectable } from 'inversify'
-import { WithoutId } from './Reference'
-import { Transaction, FieldValue } from '@google-cloud/firestore'
 
 export type DocumentData = FirestoreTypes.DocumentData
 // export type FieldValue = FirestoreTypes.FieldValue
 
-export { FirestoreTypes, FieldValue, Transaction }
+export { FieldValue, FirestoreTypes, Transaction }
 
 /**
  * Same as Partial but all fields are required to be included

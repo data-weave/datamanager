@@ -1,5 +1,5 @@
-import admin, { firestore, apps } from 'firebase-admin'
-import { initializeApp, applicationDefault } from 'firebase-admin/app'
+import admin, { apps, firestore } from 'firebase-admin'
+import { applicationDefault, initializeApp } from 'firebase-admin/app'
 
 export const initializeAdmin_SDK = () => {
     if (apps.length === 0) {

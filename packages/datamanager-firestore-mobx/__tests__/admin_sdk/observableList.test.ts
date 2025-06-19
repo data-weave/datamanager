@@ -1,10 +1,9 @@
-import { describe, test, expect } from '@jest/globals'
+import { describe, expect, test } from '@jest/globals'
+import { FirestoreNamespacedConverter } from '@js-state-reactivity-models/backend-firestore'
+import { autorun } from 'mobx'
+import { ObservableFirestoreList, ObservableFirestoreReference } from '../../lib'
 import { FirebaseProductModel, productConverter } from '../product'
 import { sleep } from '../utils'
-import { autorun } from 'mobx'
-import { ObservableFirestoreList } from '../../ObservableFirestoreList'
-import { FirestoreNamespacedConverter } from '../../utils'
-import { ObservableFirestoreReference } from '../../ObservableFirestoreReference'
 import { initializeAdmin_SDK } from './initialize'
 
 describe('Firebase tests', () => {

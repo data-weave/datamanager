@@ -1,9 +1,8 @@
-import { describe, test, expect } from '@jest/globals'
+import { describe, expect, test } from '@jest/globals'
+import { autorun } from 'mobx'
+import { ObservableFirestoreList, ObservableFirestoreReference } from '../../lib'
 import { FirebaseProductModel, productConverter } from '../product'
 import { sleep } from '../utils'
-import { autorun } from 'mobx'
-import { ObservableFirestoreList } from '../../ObservableFirestoreList'
-import { ObservableFirestoreReference } from '../../ObservableFirestoreReference'
 import { initializeJS_SDK } from './intitialize'
 
 describe('Firebase tests', () => {

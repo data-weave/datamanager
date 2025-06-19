@@ -1,0 +1,73 @@
+{
+    "$schema": "node_modules/lerna/schemas/lerna-schema.json",
+    "version": "0.2.0",
+    "packages": ["packages/*"],
+    "command": {
+        "version": {
+            "allowBranch": "main",
+            "conventionalCommits": true,
+            "exact": true,
+            "gitRemote": "origin",
+            "message": "chore(release): release packages"
+        }
+    },
+    "changelogPreset": {
+        "name": "conventionalcommits",
+        "issueUrlFormat": "{{host}}/{{owner}}/{{repository}}/issues/{{id}}",
+        "issuePrefixes": ["#"],
+        "types": [
+            {
+                "type": "feat",
+                "section": "Features"
+            },
+            {
+                "type": "feature",
+                "section": "Features"
+            },
+            {
+                "type": "fix",
+                "section": "Bug Fixes"
+            },
+            {
+                "type": "perf",
+                "section": "Performance Improvements"
+            },
+            {
+                "type": "revert",
+                "section": "Reverts"
+            },
+            {
+                "type": "docs",
+                "section": "Documentation"
+            },
+            {
+                "type": "style",
+                "section": "Styles"
+            },
+            {
+                "type": "chore",
+                "section": "Miscellaneous Chores",
+                "hidden": true
+            },
+            {
+                "type": "refactor",
+                "section": "Code Refactoring"
+            },
+            {
+                "type": "test",
+                "section": "Tests"
+            },
+            {
+                "type": "build",
+                "section": "Build System"
+            },
+            {
+                "type": "ci",
+                "section": "Continuous Integration"
+            }
+        ],
+        "commitUrlFormat": "{{host}}/{{owner}}/{{repository}}/commit/{{hash}}",
+        "compareUrlFormat": "{{host}}/{{owner}}/{{repository}}/compare/{{previousTag}}...{{currentTag}}",
+        "userUrlFormat": "{{host}}/{{user}}"
+    }
+}

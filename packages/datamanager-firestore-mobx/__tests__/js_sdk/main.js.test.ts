@@ -1,7 +1,7 @@
-import { describe, test, expect } from '@jest/globals'
+import { describe, expect, test } from '@jest/globals'
+import { FirebaseProductModel, productConverter } from '../product'
 import { sleep } from '../utils'
 import { initializeJS_SDK } from './intitialize'
-import { FirebaseProductModel, productConverter } from '../product'
 
 describe('Firebase tests', () => {
     const productModel = new FirebaseProductModel(initializeJS_SDK(), productConverter)
@@ -33,7 +33,6 @@ describe('Firebase tests', () => {
 
     test('Product delete soft', async () => {
         const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
-        console.log(productRef.id)
         await sleep(500)
         await productModel.deleteProduct(productRef.id)
 
@@ -71,4 +70,6 @@ describe('Firebase tests', () => {
         await listRef.resolve()
         expect(listRef.values.length).toEqual(3)
     })
+
+    test('Product transaction', async () => {})
 })

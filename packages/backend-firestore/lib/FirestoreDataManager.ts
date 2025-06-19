@@ -1,5 +1,15 @@
 import { injectable } from 'inversify'
 
+import {
+    CreateOptions,
+    DataManager,
+    IdentifiableReference,
+    List,
+    ListPaginationParams,
+    Metadata,
+    WithMetadata,
+    WithoutId,
+} from '@js-state-reactivity-models/datamanager'
 import { FirestoreList } from './FirestoreList'
 import {
     FIRESTORE_KEYS,
@@ -22,10 +32,7 @@ import {
     OrderBy,
     WithFieldValue,
 } from './firestoreTypes'
-import { checkIfReferenceExists, MergeConverters } from './utils'
-import { CreateOptions, DataManager, Metadata, WithMetadata } from './DataManager'
-import { IdentifiableReference, WithoutId } from './Reference'
-import { List, ListPaginationParams } from './List'
+import { MergeConverters, checkIfReferenceExists } from './utils'
 
 export type FirebaseDataManagerDeleteMode = 'soft' | 'hard'
 

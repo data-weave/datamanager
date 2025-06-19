@@ -1,22 +1,20 @@
-import { createAtom, IAtom, when } from 'mobx'
+import { IAtom, createAtom, when } from 'mobx'
 
-import { FirestoreReference, FirestoreReferenceOptions } from './FirestoreReference'
-import { DocumentData, Firestore, FirestoreTypes } from './firestoreTypes'
+import {
+    DocumentData,
+    Firestore,
+    FirestoreList,
+    FirestoreListOptions,
+    FirestoreTypes,
+} from '@js-state-reactivity-models/backend-firestore'
 
-export class ObservableFirestoreReference<T extends DocumentData, S extends DocumentData> extends FirestoreReference<
-    T,
-    S
-> {
+export class ObservableFirestoreList<T extends DocumentData, S extends DocumentData> extends FirestoreList<T, S> {
     private readonly _atom: IAtom
 
-    constructor(
-        firestore: Firestore,
-        doc: FirestoreTypes.DocumentReference<T, S>,
-        options: FirestoreReferenceOptions<T>
-    ) {
-        super(firestore, doc, options)
+    constructor(firestore: Firestore, query: FirestoreTypes.Query<T, S>, options: FirestoreListOptions<T>) {
+        super(firestore, query, options)
         this._atom = createAtom(
-            'ObservableFirestoreReference',
+            'ObservableFirestoreList',
             this._onBecomeObserved.bind(this),
             this._onBecomeUnobserved.bind(this)
         )
@@ -31,9 +29,9 @@ export class ObservableFirestoreReference<T extends DocumentData, S extends Docu
         this.unSubscribe()
     }
 
-    public get value() {
+    public get values() {
         this._atom.reportObserved()
-        return this._value
+        return this._values
     }
 
     public get resolved() {
@@ -48,10 +46,10 @@ export class ObservableFirestoreReference<T extends DocumentData, S extends Docu
 
     public async resolve() {
         await when(() => this.resolved)
-        return this._value
+        return this._values
     }
 
-    protected onValueChange() {
+    protected onValuesChange() {
         this._atom.reportChanged()
     }
 }

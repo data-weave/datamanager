@@ -1,33 +1,33 @@
-import { initializeApp, getApps, FirebaseApp, getApp } from 'firebase/app'
+import { FirebaseApp, getApp, getApps, initializeApp } from 'firebase/app'
 import {
     collection,
-    getDocs,
+    deleteDoc,
+    doc,
     getDoc,
-    serverTimestamp,
-    query,
-    where,
+    getDocs,
+    increment,
+    initializeFirestore,
     limit,
+    onSnapshot,
     orderBy,
+    query,
+    runTransaction,
+    serverTimestamp,
     setDoc,
     updateDoc,
-    doc,
-    onSnapshot,
-    increment,
-    runTransaction,
-    initializeFirestore,
-    deleteDoc,
+    where,
 } from 'firebase/firestore'
 
 export const initializeJS_SDK = () => {
     let firebaseApp: FirebaseApp
     if (getApps().length === 0) {
         firebaseApp = initializeApp({
-            apiKey: '',
-            authDomain: '',
-            projectId: '',
-            storageBucket: '',
-            messagingSenderId: '',
-            appId: '',
+            apiKey: 'AIzaSyC9QAwiRK4tBmeed5xaE-N6x0ks1ceN-oU',
+            authDomain: 'datamanager-testing.firebaseapp.com',
+            projectId: 'datamanager-testing',
+            storageBucket: 'datamanager-testing.firebasestorage.app',
+            messagingSenderId: '515755042265',
+            appId: '1:515755042265:web:e564bff82167b9abc1a5c8',
         })
     } else {
         firebaseApp = getApp()
