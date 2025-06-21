@@ -4,7 +4,8 @@ import { sleep } from '../utils'
 import { initializeJS_SDK } from './intitialize'
 
 describe('Firebase tests', () => {
-    const productModel = new FirebaseProductModel(initializeJS_SDK(), productConverter)
+    const firestore = initializeJS_SDK()
+    const productModel = new FirebaseProductModel(firestore, productConverter)
 
     test('Product creation', async () => {
         const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })

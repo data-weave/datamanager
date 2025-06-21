@@ -101,7 +101,7 @@ export class FirestoreNamespacedConverter extends Firestore {
         }
     }
 
-    public where(field: string, op: string, value: any) {
+    public where(field: string | FirestoreTypes.FieldPath, op: string, value: unknown): any {
         return {
             type: 'where',
             field,

@@ -54,6 +54,6 @@ export class FirestoreMetadataConverter
 
 export const queryNotDeleted = <T extends DocumentData, SerializedT extends DocumentData>(
     query: FirestoreTypes.Query<T, SerializedT>,
-    firestoreQuery: FirestoreQuery,
+    firestoreQuery: FirestoreQuery<T, SerializedT>,
     firestoreWhere: FirestoreWhere
 ) => firestoreQuery(query, firestoreWhere(FIRESTORE_INTERAL_KEYS.DELETED, '==', false))

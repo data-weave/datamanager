@@ -13,8 +13,8 @@ describe('Firebase tests', () => {
         productConverter,
         {
             readMode: 'realtime',
-            ReferenceClass: ObservableFirestoreReference,
-            ListClass: ObservableFirestoreList,
+            Reference: ObservableFirestoreReference,
+            List: ObservableFirestoreList,
         }
     )
 

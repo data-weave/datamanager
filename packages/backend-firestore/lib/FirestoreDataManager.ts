@@ -1,11 +1,13 @@
 import { injectable } from 'inversify'
 
 import {
+    Cache,
     CreateOptions,
     DataManager,
     IdentifiableReference,
     List,
     ListPaginationParams,
+    MapCache,
     Metadata,
     WithMetadata,
     WithoutId,
@@ -42,16 +44,18 @@ export interface FirebaseDataManagerOptions {
     readonly readMode?: FirestoreReadMode
     readonly preventOverwriteOnCreate?: boolean
     // TODO: Add preventUpdateIfNotExists?
-    readonly ReferenceClass?: typeof FirestoreReference
-    readonly ListClass?: typeof FirestoreList
+    readonly Reference?: typeof FirestoreReference
+    readonly List?: typeof FirestoreList
+    readonly listCache?: Cache
+    readonly refCache?: Cache
 }
 
 const defaultFirebaseDataManagerOptions: FirebaseDataManagerOptions = {
     deleteMode: 'soft',
     preventOverwriteOnCreate: true,
     readMode: 'static',
-    ReferenceClass: FirestoreReference,
-    ListClass: FirestoreList,
+    Reference: FirestoreReference,
+    List: FirestoreList,
 }
 
 export interface QueryParams<T extends FirestoreTypes.DocumentData> {
@@ -70,9 +74,8 @@ export class FirestoreDataManager<
     private collectionQuery: FirestoreTypes.Query<T & Metadata, SerializedT & FirestoreSerializedMetadata>
     private managerOptions: FirebaseDataManagerOptions
 
-    // TODO: Consider a proper cache
-    private refMap: Map<string, IdentifiableReference<WithMetadata<T>>> = new Map()
-    private listMap: Map<string, List<WithMetadata<T>>> = new Map()
+    private refCache: Cache<string, IdentifiableReference<WithMetadata<T>>>
+    private listCache: Cache<string, List<WithMetadata<T>>>
 
     constructor(
         private readonly firestore: Firestore,
@@ -83,6 +86,9 @@ export class FirestoreDataManager<
         // @ts-expect-error - Force merge FirestoreDataConverter and InternalFirestoreDataConverter
         this.mergedConverter = new MergeConverters(this.converter, new FirestoreMetadataConverter())
         this.managerOptions = Object.assign(defaultFirebaseDataManagerOptions, this.opts)
+
+        this.refCache = this.managerOptions.refCache || new MapCache(100)
+        this.listCache = this.managerOptions.listCache || new MapCache(100)
 
         this.collection = this.firestore
             .collection(this.firestore.app, this.collectionPath)
@@ -95,7 +101,7 @@ export class FirestoreDataManager<
     }
 
     public async read(id: string, options?: FirestoreReadOptions): Promise<WithMetadata<T> | undefined> {
-        if (!this.managerOptions?.ReferenceClass) throw new Error('ReferenceClass not defined')
+        if (!this.managerOptions?.Reference) throw new Error('ReferenceClass not defined')
 
         const ref = this.getRef(id)
 
@@ -189,17 +195,16 @@ export class FirestoreDataManager<
     }
 
     public getRef(id: string) {
-        if (!this.managerOptions?.ReferenceClass) throw new Error('ReferenceClass not defined')
+        if (!this.managerOptions?.Reference) throw new Error('ReferenceClass not defined')
 
-        if (this.refMap.has(id)) {
-            return this.refMap.get(id)!
+        if (this.refCache.has(id)) {
+            return this.refCache.get(id)!
         }
 
-        const newRef = new this.managerOptions.ReferenceClass(this.firestore, this.firestore.doc(this.collection, id), {
+        const newRef = new this.managerOptions.Reference(this.firestore, this.firestore.doc(this.collection, id), {
             readMode: this.managerOptions.readMode,
-            // TODO: fix type
-        }) as IdentifiableReference<WithMetadata<T>>
-        this.refMap.set(id, newRef)
+        })
+        this.refCache.set(id, newRef)
         return newRef
     }
 
@@ -218,19 +223,19 @@ export class FirestoreDataManager<
     }
 
     public getList(params?: QueryParams<SerializedT> & ListPaginationParams) {
-        if (!this.managerOptions.ListClass) throw new Error('ListClass not defined')
+        if (!this.managerOptions.List) throw new Error('ListClass not defined')
 
         const compoundQuery = this._getFilteredQuery(params)
 
         const key = JSON.stringify(params || {})
-        if (this.listMap.has(key)) {
-            return this.listMap.get(key)!
+        if (this.listCache.has(key)) {
+            return this.listCache.get(key)!
         }
-        const newList = new this.managerOptions.ListClass(this.firestore, compoundQuery, {
+        const newList = new this.managerOptions.List(this.firestore, compoundQuery, {
             readMode: this.managerOptions.readMode,
             ...params,
         })
-        this.listMap.set(key, newList)
+        this.listCache.set(key, newList)
         return newList
     }
 

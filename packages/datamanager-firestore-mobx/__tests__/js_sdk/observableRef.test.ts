@@ -9,7 +9,7 @@ import { initializeJS_SDK } from './intitialize'
 describe('Firebase tests', () => {
     const productModel = new FirebaseProductModel(initializeJS_SDK(), productConverter, {
         readMode: 'realtime',
-        ReferenceClass: ObservableFirestoreReference,
+        Reference: ObservableFirestoreReference,
     })
 
     test('Reference initialization', async () => {

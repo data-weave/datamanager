@@ -1,12 +1,11 @@
 import type FirestoreTypes from '@firebase/firestore'
-import type { WithFieldValue as FirestoreWithFieldValue } from '@firebase/firestore'
+import type { FieldPath, WithFieldValue as FirestoreWithFieldValue, QueryConstraint } from '@firebase/firestore'
 import type { HttpsCallable, HttpsCallableOptions } from '@firebase/functions-types'
 import { FieldValue, Transaction } from '@google-cloud/firestore'
 import { WithoutId } from '@js-state-reactivity-models/datamanager'
 import { injectable } from 'inversify'
 
 export type DocumentData = FirestoreTypes.DocumentData
-// export type FieldValue = FirestoreTypes.FieldValue
 
 export { FieldValue, FirestoreTypes, Transaction }
 
@@ -48,11 +47,11 @@ export declare interface FirestoreDataConverter<
     ): OptionallyUndefined<Required<WithoutId<T>>>
 }
 
-// TODO: add types
-/* eslint-disable @typescript-eslint/no-explicit-any */
-export type FirestoreQuery = (reference: any, filter: any) => any
-export type FirestoreWhere = (field: string, op: string, value: any) => any
-/* eslint-enable @typescript-eslint/no-explicit-any */
+export type FirestoreQuery<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData> = (
+    reference: FirestoreTypes.Query<AppModelType, DbModelType>,
+    filter: any
+) => FirestoreTypes.Query<AppModelType, DbModelType>
+export type FirestoreWhere = (field: string | FieldPath, op: string, value: unknown) => any
 
 export type FirestoreReadMode = 'realtime' | 'static'
 
@@ -155,27 +154,50 @@ export abstract class FirestoreApp {
     ): Promise<T>
 }
 
-// TODO: add types
-/* eslint-disable @typescript-eslint/no-explicit-any */
 @injectable()
 export abstract class Firestore {
     public abstract app: FirestoreApp
-    public abstract collection(reference: any, path: string): any
-    public abstract getDocs(reference: any): Promise<any>
-    public abstract getDoc(reference: any, path?: string): Promise<any>
+    public abstract collection(reference: FirestoreTypes.CollectionReference | FirestoreApp, path: string): any
+    public abstract getDocs<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
+        reference: FirestoreTypes.Query<AppModelType, DbModelType>
+    ): Promise<FirestoreTypes.QuerySnapshot<AppModelType, DbModelType>>
+    public abstract getDoc<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
+        reference: FirestoreTypes.DocumentReference<AppModelType, DbModelType>,
+        path?: string
+    ): Promise<FirestoreTypes.DocumentSnapshot<AppModelType, DbModelType>>
     public abstract serverTimestamp(): FirestoreTypes.FieldValue
     public abstract increment(n: number): FirestoreTypes.FieldValue
-    public abstract query(reference: any, filter: any): any
-    public abstract where(field: string, op: string, value: any): any
+    public abstract query<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
+        reference: FirestoreTypes.Query<AppModelType, DbModelType>,
+        filter: any
+    ): FirestoreTypes.Query<AppModelType, DbModelType>
+    public abstract where(field: string | FieldPath, op: string, value: unknown): QueryConstraint
     public abstract limit(limit: number): any
     public abstract orderBy(orderBy: string, direction: FirestoreTypes.OrderByDirection): any
-    public abstract setDoc(reference: any, data: any, options?: FirestoreTypes.SetOptions): Promise<void>
-    public abstract updateDoc(reference: any, data: any): Promise<void>
-    public abstract doc(reference: any, path?: string): any
-    public abstract deleteDoc(reference: any): Promise<void>
-    public abstract onSnapshot(
-        reference: any,
-        onNext: (snapshot: any) => void,
+    public abstract setDoc<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
+        reference: FirestoreTypes.DocumentReference<AppModelType, DbModelType>,
+        data: any,
+        options?: FirestoreTypes.SetOptions
+    ): Promise<void>
+    public abstract updateDoc<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
+        reference: FirestoreTypes.DocumentReference<AppModelType, DbModelType>,
+        data: any
+    ): Promise<void>
+    public abstract doc<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
+        reference: FirestoreTypes.Query<AppModelType, DbModelType>,
+        path?: string
+    ): FirestoreTypes.DocumentReference<AppModelType, DbModelType>
+    public abstract deleteDoc<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
+        reference: FirestoreTypes.DocumentReference<AppModelType, DbModelType>
+    ): Promise<void>
+    public abstract onSnapshot<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
+        reference: FirestoreTypes.DocumentReference<AppModelType, DbModelType>,
+        onNext: (snapshot: FirestoreTypes.DocumentSnapshot<AppModelType, DbModelType>) => void,
+        onError?: (error: Error) => void
+    ): () => void
+    public abstract onSnapshot<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
+        reference: FirestoreTypes.Query<AppModelType, DbModelType>,
+        onNext: (snapshot: FirestoreTypes.QuerySnapshot<AppModelType, DbModelType>) => void,
         onError?: (error: Error) => void
     ): () => void
     public abstract runTransaction<T>(
@@ -184,7 +206,6 @@ export abstract class Firestore {
         options?: FirestoreTypes.TransactionOptions
     ): Promise<T>
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 @injectable()
 export abstract class FirestoreSettings {
