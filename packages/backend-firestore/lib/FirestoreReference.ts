@@ -6,7 +6,7 @@ export interface FirestoreReferenceOptions<T> extends LiveReferenceOptions<T> {
     readMode?: FirestoreReadMode
 }
 
-export class FirestoreReference<T extends DocumentData, S extends DocumentData> extends LiveReference<T, S> {
+export class FirestoreReference<T extends DocumentData, S extends DocumentData> extends LiveReference<T> {
     private unsubscribeFromSnapshot: undefined | (() => void)
 
     constructor(

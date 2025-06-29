@@ -1,11 +1,11 @@
-import { DocumentData, Reference } from '../../datamanager-firestore-mobx/lib'
+import { Reference } from '../../datamanager-firestore-mobx/lib'
 
 export interface LiveReferenceOptions<T> {
     onUpdate?: (newValue: T | undefined) => void
     onError?: (error: unknown) => void
 }
 
-export class LiveReference<T extends DocumentData, S extends DocumentData> implements Reference<T> {
+export class LiveReference<T> implements Reference<T> {
     protected _value: T | undefined
     protected _resolved: boolean = false
     protected _hasError: boolean = false
