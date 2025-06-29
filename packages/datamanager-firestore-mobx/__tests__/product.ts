@@ -4,6 +4,7 @@ import {
     FirestoreDataConverter,
     FirestoreDataManager,
     QueryParams,
+    withTransaction,
 } from '@js-state-reactivity-models/backend-firestore'
 import { IdentifiableReference, Reference, WithMetadata } from '@js-state-reactivity-models/datamanager'
 
@@ -71,5 +72,24 @@ export class FirebaseProductModel implements ProductModel {
 
     deleteProduct(id: string) {
         return this.datamanager.delete(id)
+    }
+
+    updateStockWithTransaction(id: string, addQty: number) {
+        return withTransaction(this.db, async transaction => {
+            const product = await this.datamanager.read(id, { transaction: transaction as any })
+            if (!product) throw new Error('Product not found')
+            product.qty += addQty
+            await this.datamanager.update(id, { qty: product.qty }, { transaction: transaction as any })
+        })
+    }
+
+    updateStockWithTransactionWithError(id: string, addQty: number) {
+        return withTransaction(this.db, async transaction => {
+            const product = await this.datamanager.read(id, { transaction: transaction as any })
+            if (!product) throw new Error('Product not found')
+            product.qty += addQty
+            await this.datamanager.update(id, { qty: product.qty }, { transaction: transaction as any })
+            throw new Error('Test transaction failure')
+        })
     }
 }

@@ -72,5 +72,21 @@ describe('Firebase tests', () => {
         expect(listRef.values.length).toEqual(3)
     })
 
-    test('Product transaction', async () => {})
+    test('Product transaction', async () => {
+        const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        await sleep(200)
+        await productModel.updateStockWithTransaction(productRef.id, 10)
+        const productAfterUpdate = await productRef.resolve()
+        await sleep(200)
+        expect(productAfterUpdate?.qty).toEqual(11)
+    })
+
+    test('Product transaction on failed transaction', async () => {
+        const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        await sleep(200)
+        await expect(productModel.updateStockWithTransactionWithError(productRef.id, 10)).rejects.toThrow()
+        const productAfterUpdate = await productRef.resolve()
+        await sleep(200)
+        expect(productAfterUpdate?.qty).toEqual(1)
+    })
 })

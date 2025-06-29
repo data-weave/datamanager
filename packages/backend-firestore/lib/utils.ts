@@ -169,3 +169,11 @@ export const checkIfReferenceExists = (value: any): boolean => {
     if (typeof value.exists === 'function') return value.exists()
     return value.exists
 }
+
+export const withTransaction = (
+    firestore: Firestore,
+    transaction: (transaction: Transaction) => Promise<void>,
+    options?: FirestoreTypes.TransactionOptions
+) => {
+    return firestore.runTransaction!(firestore.app, transaction, options)
+}
