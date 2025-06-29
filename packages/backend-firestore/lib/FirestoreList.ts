@@ -1,33 +1,19 @@
-import { List, ListPaginationParams } from '@js-state-reactivity-models/datamanager'
+import { ListPaginationParams, LiveList, LiveListOptions } from '@js-state-reactivity-models/datamanager'
 import { DocumentData, Firestore, FirestoreReadMode, FirestoreTypes } from './firestoreTypes'
 
-export interface FirestoreListOptions<T> {
+export interface FirestoreListOptions<T> extends LiveListOptions<T> {
     readMode?: FirestoreReadMode
-    onUpdate?: (newValues: T[]) => void
 }
 
-export class FirestoreList<T extends DocumentData, S extends DocumentData> implements List<T> {
-    protected _values: T[] = []
-    protected _resolved: boolean = false
-    protected _hasError: boolean = false
+export class FirestoreList<T extends DocumentData, S extends DocumentData> extends LiveList<T> {
     private unsubscribeFromSnapshot: undefined | (() => void)
 
     constructor(
         private readonly firestore: Firestore,
         private readonly query: FirestoreTypes.Query<T, S>,
         private readonly options: FirestoreListOptions<T> & ListPaginationParams
-    ) {}
-
-    public get values() {
-        return this._values
-    }
-
-    public get hasError() {
-        return this._hasError
-    }
-
-    public get resolved() {
-        return this._resolved
+    ) {
+        super(options)
     }
 
     public async resolve() {
@@ -47,7 +33,7 @@ export class FirestoreList<T extends DocumentData, S extends DocumentData> imple
                             this.options.onUpdate?.(this._values)
                             resolve(this._values)
                         } catch (error) {
-                            this.updateError(error)
+                            this.onError(error)
                             reject(error)
                         }
                     },
@@ -66,12 +52,11 @@ export class FirestoreList<T extends DocumentData, S extends DocumentData> imple
     }
 
     protected handleInitialDataChange(values: FirestoreTypes.QueryDocumentSnapshot<T, S>[]) {
-        this._values = []
-        this._values = values.map(v => v.data())
-        this._resolved = true
-        this.onValuesChange()
+        const newValues = values.map(v => v.data())
+        this.onUpdateAll(newValues)
     }
 
+    // TODO: this need a performance optimization and a pass on different clients (web, mobile and different firebase versions
     protected handleSubsequentDataChanges(changes: FirestoreTypes.DocumentChange<T, S>[]) {
         const newValues = [...this._values]
         changes.forEach(change => {
@@ -83,8 +68,7 @@ export class FirestoreList<T extends DocumentData, S extends DocumentData> imple
                 newValues.splice(change.oldIndex, 1)
             }
         })
-        this._values = newValues
-        this.onValuesChange()
+        this.onUpdateAll(newValues)
     }
 
     public unSubscribe() {
@@ -93,13 +77,10 @@ export class FirestoreList<T extends DocumentData, S extends DocumentData> imple
 
     protected onValuesChange(): void {}
 
-    private updateError(error: unknown) {
+    protected onError(error: unknown) {
         // Try to provide useful collection details using internal properties
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         console.error(`FirestoreList Collection: ${(this.query as any)?._collectionPath?.id} error`, error)
-        this._hasError = true
-        this._values = []
-        this._resolved = true
-        this.onValuesChange()
+        super.onError(error)
     }
 }
