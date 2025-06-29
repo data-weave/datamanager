@@ -9,4 +9,5 @@ module.exports = {
     moduleNameMapper: {
         '^@js-state-reactivity-models/(.*)$': '<rootDir>/packages/$1/lib',
     },
+    transformIgnorePatterns: ['node_modules/(?!(uuid))'],
 }

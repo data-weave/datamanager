@@ -25,28 +25,27 @@ export class ObservableFirestoreList<T extends DocumentData, S extends DocumentD
     }
 
     private _onBecomeUnobserved() {
-        this._resolved = false
         this.unSubscribe()
     }
 
     public get values() {
         this._atom.reportObserved()
-        return this._values
+        return super.values
     }
 
     public get resolved() {
         this._atom.reportObserved()
-        return this._resolved
+        return super.resolved
     }
 
     public get hasError() {
         this._atom.reportObserved()
-        return this._hasError
+        return super.hasError
     }
 
     public async resolve() {
         await when(() => this.resolved)
-        return this._values
+        return super.values
     }
 
     protected onValuesChange() {

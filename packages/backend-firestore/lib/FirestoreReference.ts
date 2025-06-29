@@ -19,12 +19,13 @@ export class FirestoreReference<T extends DocumentData, S extends DocumentData> 
 
     public async resolve(): Promise<T | undefined> {
         if (this.options?.readMode === 'realtime') {
-            return new Promise<T | undefined>((resolve, reject) => {
+            return new Promise<T | undefined>((res, reject) => {
                 this.unsubscribeFromSnapshot = this.firestore.onSnapshot(
                     this.docRef,
                     documentSnapshot => {
                         try {
                             this.onUpdate(this.parseDocumentSnapshot(documentSnapshot))
+                            res(this.value)
                         } catch (error) {
                             this.onError(error)
                             reject(error)
@@ -44,7 +45,7 @@ export class FirestoreReference<T extends DocumentData, S extends DocumentData> 
             this.onError(error)
             throw error
         }
-        return this._value
+        return this.value
     }
 
     public get id(): string {
@@ -55,10 +56,6 @@ export class FirestoreReference<T extends DocumentData, S extends DocumentData> 
         return this.docRef.path
     }
 
-    protected onUpdate(data: T | undefined): void {
-        super.onUpdate(data)
-    }
-
     protected onError(error: unknown): void {
         console.error(`FirestoreReference error ${this.docRef.path}`, error)
         super.onError(error)
@@ -66,6 +63,7 @@ export class FirestoreReference<T extends DocumentData, S extends DocumentData> 
 
     public unSubscribe() {
         this.unsubscribeFromSnapshot?.()
+        this.setStale()
     }
 
     private parseDocumentSnapshot(docSnapshot: FirestoreTypes.DocumentSnapshot<T, S>): T | undefined {

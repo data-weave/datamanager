@@ -7,6 +7,7 @@ import {
     withTransaction,
 } from '@js-state-reactivity-models/backend-firestore'
 import { IdentifiableReference, Reference, WithMetadata } from '@js-state-reactivity-models/datamanager'
+import { v4 as uuidv4 } from 'uuid'
 
 interface Product {
     name: string
@@ -51,7 +52,12 @@ export class FirebaseProductModel implements ProductModel {
         readonly converter: FirestoreDataConverter<Product, SerializedProduct>,
         readonly options?: FirebaseDataManagerOptions
     ) {
-        this.datamanager = new FirestoreDataManager<Product, SerializedProduct>(db, 'products', converter, options)
+        this.datamanager = new FirestoreDataManager<Product, SerializedProduct>(
+            db,
+            `products_${uuidv4()}`,
+            converter,
+            options
+        )
     }
 
     createProduct(p: Product) {
