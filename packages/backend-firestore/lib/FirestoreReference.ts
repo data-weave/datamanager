@@ -1,38 +1,20 @@
-import { Reference } from '@js-state-reactivity-models/datamanager'
+import { LiveReference, LiveReferenceOptions } from '@js-state-reactivity-models/datamanager'
 import { DocumentData, Firestore, FirestoreReadMode, FirestoreTypes } from './firestoreTypes'
 import { checkIfReferenceExists } from './utils'
 
-export interface FirestoreReferenceOptions<T> {
+export interface FirestoreReferenceOptions<T> extends LiveReferenceOptions<T> {
     readMode?: FirestoreReadMode
-    onUpdate?: (newValue: T | undefined) => void
 }
 
-export class FirestoreReference<T extends DocumentData, S extends DocumentData> implements Reference<T> {
-    protected _value: T | undefined
-    protected _resolved: boolean = false
-    protected _hasError: boolean = false
+export class FirestoreReference<T extends DocumentData, S extends DocumentData> extends LiveReference<T, S> {
     private unsubscribeFromSnapshot: undefined | (() => void)
 
     constructor(
         private readonly firestore: Firestore,
         private readonly docRef: FirestoreTypes.DocumentReference<T, S>,
-        private readonly options: FirestoreReferenceOptions<T>
-    ) {}
-
-    public get id(): string {
-        return this.docRef.id
-    }
-
-    public get value(): T | undefined {
-        return this._value
-    }
-
-    public get resolved() {
-        return this._resolved
-    }
-
-    public get hasError() {
-        return this._hasError
+        readonly options: FirestoreReferenceOptions<T>
+    ) {
+        super(options)
     }
 
     public async resolve(): Promise<T | undefined> {
@@ -42,16 +24,14 @@ export class FirestoreReference<T extends DocumentData, S extends DocumentData> 
                     this.docRef,
                     documentSnapshot => {
                         try {
-                            this.updateValue(documentSnapshot)
-                            this.options.onUpdate?.(this._value)
-                            resolve(this._value)
+                            this.onUpdate(this.parseDocumentSnapshot(documentSnapshot))
                         } catch (error) {
-                            this.updateError(error)
+                            this.onError(error)
                             reject(error)
                         }
                     },
                     error => {
-                        this.updateError(error)
+                        this.onError(error)
                         reject(error)
                     }
                 )
@@ -59,32 +39,37 @@ export class FirestoreReference<T extends DocumentData, S extends DocumentData> 
         }
         try {
             const doc = await this.firestore.getDoc(this.docRef)
-            this.updateValue(doc)
+            this.onUpdate(this.parseDocumentSnapshot(doc))
         } catch (error) {
-            this.updateError(error)
+            this.onError(error)
             throw error
         }
         return this._value
+    }
+
+    public get id(): string {
+        return this.docRef.id
+    }
+
+    public get path(): string {
+        return this.docRef.path
+    }
+
+    protected onUpdate(data: T | undefined): void {
+        super.onUpdate(data)
+    }
+
+    protected onError(error: unknown): void {
+        console.error(`FirestoreReference error ${this.docRef.path}`, error)
+        super.onError(error)
     }
 
     public unSubscribe() {
         this.unsubscribeFromSnapshot?.()
     }
 
-    protected updateValue(docSnapshot: FirestoreTypes.DocumentSnapshot<T, S>) {
+    private parseDocumentSnapshot(docSnapshot: FirestoreTypes.DocumentSnapshot<T, S>): T | undefined {
         if (!checkIfReferenceExists(docSnapshot)) throw new Error(`Document does not exist ${this.docRef.path}`)
-        this._value = docSnapshot.data()
-        this._resolved = true
-        this.onValueChange()
-    }
-
-    protected onValueChange(): void {}
-
-    private updateError(error: unknown) {
-        console.error(`FirestoreReference error ${this.docRef.path}`, error)
-        this._hasError = true
-        this._value = undefined
-        this._resolved = true
-        this.onValueChange()
+        return docSnapshot.data()
     }
 }
