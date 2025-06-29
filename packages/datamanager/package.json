@@ -1,6 +1,6 @@
 {
     "name": "@js-state-reactivity-models/datamanager",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "author": "",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
