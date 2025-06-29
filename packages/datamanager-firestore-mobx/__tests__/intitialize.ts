@@ -4,6 +4,7 @@ import {
     deleteDoc,
     doc,
     getDoc,
+    getDocFromServer,
     getDocs,
     increment,
     initializeFirestore,
@@ -17,6 +18,9 @@ import {
     updateDoc,
     where,
 } from 'firebase/firestore'
+
+import admin, { apps, firestore } from 'firebase-admin'
+import { applicationDefault, initializeApp as initializeAdminApp } from 'firebase-admin/app'
 
 export const initializeJS_SDK = () => {
     let firebaseApp: FirebaseApp
@@ -43,6 +47,7 @@ export const initializeJS_SDK = () => {
         collection,
         getDocs,
         getDoc,
+        getDocFromServer,
         serverTimestamp,
         query,
         where,
@@ -57,5 +62,21 @@ export const initializeJS_SDK = () => {
         // TODO: fix this
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         runTransaction: runTransaction as any,
+    }
+}
+
+export const initializeAdmin_SDK = () => {
+    if (apps.length === 0) {
+        initializeAdminApp({
+            credential: applicationDefault(),
+        })
+    }
+
+    const db = firestore()
+    db.settings({ ignoreUndefinedProperties: true })
+
+    return {
+        db,
+        fieldValue: admin.firestore.FieldValue,
     }
 }

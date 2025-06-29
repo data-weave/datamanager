@@ -7,6 +7,7 @@ import {
     withTransaction,
 } from '@js-state-reactivity-models/backend-firestore'
 import { IdentifiableReference, Reference, WithMetadata } from '@js-state-reactivity-models/datamanager'
+import { v4 as uuidv4 } from 'uuid'
 
 interface Product {
     name: string
@@ -51,7 +52,12 @@ export class FirebaseProductModel implements ProductModel {
         readonly converter: FirestoreDataConverter<Product, SerializedProduct>,
         readonly options?: FirebaseDataManagerOptions
     ) {
-        this.datamanager = new FirestoreDataManager<Product, SerializedProduct>(db, 'products', converter, options)
+        this.datamanager = new FirestoreDataManager<Product, SerializedProduct>(
+            db,
+            `products_${uuidv4()}`,
+            converter,
+            options
+        )
     }
 
     createProduct(p: Product) {
@@ -74,13 +80,20 @@ export class FirebaseProductModel implements ProductModel {
         return this.datamanager.delete(id)
     }
 
-    updateStockWithTransaction(id: string, addQty: number) {
-        return withTransaction(this.db, async transaction => {
+    async updateStockWithTransaction(id: string, addQty: number) {
+        console.log('path', `${this.datamanager.collectionPath}/${id}`)
+
+        await withTransaction(this.db, async transaction => {
             const product = await this.datamanager.read(id, { transaction: transaction as any })
             if (!product) throw new Error('Product not found')
             product.qty += addQty
             await this.datamanager.update(id, { qty: product.qty }, { transaction: transaction as any })
+            console.log('updated in transaction')
         })
+
+        // const product = await this.datamanager.read(id)
+        // console.log('product', product)
+        // return
     }
 
     updateStockWithTransactionWithError(id: string, addQty: number) {

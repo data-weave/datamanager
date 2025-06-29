@@ -1,41 +1,37 @@
-import { describe, expect, test } from '@jest/globals'
-import { FirestoreNamespacedConverter } from '@js-state-reactivity-models/backend-firestore'
+import { describe, test } from '@jest/globals'
 import { autorun } from 'mobx'
-import { ObservableFirestoreList, ObservableFirestoreReference } from '../../lib'
-import { FirebaseProductModel, productConverter } from '../product'
-import { sleep } from '../utils'
-import { initializeAdmin_SDK } from './initialize'
+import { ObservableFirestoreList } from '../lib'
+import { sdk } from './main.js.test'
+import { FirebaseProductModel, productConverter } from './product'
+import { sleep } from './utils'
+
+let productModel: FirebaseProductModel
+
+beforeEach(() => {
+    productModel = new FirebaseProductModel(sdk, productConverter, {
+        readMode: 'realtime',
+        List: ObservableFirestoreList,
+    })
+})
 
 describe('Firebase tests', () => {
-    const adminSdk = initializeAdmin_SDK()
-    const productModel = new FirebaseProductModel(
-        new FirestoreNamespacedConverter(adminSdk.db, adminSdk.fieldValue),
-        productConverter,
-        {
-            readMode: 'realtime',
-            Reference: ObservableFirestoreReference,
-            List: ObservableFirestoreList,
-        }
-    )
-
     test('List initialization', async () => {
+        await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
         const productList = productModel.getProductList()
-        // it should not resolve, if just checking the value
+        // it should not resolve by itself
         expect(productList.resolved).toEqual(false)
-        await sleep(1000)
+        await sleep(500)
         expect(productList.resolved).toEqual(false)
 
-        // it should not resolve - observed only for the duration of resolve() call
         const products = await productList.resolve()
         expect(products.length).toBeGreaterThan(0)
-        expect(productList.resolved).toEqual(false)
 
         // if observed, it should resolve automatically
         const dispose = autorun(function () {
             return productList.resolved
         })
 
-        await sleep(1000)
+        await sleep(500)
         expect(productList.values.length).toBeGreaterThan(0)
         expect(productList.resolved).toEqual(true)
         dispose()
@@ -48,7 +44,7 @@ describe('Firebase tests', () => {
             return productList.values
         })
 
-        await sleep(1000)
+        await sleep(500)
         expect(productList.values.length).toBeGreaterThan(0)
         expect(productList.resolved).toEqual(true)
         dispose2()
@@ -70,9 +66,11 @@ describe('Firebase tests', () => {
         })
 
         await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
-        await sleep(1000)
+        await sleep(500)
 
         expect(productList.values.length).toBeGreaterThan(originalLength)
         dispose()
     })
+
+    test('List multiple updates at once', async () => {})
 })

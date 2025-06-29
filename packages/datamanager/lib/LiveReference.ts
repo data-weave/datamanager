@@ -6,10 +6,10 @@ export interface LiveReferenceOptions<T> {
 }
 
 export class LiveReference<T> implements Reference<T> {
-    protected _value: T | undefined
-    protected _resolved: boolean = false
-    protected _hasError: boolean = false
-    protected _options: LiveReferenceOptions<T>
+    private _value: T | undefined
+    private _resolved: boolean = false
+    private _hasError: boolean = false
+    private _options: LiveReferenceOptions<T>
 
     resolve(): Promise<T | undefined> {
         throw new Error('Method not implemented.')
@@ -32,6 +32,10 @@ export class LiveReference<T> implements Reference<T> {
 
     public get hasError() {
         return this._hasError
+    }
+
+    protected setStale() {
+        this._resolved = false
     }
 
     protected onUpdate(data: T | undefined): void {

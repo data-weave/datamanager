@@ -1,4 +1,4 @@
-import { IAtom, createAtom, when } from 'mobx'
+import { IAtom, createAtom } from 'mobx'
 
 import {
     DocumentData,
@@ -32,28 +32,26 @@ export class ObservableFirestoreReference<T extends DocumentData, S extends Docu
     }
 
     private _onBecomeUnobserved() {
-        this._resolved = false
         this.unSubscribe()
     }
 
     public get value() {
         this._atom.reportObserved()
-        return this._value
+        return super.value
     }
 
     public get resolved() {
         this._atom.reportObserved()
-        return this._resolved
+        return super.resolved
     }
 
     public get hasError() {
         this._atom.reportObserved()
-        return this._hasError
+        return super.hasError
     }
 
     public async resolve() {
-        await when(() => this.resolved)
-        return this._value
+        return super.resolve()
     }
 
     protected onValueChange() {

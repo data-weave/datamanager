@@ -79,13 +79,13 @@ export class FirestoreDataManager<
 
     constructor(
         private readonly firestore: Firestore,
-        private readonly collectionPath: string,
+        public readonly collectionPath: string,
         private readonly converter: FirestoreDataConverter<T, SerializedT>,
-        private readonly opts?: FirebaseDataManagerOptions
+        opts?: FirebaseDataManagerOptions
     ) {
         // @ts-expect-error - Force merge FirestoreDataConverter and InternalFirestoreDataConverter
         this.mergedConverter = new MergeConverters(this.converter, new FirestoreMetadataConverter())
-        this.managerOptions = Object.assign(defaultFirebaseDataManagerOptions, this.opts)
+        this.managerOptions = Object.assign(defaultFirebaseDataManagerOptions, opts)
 
         this.refCache = this.managerOptions.refCache || new MapCache(100)
         this.listCache = this.managerOptions.listCache || new MapCache(100)

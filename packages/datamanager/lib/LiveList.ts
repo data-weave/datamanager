@@ -6,10 +6,10 @@ export interface LiveListOptions<T> {
 }
 
 export class LiveList<T> implements List<T> {
-    protected _values: T[] = []
-    protected _resolved: boolean = false
-    protected _hasError: boolean = false
-    protected _options: LiveListOptions<T>
+    private _values: T[] = []
+    private _resolved: boolean = false
+    private _hasError: boolean = false
+    private _options: LiveListOptions<T>
 
     constructor(options: LiveListOptions<T>) {
         this._options = options
@@ -31,17 +31,33 @@ export class LiveList<T> implements List<T> {
         return this._resolved
     }
 
+    protected setStale() {
+        this._resolved = false
+    }
+
     protected onValuesChange(): void {}
+
+    protected onUpdate(): void {
+        this._resolved = true
+        this.onValuesChange()
+        this._options.onUpdate?.(this._values)
+    }
 
     protected onUpdateAll(values: T[]): void {
         this._values = values
-        this._resolved = true
-        this.onValuesChange()
+        this.onUpdate()
     }
 
     protected onUpdateAtIndex(index: number, value: T): void {
         this._values[index] = value
-        this.onValuesChange()
+    }
+
+    protected onAddAtIndex(index: number, value: T): void {
+        this._values.splice(index, 0, value)
+    }
+
+    protected onRemoveAtIndex(index: number): void {
+        this._values.splice(index, 1)
     }
 
     protected onError(error: unknown): void {

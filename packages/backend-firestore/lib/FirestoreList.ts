@@ -30,16 +30,14 @@ export class FirestoreList<T extends DocumentData, S extends DocumentData> exten
                             } else {
                                 this.handleSubsequentDataChanges(querySnapshot.docChanges())
                             }
-                            this.options.onUpdate?.(this._values)
-                            resolve(this._values)
+                            resolve(this.values)
                         } catch (error) {
                             this.onError(error)
                             reject(error)
                         }
                     },
                     error => {
-                        this._hasError = true
-                        this.onValuesChange()
+                        this.onError(error)
                         reject(error)
                     }
                 )
@@ -47,7 +45,7 @@ export class FirestoreList<T extends DocumentData, S extends DocumentData> exten
         } else {
             const snapshot = await this.firestore.getDocs(this.query)
             this.handleInitialDataChange(snapshot.docs)
-            return this._values
+            return this.values
         }
     }
 
@@ -56,31 +54,29 @@ export class FirestoreList<T extends DocumentData, S extends DocumentData> exten
         this.onUpdateAll(newValues)
     }
 
-    // TODO: this need a performance optimization and a pass on different clients (web, mobile and different firebase versions
     protected handleSubsequentDataChanges(changes: FirestoreTypes.DocumentChange<T, S>[]) {
-        const newValues = [...this._values]
         changes.forEach(change => {
             if (change.type === 'added') {
-                newValues.splice(change.newIndex, 0, change.doc.data())
+                this.onAddAtIndex(change.newIndex, change.doc.data())
             } else if (change.type === 'modified') {
-                newValues.splice(change.newIndex, 1, change.doc.data())
+                this.onUpdateAtIndex(change.newIndex, change.doc.data())
             } else if (change.type === 'removed') {
-                newValues.splice(change.oldIndex, 1)
+                this.onRemoveAtIndex(change.oldIndex)
             }
         })
-        this.onUpdateAll(newValues)
+        // TODO: handle onUpdate in the parent class - make sure it's only called once after all changes are processed
+        this.onUpdate()
     }
 
     public unSubscribe() {
         this.unsubscribeFromSnapshot?.()
+        this.setStale()
     }
-
-    protected onValuesChange(): void {}
 
     protected onError(error: unknown) {
         // Try to provide useful collection details using internal properties
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        console.error(`FirestoreList Collection: ${(this.query as any)?._collectionPath?.id} error`, error)
+        console.warn(`FirestoreList Collection: ${(this.query as any)?._collectionPath?.id} error`, error)
         super.onError(error)
     }
 }
