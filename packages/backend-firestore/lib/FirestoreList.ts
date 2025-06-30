@@ -30,6 +30,8 @@ export class FirestoreList<T extends DocumentData, S extends DocumentData> exten
                             } else {
                                 this.handleSubsequentDataChanges(querySnapshot.docChanges())
                             }
+                            // TODO: When calling ".resolve()" with realtime listener,
+                            // the snapshot data might be stale from cache.
                             resolve(this.values)
                         } catch (error) {
                             this.onError(error)

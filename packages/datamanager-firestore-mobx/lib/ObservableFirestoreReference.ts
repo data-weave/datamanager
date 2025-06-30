@@ -1,4 +1,4 @@
-import { IAtom, createAtom, when } from 'mobx'
+import { IAtom, createAtom } from 'mobx'
 
 import {
     DocumentData,
@@ -51,8 +51,7 @@ export class ObservableFirestoreReference<T extends DocumentData, S extends Docu
     }
 
     public async resolve() {
-        await when(() => this.resolved)
-        return super.value
+        return super.resolve()
     }
 
     protected onValueChange() {

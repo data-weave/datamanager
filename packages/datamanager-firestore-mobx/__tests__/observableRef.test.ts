@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals'
-import { autorun } from 'mobx'
 
+import { autorun } from 'mobx'
 import { ObservableFirestoreReference } from '../lib'
 import { sdk } from './main.js.test'
 import { FirebaseProductModel, productConverter } from './product'
@@ -15,7 +15,7 @@ beforeEach(() => {
     })
 })
 
-describe('Firebase tests', () => {
+describe('Firebase observable reference tests', () => {
     test('Reference initialization', async () => {
         const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
         // it should not resolve, if just checking the value
@@ -51,6 +51,7 @@ describe('Firebase tests', () => {
 
     test('Reference realtime updates', async () => {
         const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+
         const dispose = autorun(function () {
             return productRef.value
         })
@@ -62,5 +63,37 @@ describe('Firebase tests', () => {
 
         expect(productRef.value?.qty).toEqual(2)
         dispose()
+    })
+
+    test('Product transaction', async () => {
+        const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        await sleep(500)
+        await productModel.updateStockTwiceWithTransaction(productRef.id, 10)
+        await productRef.resolve()
+        await sleep(500)
+        expect(productRef.value?.qty).toEqual(21)
+    })
+
+    test('Product transaction with realtime updates', async () => {
+        const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        const dispose = autorun(function () {
+            return productRef.value
+        })
+        await sleep(500)
+        expect(productRef.value?.qty).toEqual(1)
+
+        await productModel.updateStockTwiceWithTransaction(productRef.id, 10)
+        await sleep(500)
+        expect(productRef.value?.qty).toEqual(21)
+        dispose()
+    })
+
+    test('Product transaction on failed transaction', async () => {
+        const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        await sleep(500)
+        await expect(productModel.updateStockWithTransactionWithError(productRef.id, 10)).rejects.toThrow()
+        await productRef.resolve()
+        await sleep(500)
+        expect(productRef.value?.qty).toEqual(1)
     })
 })

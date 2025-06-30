@@ -25,6 +25,8 @@ export class FirestoreReference<T extends DocumentData, S extends DocumentData> 
                     documentSnapshot => {
                         try {
                             this.onUpdate(this.parseDocumentSnapshot(documentSnapshot))
+                            // TODO: When calling ".resolve()" with realtime listener,
+                            // the snapshot data might be stale from cache.
                             res(this.value)
                         } catch (error) {
                             this.onError(error)

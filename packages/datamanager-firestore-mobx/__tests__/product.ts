@@ -46,6 +46,7 @@ abstract class ProductModel<T = WithMetadata<Product>> {
 
 export class FirebaseProductModel implements ProductModel {
     private datamanager: FirestoreDataManager<Product, SerializedProduct>
+    private collectionName = `products_${uuidv4()}`
 
     constructor(
         readonly db: Firestore,
@@ -54,7 +55,7 @@ export class FirebaseProductModel implements ProductModel {
     ) {
         this.datamanager = new FirestoreDataManager<Product, SerializedProduct>(
             db,
-            `products_${uuidv4()}`,
+            this.collectionName,
             converter,
             options
         )
@@ -80,21 +81,16 @@ export class FirebaseProductModel implements ProductModel {
         return this.datamanager.delete(id)
     }
 
-    updateStockWithTransaction(id: string, addQty: number) {
+    updateStockTwiceWithTransaction(id: string, addQty: number) {
         return withTransaction(this.db, async transaction => {
-            const product = await this.datamanager.read(id, { transaction: transaction as any })
-            if (!product) throw new Error('Product not found')
-            product.qty += addQty
-            await this.datamanager.update(id, { qty: product.qty }, { transaction: transaction as any })
+            await this.datamanager.update(id, { qty: this.db.increment(addQty) }, { transaction: transaction as any })
+            await this.datamanager.update(id, { qty: this.db.increment(addQty) }, { transaction: transaction as any })
         })
     }
 
     updateStockWithTransactionWithError(id: string, addQty: number) {
         return withTransaction(this.db, async transaction => {
-            const product = await this.datamanager.read(id, { transaction: transaction as any })
-            if (!product) throw new Error('Product not found')
-            product.qty += addQty
-            await this.datamanager.update(id, { qty: product.qty }, { transaction: transaction as any })
+            await this.datamanager.update(id, { qty: this.db.increment(addQty) }, { transaction: transaction as any })
             throw new Error('Test transaction failure')
         })
     }
