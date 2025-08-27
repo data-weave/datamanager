@@ -25,13 +25,12 @@ export const initializeJS_SDK = () => {
     let firebaseApp: FirebaseApp
     if (getApps().length === 0) {
         firebaseApp = initializeApp({
-            apiKey: 'AIzaSyCZ7AC43HLENNMN_uq80EINtAqQ_A3xxJ8',
-            authDomain: 'test-project-charge.firebaseapp.com',
-            projectId: 'test-project-charge',
-            storageBucket: 'test-project-charge.firebasestorage.app',
-            messagingSenderId: '85196408854',
-            appId: '1:85196408854:web:3ddcc34accc86785908d37',
-            measurementId: 'G-RXN14NVLJ1',
+            apiKey: 'AIzaSyCdkugGlrbZ3xMZztqtPvLWVqMaV6jeZLw',
+            authDomain: 'datamanager-testing-d4dd6.firebaseapp.com',
+            projectId: 'datamanager-testing-d4dd6',
+            storageBucket: 'datamanager-testing-d4dd6.firebasestorage.app',
+            messagingSenderId: '334672328900',
+            appId: '1:334672328900:web:afa909dc8e01976b89f191',
         })
     } else {
         firebaseApp = getApp()
