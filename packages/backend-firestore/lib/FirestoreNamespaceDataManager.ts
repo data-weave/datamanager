@@ -64,7 +64,7 @@ export interface QueryParams<T extends FirestoreTypes.DocumentData> {
 }
 
 @injectable()
-export class FirestoreDataManager<
+export class FirestoreNamespaceDataManager<
     T extends FirestoreTypes.DocumentData,
     SerializedT extends FirestoreTypes.DocumentData,
 > implements DataManager<T>
