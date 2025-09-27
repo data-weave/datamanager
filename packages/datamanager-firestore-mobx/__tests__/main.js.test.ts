@@ -1,5 +1,5 @@
 import { Firestore, FirestoreNamespacedConverter } from '@js-state-reactivity-models/backend-firestore'
-import { initializeAdmin_SDK, initializeJS_SDK } from './intitialize'
+import { initializeNamespaceAdmin_SDK, initializeNamespaceJS_SDK } from './intitialize'
 import { FirebaseProductModel, productConverter } from './product'
 import { sleep } from './utils'
 
@@ -9,10 +9,10 @@ beforeAll(() => {
     const sdkType = process.env.SDK_TYPE || 'JS_SDK'
 
     if (sdkType === 'ADMIN_SDK') {
-        const adminSdk = initializeAdmin_SDK()
+        const adminSdk = initializeNamespaceAdmin_SDK()
         sdk = new FirestoreNamespacedConverter(adminSdk.db, adminSdk.fieldValue)
     } else {
-        sdk = initializeJS_SDK()
+        sdk = initializeNamespaceJS_SDK()
     }
 })
 

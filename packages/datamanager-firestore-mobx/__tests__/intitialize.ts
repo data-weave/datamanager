@@ -19,29 +19,26 @@ import {
 } from 'firebase/firestore'
 
 import admin, { apps, firestore } from 'firebase-admin'
-import { applicationDefault, initializeApp as initializeAdminApp } from 'firebase-admin/app'
+import { initializeApp as initializeAdminApp } from 'firebase-admin/app'
 
-export const initializeJS_SDK = () => {
+export const initializeNamespaceJS_SDK = () => {
     let firebaseApp: FirebaseApp
     if (getApps().length === 0) {
         firebaseApp = initializeApp({
-            apiKey: 'AIzaSyCdkugGlrbZ3xMZztqtPvLWVqMaV6jeZLw',
-            authDomain: 'datamanager-testing-d4dd6.firebaseapp.com',
-            projectId: 'datamanager-testing-d4dd6',
-            storageBucket: 'datamanager-testing-d4dd6.firebasestorage.app',
-            messagingSenderId: '334672328900',
-            appId: '1:334672328900:web:afa909dc8e01976b89f191',
+            projectId: 'demo-test-project',
         })
     } else {
         firebaseApp = getApp()
     }
 
-    const firestore = initializeFirestore(firebaseApp, {
+    const db = initializeFirestore(firebaseApp, {
         ignoreUndefinedProperties: true,
+        host: 'localhost:8080',
+        ssl: false,
     })
 
     return {
-        app: firestore,
+        app: db,
         collection,
         getDocs,
         getDoc,
@@ -62,15 +59,20 @@ export const initializeJS_SDK = () => {
     }
 }
 
-export const initializeAdmin_SDK = () => {
+export const initializeNamespaceAdmin_SDK = () => {
     if (apps.length === 0) {
         initializeAdminApp({
-            credential: applicationDefault(),
+            projectId: 'demo-test-project',
         })
     }
 
     const db = firestore()
-    db.settings({ ignoreUndefinedProperties: true })
+
+    db.settings({
+        ignoreUndefinedProperties: true,
+        host: 'localhost:8080',
+        ssl: false,
+    })
 
     return {
         db,
