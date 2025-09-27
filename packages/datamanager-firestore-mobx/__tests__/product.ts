@@ -2,7 +2,7 @@ import {
     FirebaseDataManagerOptions,
     Firestore,
     FirestoreDataConverter,
-    FirestoreNamespaceDataManager,
+    FirestoreDataManager,
     QueryParams,
     withTransaction,
 } from '@js-state-reactivity-models/backend-firestore'
@@ -45,7 +45,7 @@ abstract class ProductModel<T = WithMetadata<Product>> {
 }
 
 export class FirebaseProductModel implements ProductModel {
-    private datamanager: FirestoreNamespaceDataManager<Product, SerializedProduct>
+    private datamanager: FirestoreDataManager<Product, SerializedProduct>
     private collectionName = `products_${uuidv4()}`
 
     constructor(
@@ -53,7 +53,7 @@ export class FirebaseProductModel implements ProductModel {
         readonly converter: FirestoreDataConverter<Product, SerializedProduct>,
         readonly options?: FirebaseDataManagerOptions
     ) {
-        this.datamanager = new FirestoreNamespaceDataManager<Product, SerializedProduct>(
+        this.datamanager = new FirestoreDataManager<Product, SerializedProduct>(
             db,
             this.collectionName,
             converter,

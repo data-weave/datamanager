@@ -1,6 +1,6 @@
+export * from './FirestoreDataManager'
 export * from './FirestoreList'
 export * from './FirestoreMetadata'
-export * from './FirestoreNamespaceDataManager'
 export * from './FirestoreReference'
 export * from './firestoreTypes'
 export * from './utils'

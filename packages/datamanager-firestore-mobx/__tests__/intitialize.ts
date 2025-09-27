@@ -21,7 +21,7 @@ import {
 import admin, { apps, firestore } from 'firebase-admin'
 import { initializeApp as initializeAdminApp } from 'firebase-admin/app'
 
-export const initializeNamespaceJS_SDK = () => {
+export const initializeJS_SDK = () => {
     let firebaseApp: FirebaseApp
     if (getApps().length === 0) {
         firebaseApp = initializeApp({
@@ -59,7 +59,7 @@ export const initializeNamespaceJS_SDK = () => {
     }
 }
 
-export const initializeNamespaceAdmin_SDK = () => {
+export const initializeAdmin_SDK = () => {
     if (apps.length === 0) {
         initializeAdminApp({
             projectId: 'demo-test-project',
