@@ -20,4 +20,7 @@ sleep 25
 
 echo "Running tests..."
 export FIRESTORE_EMULATOR_HOST=localhost:8080
-npm run test
+echo "Testing JS SDK..."
+npm run test:js-sdk
+echo "Testing Admin SDK..."
+npm run test:admin-sdk
