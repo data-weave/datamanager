@@ -8,7 +8,8 @@ module.exports = {
         '\\.(ts|tsx)$': ['ts-jest', {}],
     },
     moduleNameMapper: {
-        '^@js-state-reactivity-models/(.*)$': '<rootDir>/packages/$1/lib',
+        '^@js-state-reactivity-models/([^/]+)$': '<rootDir>/packages/$1/lib',
+        '^@js-state-reactivity-models/(.*)$': '<rootDir>/packages/$1',
     },
     transformIgnorePatterns: ['node_modules/(?!(uuid))'],
 }
