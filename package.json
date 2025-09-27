@@ -16,7 +16,7 @@
         "compile": "tsc --project .",
         "format": "prettier --write \"packages/**/*.{js,ts,json}\"",
         "format:check": "prettier --check \"packages/**/*.{js,ts,json}\"",
-        "circular-dep-check": "madge --circular --extensions js,ts",
+        "circular-dep-check": "madge --circular --extensions ts ./",
         "lint": "npm run lint:packages",
         "lint:packages": "eslint packages/* --max-warnings=0",
         "start:dev": "npx nodemon",
@@ -64,6 +64,7 @@
         "ts-node": "^10.9.2",
         "typescript": "^5.7.2",
         "typescript-eslint": "^8.19.0",
+        "madge": "8.0.0",
         "uuid": "^11.1.0"
     },
     "peerDependencies": {
@@ -80,5 +81,6 @@
             "eslint --max-warnings=0 --fix"
         ],
         "**/*.{js,ts,json}": "prettier --write"
-    }
+    },
+    "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
