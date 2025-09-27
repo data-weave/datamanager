@@ -1,4 +1,4 @@
-import { Reference } from '../../datamanager-firestore-mobx/lib'
+import { Reference } from './Reference'
 
 export interface LiveReferenceOptions<T> {
     onUpdate?: (newValue: T | undefined) => void

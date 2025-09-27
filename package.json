@@ -15,6 +15,8 @@
         "artifactregistry-login": "npx google-artifactregistry-auth",
         "compile": "tsc --project .",
         "format": "prettier --write \"packages/**/*.{js,ts,json}\"",
+        "format:check": "prettier --check \"packages/**/*.{js,ts,json}\"",
+        "circular-dep-check": "madge --circular --extensions js,ts",
         "lint": "npm run lint:packages",
         "lint:packages": "eslint packages/* --max-warnings=0",
         "start:dev": "npx nodemon",

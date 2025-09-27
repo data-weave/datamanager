@@ -1,17 +1,14 @@
 import { injectable } from 'inversify'
 
+import { Cache, MapCache } from '@js-state-reactivity-models/datamanager/lib/Cache'
 import {
-    Cache,
     CreateOptions,
     DataManager,
-    IdentifiableReference,
-    List,
-    ListPaginationParams,
-    MapCache,
     Metadata,
     WithMetadata,
-    WithoutId,
-} from '@js-state-reactivity-models/datamanager'
+} from '@js-state-reactivity-models/datamanager/lib/DataManager'
+import { List, ListPaginationParams } from '@js-state-reactivity-models/datamanager/lib/List'
+import { IdentifiableReference, WithoutId } from '@js-state-reactivity-models/datamanager/lib/Reference'
 import { FirestoreList } from './FirestoreList'
 import {
     FIRESTORE_KEYS,
