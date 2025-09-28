@@ -1,4 +1,4 @@
-import { WithoutId } from '@js-state-reactivity-models/datamanager'
+import { WithoutId } from '@data-weave/datamanager'
 import {
     DocumentData,
     FieldValues,

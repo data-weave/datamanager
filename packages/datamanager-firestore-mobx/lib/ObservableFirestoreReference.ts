@@ -6,7 +6,7 @@ import {
     FirestoreReference,
     FirestoreReferenceOptions,
     FirestoreTypes,
-} from '@js-state-reactivity-models/backend-firestore'
+} from '@data-weave/backend-firestore'
 
 export class ObservableFirestoreReference<T extends DocumentData, S extends DocumentData> extends FirestoreReference<
     T,

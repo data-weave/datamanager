@@ -1,4 +1,4 @@
-import { Firestore, FirestoreNamespacedConverter } from '@js-state-reactivity-models/backend-firestore'
+import { Firestore, FirestoreNamespacedConverter } from '@data-weave/backend-firestore'
 import { initializeAdmin_SDK, initializeJS_SDK } from './intitialize'
 import { FirebaseProductModel, productConverter } from './product'
 import { sleep } from './utils'

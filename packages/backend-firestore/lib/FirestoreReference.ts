@@ -1,4 +1,4 @@
-import { LiveReference, LiveReferenceOptions } from '@js-state-reactivity-models/datamanager'
+import { LiveReference, LiveReferenceOptions } from '@data-weave/datamanager'
 import { DocumentData, Firestore, FirestoreReadMode, FirestoreTypes } from './firestoreTypes'
 import { checkIfReferenceExists } from './utils'
 

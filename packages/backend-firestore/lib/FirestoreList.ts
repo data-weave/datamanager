@@ -1,4 +1,4 @@
-import { ListPaginationParams, LiveList, LiveListOptions } from '@js-state-reactivity-models/datamanager'
+import { ListPaginationParams, LiveList, LiveListOptions } from '@data-weave/datamanager'
 import { DocumentData, Firestore, FirestoreReadMode, FirestoreTypes } from './firestoreTypes'
 
 export interface FirestoreListOptions<T> extends LiveListOptions<T> {

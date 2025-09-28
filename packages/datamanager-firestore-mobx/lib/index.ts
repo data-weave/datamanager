@@ -1,5 +1,5 @@
-export * from '@js-state-reactivity-models/backend-firestore'
-export * from '@js-state-reactivity-models/datamanager'
+export * from '@data-weave/backend-firestore'
+export * from '@data-weave/datamanager'
 
 export * from './ObservableFirestoreList'
 export * from './ObservableFirestoreReference'

@@ -1,14 +1,9 @@
 import { injectable } from 'inversify'
 
-import { Cache, MapCache } from '@js-state-reactivity-models/datamanager/lib/Cache'
-import {
-    CreateOptions,
-    DataManager,
-    Metadata,
-    WithMetadata,
-} from '@js-state-reactivity-models/datamanager/lib/DataManager'
-import { List, ListPaginationParams } from '@js-state-reactivity-models/datamanager/lib/List'
-import { IdentifiableReference, WithoutId } from '@js-state-reactivity-models/datamanager/lib/Reference'
+import { Cache, MapCache } from '@data-weave/datamanager/lib/Cache'
+import { CreateOptions, DataManager, Metadata, WithMetadata } from '@data-weave/datamanager/lib/DataManager'
+import { List, ListPaginationParams } from '@data-weave/datamanager/lib/List'
+import { IdentifiableReference, WithoutId } from '@data-weave/datamanager/lib/Reference'
 import { FirestoreList } from './FirestoreList'
 import {
     FIRESTORE_KEYS,

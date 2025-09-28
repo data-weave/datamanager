@@ -1,5 +1,5 @@
 {
-    "name": "@js-state-reactivity-models/datamanager-firestore-mobx",
+    "name": "@data-weave/datamanager-firestore-mobx",
     "version": "0.2.0",
     "author": "",
     "main": "lib/index.js",
@@ -11,7 +11,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/js-state-reactivity-models/datamanager/tree/main/packages/datamanager-firestore-mobx"
+        "url": "https://github.com/data-weave/datamanager/tree/main/packages/datamanager-firestore-mobx"
     },
     "publishConfig": {
         "access": "private",
@@ -19,8 +19,8 @@
         "provenance": true
     },
     "peerDependencies": {
-        "@js-state-reactivity-models/datamanager": "0.2.0",
-        "@js-state-reactivity-models/backend-firestore": "0.2.0"
+        "@data-weave/datamanager": "0.2.0",
+        "@data-weave/backend-firestore": "0.2.0"
     },
     "dependencies": {
         "mobx": "6.10.0"

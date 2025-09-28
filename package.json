@@ -1,5 +1,5 @@
 {
-    "name": "js-state-reactivity-models",
+    "name": "data-weave",
     "version": "0.2.0",
     "main": "build/index.js",
     "types": "src/index.ts",

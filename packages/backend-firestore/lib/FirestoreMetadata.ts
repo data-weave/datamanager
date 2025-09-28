@@ -1,4 +1,4 @@
-import { Metadata, WithoutId } from '@js-state-reactivity-models/datamanager'
+import { Metadata, WithoutId } from '@data-weave/datamanager'
 import {
     DocumentData,
     FirestoreQuery,
