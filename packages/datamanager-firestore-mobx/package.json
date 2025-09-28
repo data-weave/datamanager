@@ -1,6 +1,6 @@
 {
     "name": "@data-weave/datamanager-firestore-mobx",
-    "version": "0.3.2",
+    "version": "0.3.3",
     "author": "",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
