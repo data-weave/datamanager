@@ -11,11 +11,11 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/data-weave/datamanager/tree/main/packages/datamanager"
+        "url": "https://github.com/data-weave/datamanager/tree/master/packages/datamanager"
     },
     "publishConfig": {
-        "access": "private",
-        "registry": "https://us-central1-npm.pkg.dev/payce-dev-b41d4/datamanager/",
+        "access": "public",
+        "registry": "https://registry.npmjs.org/",
         "provenance": true
     }
 }

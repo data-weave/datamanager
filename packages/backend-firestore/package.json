@@ -11,11 +11,12 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/data-weave/datamanager/tree/main/packages/backend-firestore"
+        "url": "https://github.com/data-weave/datamanager/tree/master/packages/backend-firestore"
     },
     "publishConfig": {
-        "access": "private",
-        "registry": "https://us-central1-npm.pkg.dev/payce-dev-b41d4/backend-firestore/"
+        "access": "public",
+        "registry": "https://registry.npmjs.org/",
+        "provenance": true
     },
     "dependencies": {
         "firebase": "^11.9.0",
