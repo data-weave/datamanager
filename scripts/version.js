@@ -20,6 +20,8 @@ if (rootPackageJsonContents.version !== lernaVersion) {
   rootPackageJsonContents.version = lernaVersion;
   writeFileSync(rootPackageJsonPath, JSON.stringify(rootPackageJsonContents, null, 4) + '\n');
   console.log(`Updated root package.json version to ${lernaVersion}`);
+  // Stage the updated package.json file
+  execSync(`git add ${rootPackageJsonPath}`);
 }
 
 packages.forEach(pkg => {

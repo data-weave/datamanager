@@ -8,8 +8,7 @@
             "conventionalCommits": true,
             "exact": true,
             "gitRemote": "origin",
-            "message": "chore(release): release packages",
-            "gitAdd": ["package.json", "packages/*/lib/version.js"]
+            "message": "chore(release): release packages"
         }
     },
     "changelogPreset": {
