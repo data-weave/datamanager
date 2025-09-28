@@ -1,6 +1,6 @@
 {
     "name": "@data-weave/datamanager",
-    "version": "0.3.6",
+    "version": "0.3.7",
     "author": "",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
