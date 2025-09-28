@@ -12,6 +12,7 @@
         "registry": "https://registry.npmjs.org/"
     },
     "scripts": {
+        "version": "node ./scripts/version.js",
         "artifactregistry-login": "npx google-artifactregistry-auth",
         "compile": "tsc --project .",
         "format": "prettier --write \"packages/**/*.{js,ts,json}\"",
