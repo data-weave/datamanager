@@ -12,8 +12,7 @@
         "registry": "https://registry.npmjs.org/"
     },
     "scripts": {
-        "version": "node ./scripts/version.js",
-        "postversion": "yarn lerna:prepare",
+        "version": "node ./scripts/version.js && yarn lerna:prepare",
         "lerna:prepare": "lerna run prepare",
         "lerna:version": "lerna version --sync-dist-version --force-publish",
         "artifactregistry-login": "npx google-artifactregistry-auth",
