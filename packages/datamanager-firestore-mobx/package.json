@@ -18,8 +18,8 @@
         "registry": "https://registry.npmjs.org/"
     },
     "peerDependencies": {
-        "@data-weave/backend-firestore": "0.2.0",
-        "@data-weave/datamanager": "0.2.0"
+        "@data-weave/backend-firestore": "0.3.2",
+        "@data-weave/datamanager": "0.3.2"
     },
     "dependencies": {
         "mobx": "6.10.0"
