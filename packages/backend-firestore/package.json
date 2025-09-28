@@ -1,6 +1,6 @@
 {
     "name": "@data-weave/backend-firestore",
-    "version": "0.3.3",
+    "version": "0.3.4",
     "author": "",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
@@ -22,6 +22,6 @@
         "firebase-admin": "^13.0.2"
     },
     "peerDependencies": {
-        "@data-weave/datamanager": "0.3.2"
+        "@data-weave/datamanager": "0.3.4"
     }
 }
