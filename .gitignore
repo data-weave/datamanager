@@ -2,3 +2,4 @@ node_modules*
 build*
 
 serviceAccount.json
+firestore-debug.log

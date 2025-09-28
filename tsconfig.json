@@ -1,6 +1,6 @@
 {
-    "include": ["src/**/*.ts"],
-    "exclude": ["src/**/*.test.ts", "src/_test/**/*"],
+    "include": ["packages/**/lib/**/*.ts", "packages/**/__test__/**/*.ts"],
+    "exclude": ["node_modules", "**/*.spec.ts"],
     "compilerOptions": {
         "target": "es2016",
         "lib": ["es6"],

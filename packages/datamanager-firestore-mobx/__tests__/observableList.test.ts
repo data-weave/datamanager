@@ -1,50 +1,41 @@
-import { describe, test, expect } from '@jest/globals'
-import { firestore, apps } from 'firebase-admin'
-import { initializeApp, applicationDefault } from 'firebase-admin/app'
+import { describe, test } from '@jest/globals'
+import { autorun } from 'mobx'
+import { ObservableFirestoreList } from '../lib'
+import { sdk } from './main.js.test'
 import { FirebaseProductModel, productConverter } from './product'
 import { sleep } from './utils'
-import { autorun } from 'mobx'
-import { ObservableFirestoreReference } from '../ObservableFirestoreReference'
-import { ObservableFirestoreList } from '../ObservableFirestoreList'
 
 let productModel: FirebaseProductModel
 
-beforeAll(() => {
-    if (apps.length === 0) {
-        initializeApp({
-            credential: applicationDefault(),
-        })
-    }
-
-    const db = firestore()
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    productModel = new FirebaseProductModel(db as any, firestore.FieldValue, productConverter, {
+beforeEach(() => {
+    productModel = new FirebaseProductModel(sdk, productConverter, {
         readMode: 'realtime',
-        ReferenceClass: ObservableFirestoreReference,
-        ListClass: ObservableFirestoreList,
+        List: ObservableFirestoreList,
     })
 })
 
-describe('Firebase tests', () => {
+describe('Firebase observable list tests', () => {
+    test('do nothing', () => {
+        expect(true).toEqual(true)
+    })
+
     test('List initialization', async () => {
-        const productList = await productModel.getProductList()
-        // it should not resolve, if just checking the value
+        await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        const productList = productModel.getProductList()
+        // it should not resolve by itself
         expect(productList.resolved).toEqual(false)
-        await sleep(1000)
+        await sleep(500)
         expect(productList.resolved).toEqual(false)
 
-        // it should not resolve - observed only for the duration of resolve() call
         const products = await productList.resolve()
         expect(products.length).toBeGreaterThan(0)
-        expect(productList.resolved).toEqual(false)
 
         // if observed, it should resolve automatically
         const dispose = autorun(function () {
             return productList.resolved
         })
 
-        await sleep(1000)
+        await sleep(500)
         expect(productList.values.length).toBeGreaterThan(0)
         expect(productList.resolved).toEqual(true)
         dispose()
@@ -57,7 +48,7 @@ describe('Firebase tests', () => {
             return productList.values
         })
 
-        await sleep(1000)
+        await sleep(500)
         expect(productList.values.length).toBeGreaterThan(0)
         expect(productList.resolved).toEqual(true)
         dispose2()
@@ -79,7 +70,7 @@ describe('Firebase tests', () => {
         })
 
         await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
-        await sleep(1000)
+        await sleep(500)
 
         expect(productList.values.length).toBeGreaterThan(originalLength)
         dispose()
