@@ -4,7 +4,7 @@
     "packages": ["packages/*"],
     "command": {
         "version": {
-            "allowBranch": "main",
+            "allowBranch": "master",
             "conventionalCommits": true,
             "exact": true,
             "gitRemote": "origin",

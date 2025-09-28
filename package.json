@@ -9,7 +9,7 @@
         "build"
     ],
     "publishConfig": {
-        "registry": "https://us-central1-npm.pkg.dev/payce-dev-b41d4/datamanager/"
+        "registry": "https://registry.npmjs.org/"
     },
     "scripts": {
         "artifactregistry-login": "npx google-artifactregistry-auth",
@@ -30,7 +30,8 @@
         "test:watch-js": "export FIRESTORE_EMULATOR_HOST=localhost:8080 && SDK_TYPE=JS_SDK jest --watch",
         "test:watch-admin": "export FIRESTORE_EMULATOR_HOST=localhost:8080 && SDK_TYPE=ADMIN_SDK jest --watch",
         "test:emulator": "./scripts/test-with-emulator.sh",
-        "prepare": "husky"
+        "prepare": "husky",
+        "release": "lerna publish"
     },
     "keywords": [],
     "author": "",
