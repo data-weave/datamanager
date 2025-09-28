@@ -13,6 +13,9 @@
     },
     "scripts": {
         "version": "node ./scripts/version.js",
+        "postversion": "yarn lerna:prepare",
+        "lerna:prepare": "lerna run prepare",
+        "lerna:version": "lerna version --sync-dist-version --amend --force-publish",
         "artifactregistry-login": "npx google-artifactregistry-auth",
         "compile": "tsc --project .",
         "format": "prettier --write \"packages/**/*.{js,ts,json}\"",
@@ -31,8 +34,7 @@
         "test:watch-js": "export FIRESTORE_EMULATOR_HOST=localhost:8080 && SDK_TYPE=JS_SDK jest --watch",
         "test:watch-admin": "export FIRESTORE_EMULATOR_HOST=localhost:8080 && SDK_TYPE=ADMIN_SDK jest --watch",
         "test:emulator": "./scripts/test-with-emulator.sh",
-        "prepare": "husky",
-        "release": "lerna publish"
+        "prepare": "husky"
     },
     "keywords": [],
     "author": "",

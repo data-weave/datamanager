@@ -12,6 +12,16 @@ const packages = JSON.parse(execSync('npx lerna ls --json').toString('utf-8'));
 const lernaVersion = JSON.parse(readFileSync('lerna.json')).version;
 console.log(`Found lerna version: ${lernaVersion}`);
 
+// Update root directory package.json version to match lerna version
+const rootPackageJsonPath = 'package.json';
+const rootPackageJsonContents = JSON.parse(readFileSync(rootPackageJsonPath).toString('utf-8'));
+
+if (rootPackageJsonContents.version !== lernaVersion) {
+  rootPackageJsonContents.version = lernaVersion;
+  writeFileSync(rootPackageJsonPath, JSON.stringify(rootPackageJsonContents, null, 4) + '\n');
+  console.log(`Updated root package.json version to ${lernaVersion}`);
+}
+
 packages.forEach(pkg => {
   const { location } = pkg;
   // ---------------------------
