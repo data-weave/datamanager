@@ -11,5 +11,6 @@ module.exports = {
         '^@js-state-reactivity-models/([^/]+)$': '<rootDir>/packages/$1/lib',
         '^@js-state-reactivity-models/(.*)$': '<rootDir>/packages/$1',
     },
+    setupFilesAfterEnv: ['<rootDir>/packages/datamanager-firestore-mobx/__tests__/setup.ts'],
     transformIgnorePatterns: ['node_modules/(?!(uuid))'],
 }
