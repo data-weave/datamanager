@@ -1,8 +1,14 @@
 import { ListPaginationParams, LiveList, LiveListOptions } from '@data-weave/datamanager'
 import { DocumentData, Firestore, FirestoreReadMode, FirestoreTypes } from './firestoreTypes'
 
+export interface FirestoreListContext {
+    query: FirestoreTypes.Query<unknown>
+    readMode?: FirestoreReadMode
+}
+
 export interface FirestoreListOptions<T> extends LiveListOptions<T> {
     readMode?: FirestoreReadMode
+    errorInterceptor?: (error: unknown, ctx: FirestoreListContext) => void
 }
 
 export class FirestoreList<T extends DocumentData, S extends DocumentData> extends LiveList<T> {
@@ -79,6 +85,10 @@ export class FirestoreList<T extends DocumentData, S extends DocumentData> exten
         // Try to provide useful collection details using internal properties
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         console.error(`FirestoreList Collection: ${(this.query as any)?._collectionPath?.id} error`, error)
+        this.options?.errorInterceptor?.(error, {
+            query: this.query,
+            readMode: this.options?.readMode,
+        })
         super.onError(error)
     }
 }

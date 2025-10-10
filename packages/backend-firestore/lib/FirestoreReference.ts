@@ -2,9 +2,17 @@ import { LiveReference, LiveReferenceOptions } from '@data-weave/datamanager'
 import { DocumentData, Firestore, FirestoreReadMode, FirestoreTypes } from './firestoreTypes'
 import { checkIfReferenceExists } from './utils'
 
+export interface FirestoreReferenceContext {
+    path: string
+    id: string
+    readMode?: FirestoreReadMode
+    snapshotOptions?: FirestoreTypes.SnapshotOptions
+}
+
 export interface FirestoreReferenceOptions<T> extends LiveReferenceOptions<T> {
     readMode?: FirestoreReadMode
     snapshotOptions?: FirestoreTypes.SnapshotOptions
+    errorInterceptor?: (error: unknown, ctx: FirestoreReferenceContext) => void
 }
 
 export class FirestoreReference<T extends DocumentData, S extends DocumentData> extends LiveReference<T> {
@@ -61,6 +69,12 @@ export class FirestoreReference<T extends DocumentData, S extends DocumentData> 
 
     protected onError(error: unknown): void {
         console.error(`FirestoreReference error ${this.docRef.path}`, error)
+        this.options?.errorInterceptor?.(error, {
+            path: this.docRef.path,
+            id: this.docRef.id,
+            readMode: this.options?.readMode,
+            snapshotOptions: this.options?.snapshotOptions,
+        })
         super.onError(error)
     }
 
