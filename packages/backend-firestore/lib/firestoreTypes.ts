@@ -28,23 +28,38 @@ export declare interface InternalFirestoreDataConverter<
     ): T
 }
 
+export type WithTimestamps<T> = {
+    [K in keyof T]: T[K] extends Date
+        ? FirestoreTypes.Timestamp
+        : T[K] extends Date | null
+          ? FirestoreTypes.Timestamp | null
+          : T[K] extends Date | undefined
+            ? FirestoreTypes.Timestamp | undefined
+            : T[K] extends Date | null | undefined
+              ? FirestoreTypes.Timestamp | null | undefined
+              : T[K] extends object
+                ? T[K] extends any[]
+                    ? T[K] extends (infer U)[]
+                        ? WithTimestamps<U>[]
+                        : T[K]
+                    : WithTimestamps<T[K]>
+                : T[K]
+}
+
 /**
  * Converts data between model and serialized data. Differs from InternalFirestoreDataConverter
  * by using `OptionallyUndefined` and `Required` to ensure that all fields are included in de/serialization
  * even if some model defined properties are optional.
  */
-export declare interface FirestoreDataConverter<
-    T extends DocumentData,
-    SerializedT extends DocumentData = DocumentData,
-> {
+export declare interface FirestoreDataConverter<ModelObject, SerializedModelObject = ModelObject> {
     toFirestore(
-        modelObject: WithoutId<Partial<WithFieldValue<T>>>,
+        modelObject: WithoutId<ModelObject>,
         options?: FirestoreTypes.SetOptions
-    ): OptionallyUndefined<Required<WithoutId<WithFieldValue<SerializedT>>>>
+    ): OptionallyUndefined<Required<WithoutId<WithFieldValue<SerializedModelObject>>>>
     fromFirestore(
-        snapshot: FirestoreTypes.QueryDocumentSnapshot<T, SerializedT>,
+        snapshot: FirestoreTypes.QueryDocumentSnapshot<WithTimestamps<SerializedModelObject>>,
         options?: FirestoreTypes.SnapshotOptions
-    ): OptionallyUndefined<Required<WithoutId<T>>>
+    ): ModelObject
 }
 
 export type FirestoreQuery<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData> = (

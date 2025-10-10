@@ -15,18 +15,21 @@ interface Product {
     qty: number
 }
 
-type SerializedProduct = Product
+// type SerializedProduct = Product & { temp: boolean }
 
-export const productConverter: FirestoreDataConverter<Product, SerializedProduct> = {
-    toFirestore: function (modelObject: Product) {
+// type test = WithTimestamps<Product>
+// type test = Product
+
+export const productConverter: FirestoreDataConverter<Product> = {
+    toFirestore: function (modelObject) {
         return {
             name: modelObject.name,
             desciption: modelObject.desciption,
             qty: modelObject.qty,
         }
     },
-    fromFirestore: function (snapshot, options) {
-        const data = snapshot.data(options) as SerializedProduct
+    fromFirestore: function (snapshot, options): Product {
+        const data = snapshot.data(options)
         return {
             name: data.name,
             desciption: data.desciption,
@@ -45,20 +48,15 @@ abstract class ProductModel<T = WithMetadata<Product>> {
 }
 
 export class FirebaseProductModel implements ProductModel {
-    private datamanager: FirestoreDataManager<Product, SerializedProduct>
+    private datamanager: FirestoreDataManager<Product>
     private collectionName = `products_${uuidv4()}`
 
     constructor(
         readonly db: Firestore,
-        readonly converter: FirestoreDataConverter<Product, SerializedProduct>,
+        readonly converter: FirestoreDataConverter<Product>,
         readonly options?: FirebaseDataManagerOptions
     ) {
-        this.datamanager = new FirestoreDataManager<Product, SerializedProduct>(
-            db,
-            this.collectionName,
-            converter,
-            options
-        )
+        this.datamanager = new FirestoreDataManager<Product>(db, this.collectionName, converter, options)
     }
 
     createProduct(p: Product) {
