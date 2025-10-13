@@ -58,7 +58,7 @@ export interface QueryParams<T extends FirestoreTypes.DocumentData> {
 @injectable()
 export class FirestoreDataManager<
     T extends FirestoreTypes.DocumentData,
-    SerializedT extends FirestoreTypes.DocumentData,
+    SerializedT extends FirestoreTypes.DocumentData = T,
 > implements DataManager<T>
 {
     private mergedConverter: InternalFirestoreDataConverter<T & Metadata, SerializedT & FirestoreSerializedMetadata>

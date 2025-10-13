@@ -4,6 +4,7 @@ import { checkIfReferenceExists } from './utils'
 
 export interface FirestoreReferenceOptions<T> extends LiveReferenceOptions<T> {
     readMode?: FirestoreReadMode
+    snapshotOptions?: FirestoreTypes.SnapshotOptions
 }
 
 export class FirestoreReference<T extends DocumentData, S extends DocumentData> extends LiveReference<T> {
@@ -70,6 +71,6 @@ export class FirestoreReference<T extends DocumentData, S extends DocumentData> 
 
     private parseDocumentSnapshot(docSnapshot: FirestoreTypes.DocumentSnapshot<T, S>): T | undefined {
         if (!checkIfReferenceExists(docSnapshot)) throw new Error(`Document does not exist ${this.docRef.path}`)
-        return docSnapshot.data()
+        return docSnapshot.data(this.options?.snapshotOptions)
     }
 }
