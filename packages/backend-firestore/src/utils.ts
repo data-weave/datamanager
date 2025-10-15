@@ -1,4 +1,4 @@
-import { WithoutId } from '@data-weave/datamanager'
+import { WithoutId } from '@data-weave/datamanager/src'
 import {
     DocumentData,
     Firestore,

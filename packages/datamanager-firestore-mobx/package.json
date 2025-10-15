@@ -22,11 +22,12 @@
         "registry": "https://registry.npmjs.org/"
     },
     "peerDependencies": {
-        "@data-weave/backend-firestore": "0.4.4",
-        "@data-weave/datamanager": "0.4.4",
+        "@data-weave/backend-firestore": "0.4.3",
+        "@data-weave/datamanager": "0.4.3",
         "mobx": ">=6.0.0"
     },
     "devDependencies": {
         "@data-weave/backend-firestore-admin": "0.4.4"
-    }
+    },
+    "gitHead": "df44d823b93b392d9e3b685fafb0d17399001291"
 }

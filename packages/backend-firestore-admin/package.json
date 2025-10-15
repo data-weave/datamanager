@@ -9,7 +9,7 @@
         "lib/**/*.d.ts"
     ],
     "scripts": {
-        "build": "genversion --semi lib/version.js && cp ../../build/backend-firestore-admin/lib/*.js lib/ && cp ../../build/types/backend-firestore-admin/lib/*.d.ts lib/",
+        "build": "genversion --semi lib/version.js && tsc",
         "build:clean": "rimraf android/build && rimraf ios/build",
         "prepare": "npm run build"
     },
@@ -22,8 +22,9 @@
         "registry": "https://registry.npmjs.org/"
     },
     "peerDependencies": {
-        "@data-weave/backend-firestore": "0.4.4",
-        "@data-weave/datamanager": "0.4.4",
+        "@data-weave/backend-firestore": "0.4.3",
+        "@data-weave/datamanager": "0.4.3",
         "firebase-admin": ">=13.0.0"
-    }
+    },
+    "gitHead": "df44d823b93b392d9e3b685fafb0d17399001291"
 }

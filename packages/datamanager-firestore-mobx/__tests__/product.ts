@@ -5,8 +5,8 @@ import {
     FirestoreDataManager,
     QueryParams,
     withTransaction,
-} from '@data-weave/backend-firestore'
-import { IdentifiableReference, Reference, WithMetadata } from '@data-weave/datamanager'
+} from '@data-weave/backend-firestore/src'
+import { IdentifiableReference, Reference, WithMetadata } from '@data-weave/datamanager/src'
 import { v4 as uuidv4 } from 'uuid'
 
 interface Product {

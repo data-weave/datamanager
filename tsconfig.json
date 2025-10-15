@@ -1,19 +1,15 @@
 {
-    "include": ["packages/**/lib/**/*.ts", "packages/**/__test__/**/*.ts"],
-    "exclude": ["node_modules", "**/*.spec.ts"],
     "compilerOptions": {
-        "target": "es2016",
-        "lib": ["es6"],
         "module": "commonjs",
-        "resolveJsonModule": true,
-        "allowJs": true,
-        "outDir": "build",
         "declaration": true,
-        "declarationDir": "build/types",
-        "esModuleInterop": true,
-        "forceConsistentCasingInFileNames": true,
-        "strict": true,
-        "noImplicitAny": true,
-        "skipLibCheck": true
-    }
+        "noImplicitAny": false,
+        "removeComments": true,
+        "noLib": false,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "target": "es6",
+        "sourceMap": true,
+        "lib": ["es6"]
+    },
+    "exclude": ["node_modules", "**/*.spec.ts"]
 }

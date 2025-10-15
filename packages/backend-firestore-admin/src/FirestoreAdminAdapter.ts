@@ -1,4 +1,4 @@
-import { FieldValues, Firestore, FirestoreApp, FirestoreTypes, Transaction } from '@data-weave/backend-firestore'
+import { FieldValues, Firestore, FirestoreApp, FirestoreTypes, Transaction } from '@data-weave/backend-firestore/src'
 
 /*
  *  FirestoreAdminAdapter creates an interface between modular and namespaced

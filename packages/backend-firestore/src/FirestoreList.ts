@@ -1,4 +1,4 @@
-import { ListPaginationParams, LiveList, LiveListOptions } from '@data-weave/datamanager'
+import { ListPaginationParams, LiveList, LiveListOptions } from '@data-weave/datamanager/src'
 import { DocumentData, Firestore, FirestoreReadMode, FirestoreTypes } from './firestoreTypes'
 
 export interface FirestoreListContext {

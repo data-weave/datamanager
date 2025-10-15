@@ -1,4 +1,4 @@
-import { LiveReference, LiveReferenceOptions } from '@data-weave/datamanager'
+import { LiveReference, LiveReferenceOptions } from '@data-weave/datamanager/src'
 import { DocumentData, Firestore, FirestoreReadMode, FirestoreTypes } from './firestoreTypes'
 import { checkIfReferenceExists } from './utils'
 

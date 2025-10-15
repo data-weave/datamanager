@@ -1,4 +1,4 @@
-import { Metadata, WithoutId } from '@data-weave/datamanager'
+import { Metadata, WithoutId } from '@data-weave/datamanager/src'
 import {
     DocumentData,
     FirestoreQuery,
