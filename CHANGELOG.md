@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.0](https://github.com/data-weave/datamanager/compare/v0.3.8...v0.4.0) (2025-10-15)
+
+### Features
+
+- add error interceptor ([dde95c8](https://github.com/data-weave/datamanager/commit/dde95c8dba3d02d7861d132314db4d1cf23bec37))
+- add new typing, snapshot options and sane type defaults ([7095568](https://github.com/data-weave/datamanager/commit/7095568892048dc75cccc284e2dd2ba23793a152))
+- create shim for modular firebase as well ([591b25a](https://github.com/data-weave/datamanager/commit/591b25a8cbcf89687b3880cc3ca1cd95a735e11d))
+- move firebase-admin shim to it's own package ([ac9f861](https://github.com/data-weave/datamanager/commit/ac9f861ca810a2a14706e10e87674b1b1f14a964))
+
 ## [0.3.8](https://github.com/data-weave/datamanager/compare/v0.3.7...v0.3.8) (2025-09-28)
 
 **Note:** Version bump only for package data-weave
