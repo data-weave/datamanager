@@ -1,7 +1,7 @@
 import { injectable } from 'inversify'
 
-import { CreateOptions, DataManager, Metadata, WithMetadata } from '@data-weave/datamanager/lib/DataManager'
 import { Cache, MapCache } from '@data-weave/datamanager/src/Cache'
+import { CreateOptions, DataManager, Metadata, WithMetadata } from '@data-weave/datamanager/src/DataManager'
 import { List, ListPaginationParams } from '@data-weave/datamanager/src/List'
 import { IdentifiableReference, WithoutId } from '@data-weave/datamanager/src/Reference'
 import { FirestoreList, FirestoreListContext } from './FirestoreList'

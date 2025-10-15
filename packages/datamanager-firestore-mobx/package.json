@@ -9,8 +9,9 @@
         "lib/**/*.d.ts"
     ],
     "scripts": {
-        "build": "genversion --semi lib/version.js && cp ../../build/datamanager-firestore-mobx/lib/*.js lib/ && cp ../../build/types/datamanager-firestore-mobx/lib/*.d.ts lib/",
-        "build:clean": "rimraf android/build && rimraf ios/build",
+        "clean": "rm -rf lib",
+        "build": "genversion --force --semi lib/version.js && tsc",
+        "build:clean": "npm run clean && npm run build",
         "prepare": "npm run build"
     },
     "repository": {
@@ -24,10 +25,9 @@
     "peerDependencies": {
         "@data-weave/backend-firestore": "0.4.3",
         "@data-weave/datamanager": "0.4.3",
+        "@data-weave/backend-firestore-admin": "0.4.3",
         "mobx": ">=6.0.0"
     },
-    "devDependencies": {
-        "@data-weave/backend-firestore-admin": "0.4.4"
-    },
+    "devDependencies": {},
     "gitHead": "df44d823b93b392d9e3b685fafb0d17399001291"
 }

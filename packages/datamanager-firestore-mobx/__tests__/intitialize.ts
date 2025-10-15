@@ -1,4 +1,4 @@
-import { createModularFirestoreAdapter } from '@data-weave/backend-firestore'
+import { createModularFirestoreAdapter } from '@data-weave/backend-firestore/src'
 import admin, { apps, firestore } from 'firebase-admin'
 import { initializeApp as initializeAdminApp } from 'firebase-admin/app'
 import { FirebaseApp, getApp, getApps, initializeApp } from 'firebase/app'

@@ -1,5 +1,5 @@
 import { WithoutId } from '@data-weave/datamanager/src'
-import type FirestoreTypes from '@firebase/firestore'
+import type * as FirestoreTypes from '@firebase/firestore'
 import type { FieldPath, WithFieldValue as FirestoreWithFieldValue, QueryConstraint } from '@firebase/firestore'
 import type { HttpsCallable, HttpsCallableOptions } from '@firebase/functions-types'
 import { FieldValue, Transaction } from '@google-cloud/firestore'

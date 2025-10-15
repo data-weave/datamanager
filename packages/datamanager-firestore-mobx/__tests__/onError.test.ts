@@ -1,5 +1,6 @@
+import { FirestoreListContext, FirestoreReferenceContext } from '@data-weave/backend-firestore/src'
 import { describe, test } from '@jest/globals'
-import { FirestoreListContext, FirestoreReferenceContext, ObservableFirestoreList } from '../lib'
+import { ObservableFirestoreList } from '../src'
 import { sdk } from './main.js.test'
 import { FirebaseProductModel, productConverter } from './product'
 

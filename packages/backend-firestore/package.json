@@ -9,8 +9,9 @@
         "lib/**/*.d.ts"
     ],
     "scripts": {
-        "build": "genversion --semi lib/version.js && cp ../../build/backend-firestore/lib/*.js lib/ && cp ../../build/types/backend-firestore/lib/*.d.ts lib/",
-        "build:clean": "rimraf android/build && rimraf ios/build",
+        "clean": "rm -rf lib",
+        "build": "genversion --force --semi lib/version.js && tsc",
+        "build:clean": "npm run clean && npm run build",
         "prepare": "npm run build"
     },
     "repository": {
