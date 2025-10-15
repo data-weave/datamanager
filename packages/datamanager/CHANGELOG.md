@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.4](https://github.com/data-weave/datamanager/compare/v0.4.3...v0.4.4) (2025-10-15)
+
+**Note:** Version bump only for package @data-weave/datamanager
+
 ## [0.4.3](https://github.com/data-weave/datamanager/compare/v0.4.2...v0.4.3) (2025-10-15)
 
 **Note:** Version bump only for package @data-weave/datamanager
