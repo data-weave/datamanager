@@ -8,6 +8,25 @@ import {
     WithFieldValue,
 } from './firestoreTypes'
 
+import {
+    Firestore as FirebaseFirestore,
+    collection,
+    deleteDoc,
+    doc,
+    getDoc,
+    getDocs,
+    increment,
+    limit,
+    onSnapshot,
+    orderBy,
+    query,
+    runTransaction,
+    serverTimestamp,
+    setDoc,
+    updateDoc,
+    where,
+} from 'firebase/firestore'
+
 export class MergeConverters<
     T extends DocumentData,
     SerializedT extends DocumentData,
@@ -45,6 +64,29 @@ export class MergeConverters<
             ...this.converter1.fromFirestore(snapshot, options),
             ...this.converter2.fromFirestore(snapshot, options),
         }
+    }
+}
+
+export function createModularFirestoreAdapter(firestore: FirebaseFirestore): Firestore {
+    return {
+        app: firestore,
+        collection,
+        getDocs,
+        getDoc,
+        serverTimestamp,
+        query,
+        where,
+        limit,
+        orderBy,
+        setDoc,
+        updateDoc,
+        deleteDoc,
+        doc,
+        onSnapshot,
+        increment,
+        // TODO: fix this
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        runTransaction: runTransaction as any,
     }
 }
 
