@@ -1,6 +1,6 @@
 {
     "name": "@data-weave/backend-firestore-admin",
-    "version": "0.4.2",
+    "version": "0.4.3",
     "author": "",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
@@ -22,8 +22,8 @@
         "registry": "https://registry.npmjs.org/"
     },
     "peerDependencies": {
-        "@data-weave/backend-firestore": "0.4.2",
-        "@data-weave/datamanager": "0.4.2",
+        "@data-weave/backend-firestore": "0.4.3",
+        "@data-weave/datamanager": "0.4.3",
         "firebase-admin": ">=13.0.0"
     }
 }
