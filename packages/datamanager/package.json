@@ -4,8 +4,12 @@
     "author": "",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
+    "files": [
+        "lib/**/*.js",
+        "lib/**/*.d.ts"
+    ],
     "scripts": {
-        "build": "genversion --semi lib/version.js",
+        "build": "genversion --semi lib/version.js && cp -r ../../build/datamanager/lib/*.js lib/ && cp -r ../../build/types/datamanager/lib/*.d.ts lib/",
         "build:clean": "rimraf android/build && rimraf ios/build",
         "prepare": "npm run build"
     },
