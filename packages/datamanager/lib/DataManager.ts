@@ -31,6 +31,13 @@ export interface Metadata {
 }
 
 export type WithMetadata<T> = T & Metadata
+/**
+ * DataManager is the base class for all data managers.
+ * It is responsible for reading, creating, deleting, and updating data.
+ * It is also responsible for returning references and lists.
+ * It is generic and can be used for any type of data.
+ * @template T - The type of the data to be managed.
+ */
 export abstract class DataManager<T> {
     public abstract read(id: string): Promise<T | undefined>
     public abstract create(data: WithoutId<T>, options?: CreateOptions): Promise<IdentifiableReference<WithMetadata<T>>>
