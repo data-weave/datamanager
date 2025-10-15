@@ -19,9 +19,10 @@
     },
     "peerDependencies": {
         "@data-weave/backend-firestore": "0.3.8",
-        "@data-weave/datamanager": "0.3.8"
+        "@data-weave/datamanager": "0.3.8",
+        "mobx": ">=6.0.0"
     },
-    "dependencies": {
-        "mobx": "6.10.0"
+    "devDependencies": {
+        "@data-weave/backend-firestore-admin": "0.3.8"
     }
 }
