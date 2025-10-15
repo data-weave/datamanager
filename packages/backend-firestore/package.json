@@ -10,7 +10,7 @@
     ],
     "scripts": {
         "clean": "rm -rf lib",
-        "build": "genversion --force --semi lib/version.js && tsc",
+        "build": "genversion --force --semi src/version.js && tsc",
         "build:clean": "npm run clean && npm run build",
         "prepare": "npm run build"
     },
