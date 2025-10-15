@@ -1,5 +1,5 @@
 {
-    "name": "@data-weave/datamanager-firestore-mobx",
+    "name": "@data-weave/backend-firestore-admin",
     "version": "0.3.8",
     "author": "",
     "main": "lib/index.js",
@@ -11,18 +11,15 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/data-weave/datamanager/tree/master/packages/datamanager-firestore-mobx"
+        "url": "https://github.com/data-weave/datamanager/tree/master/packages/backend-firestore-admin"
     },
     "publishConfig": {
         "access": "public",
         "registry": "https://registry.npmjs.org/"
     },
     "peerDependencies": {
+        "firebase-admin": ">=13.0.0",
         "@data-weave/backend-firestore": "0.3.8",
-        "@data-weave/datamanager": "0.3.8",
-        "mobx": ">=6.0.0"
-    },
-    "devDependencies": {
-        "@data-weave/backend-firestore-admin": "0.3.8"
+        "@data-weave/datamanager": "0.3.8"
     }
 }

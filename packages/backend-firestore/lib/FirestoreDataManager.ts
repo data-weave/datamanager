@@ -4,14 +4,14 @@ import { Cache, MapCache } from '@data-weave/datamanager/lib/Cache'
 import { CreateOptions, DataManager, Metadata, WithMetadata } from '@data-weave/datamanager/lib/DataManager'
 import { List, ListPaginationParams } from '@data-weave/datamanager/lib/List'
 import { IdentifiableReference, WithoutId } from '@data-weave/datamanager/lib/Reference'
-import { FirestoreList } from './FirestoreList'
+import { FirestoreList, FirestoreListContext } from './FirestoreList'
 import {
     FIRESTORE_KEYS,
     FirestoreMetadataConverter,
     FirestoreSerializedMetadata,
     queryNotDeleted,
 } from './FirestoreMetadata'
-import { FirestoreReference } from './FirestoreReference'
+import { FirestoreReference, FirestoreReferenceContext } from './FirestoreReference'
 import {
     DocumentData,
     FilterBy,
@@ -35,6 +35,8 @@ export interface FirebaseDataManagerOptions {
     readonly deleteMode?: FirebaseDataManagerDeleteMode
     readonly readMode?: FirestoreReadMode
     readonly preventOverwriteOnCreate?: boolean
+    readonly errorInterceptor?: (error: unknown, ctx: FirestoreReferenceContext | FirestoreListContext) => void
+    readonly snapshotOptions?: FirestoreTypes.SnapshotOptions
     // TODO: Add preventUpdateIfNotExists?
     readonly Reference?: typeof FirestoreReference
     readonly List?: typeof FirestoreList
@@ -195,6 +197,8 @@ export class FirestoreDataManager<
 
         const newRef = new this.managerOptions.Reference(this.firestore, this.firestore.doc(this.collection, id), {
             readMode: this.managerOptions.readMode,
+            errorInterceptor: this.managerOptions.errorInterceptor,
+            snapshotOptions: this.managerOptions.snapshotOptions,
         })
         this.refCache.set(id, newRef)
         return newRef
@@ -225,6 +229,7 @@ export class FirestoreDataManager<
         }
         const newList = new this.managerOptions.List(this.firestore, compoundQuery, {
             readMode: this.managerOptions.readMode,
+            errorInterceptor: this.managerOptions.errorInterceptor,
             ...params,
         })
         this.listCache.set(key, newList)

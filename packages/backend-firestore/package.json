@@ -17,11 +17,8 @@
         "access": "public",
         "registry": "https://registry.npmjs.org/"
     },
-    "dependencies": {
-        "firebase": "^11.9.0",
-        "firebase-admin": "^13.0.2"
-    },
     "peerDependencies": {
+        "firebase": ">=11.0.0",
         "@data-weave/datamanager": "0.3.8"
     }
 }

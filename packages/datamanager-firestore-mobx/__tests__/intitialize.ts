@@ -1,25 +1,8 @@
-import { FirebaseApp, getApp, getApps, initializeApp } from 'firebase/app'
-import {
-    collection,
-    deleteDoc,
-    doc,
-    getDoc,
-    getDocs,
-    increment,
-    initializeFirestore,
-    limit,
-    onSnapshot,
-    orderBy,
-    query,
-    runTransaction,
-    serverTimestamp,
-    setDoc,
-    updateDoc,
-    where,
-} from 'firebase/firestore'
-
+import { createModularFirestoreAdapter } from '@data-weave/backend-firestore'
 import admin, { apps, firestore } from 'firebase-admin'
 import { initializeApp as initializeAdminApp } from 'firebase-admin/app'
+import { FirebaseApp, getApp, getApps, initializeApp } from 'firebase/app'
+import { initializeFirestore } from 'firebase/firestore'
 
 export const initializeJS_SDK = () => {
     let firebaseApp: FirebaseApp
@@ -37,26 +20,7 @@ export const initializeJS_SDK = () => {
         ssl: false,
     })
 
-    return {
-        app: db,
-        collection,
-        getDocs,
-        getDoc,
-        serverTimestamp,
-        query,
-        where,
-        limit,
-        orderBy,
-        setDoc,
-        updateDoc,
-        deleteDoc,
-        doc,
-        onSnapshot,
-        increment,
-        // TODO: fix this
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        runTransaction: runTransaction as any,
-    }
+    return createModularFirestoreAdapter(db)
 }
 
 export const initializeAdmin_SDK = () => {

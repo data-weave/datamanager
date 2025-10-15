@@ -33,7 +33,7 @@
         "test:watch-js": "export FIRESTORE_EMULATOR_HOST=localhost:8080 && SDK_TYPE=JS_SDK jest --watch",
         "test:watch-admin": "export FIRESTORE_EMULATOR_HOST=localhost:8080 && SDK_TYPE=ADMIN_SDK jest --watch",
         "test:emulator": "./scripts/test-with-emulator.sh",
-        "prepare": "husky"
+        "prepare": "npm run build"
     },
     "keywords": [],
     "author": "",

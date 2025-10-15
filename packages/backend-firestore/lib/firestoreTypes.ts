@@ -98,12 +98,15 @@ export type FilterableFields<
     ? // Handle firebase timestamp fields
       T[K] extends FirestoreTypes.Timestamp
         ? `${K}`
-        : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          T[K] extends any[]
-          ? GenNode<K, IsRoot>
-          : T[K] extends object
-            ? `${GenNode<K, IsRoot>}${FilterableFields<T[K], false>}`
-            : GenNode<K, IsRoot>
+        : // Handle Date fields
+          T[K] extends Date
+          ? `${K}`
+          : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            T[K] extends any[]
+            ? GenNode<K, IsRoot>
+            : T[K] extends object
+              ? `${GenNode<K, IsRoot>}${FilterableFields<T[K], false>}`
+              : GenNode<K, IsRoot>
     : never
 
 type GetValue<T, K extends string> = K extends `${infer L}.${infer R}`
@@ -111,7 +114,9 @@ type GetValue<T, K extends string> = K extends `${infer L}.${infer R}`
         ? GetValue<T[L], R>
         : never
     : K extends keyof T
-      ? T[K]
+      ? T[K] extends Date
+          ? Date | FirestoreTypes.Timestamp
+          : T[K]
       : K extends string
         ? string | number | boolean
         : never
