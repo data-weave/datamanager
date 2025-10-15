@@ -5,14 +5,18 @@
         "module": "commonjs",
         "resolveJsonModule": true,
         "allowJs": true,
-        "outDir": "build",
         "declaration": true,
-        "declarationDir": "build/types",
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
         "strict": true,
         "noImplicitAny": true,
-        "skipLibCheck": true
-    },
-    "exclude": ["node_modules"]
+        "skipLibCheck": true,
+        "baseUrl": ".",
+        "paths": {
+            "@data-weave/datamanager": ["./packages/datamanager/src"],
+            "@data-weave/backend-firestore": ["./packages/backend-firestore/src"],
+            "@data-weave/backend-firestore-admin": ["./packages/backend-firestore-admin/src"],
+            "@data-weave/datamanager-firestore-mobx": ["./packages/datamanager-firestore-mobx/src"]
+        }
+    }
 }

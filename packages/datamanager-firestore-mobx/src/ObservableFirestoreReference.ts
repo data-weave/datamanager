@@ -6,7 +6,7 @@ import {
     FirestoreReference,
     FirestoreReferenceOptions,
     FirestoreTypes,
-} from '@data-weave/backend-firestore/src'
+} from '@data-weave/backend-firestore'
 
 export class ObservableFirestoreReference<T extends DocumentData, S extends DocumentData> extends FirestoreReference<
     T,
