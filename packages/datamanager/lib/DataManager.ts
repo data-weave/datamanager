@@ -30,14 +30,8 @@ export interface Metadata {
     readonly deleted: boolean
 }
 
-// Copy of Firestore DocumentData definition
-type DocumentData = {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [field: string]: any
-}
-
-export type WithMetadata<T extends DocumentData> = T & Metadata
-export abstract class DataManager<T extends DocumentData> {
+export type WithMetadata<T> = T & Metadata
+export abstract class DataManager<T> {
     public abstract read(id: string): Promise<T | undefined>
     public abstract create(data: WithoutId<T>, options?: CreateOptions): Promise<IdentifiableReference<WithMetadata<T>>>
     public abstract delete(id: string): Promise<void>

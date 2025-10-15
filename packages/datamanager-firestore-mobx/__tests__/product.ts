@@ -40,8 +40,8 @@ export const productConverter: FirestoreDataConverter<Product> = {
 
 type UpdateProductParams = Partial<Pick<Product, 'qty' | 'desciption' | 'name'>>
 
-abstract class ProductModel<T = WithMetadata<Product>> {
-    abstract createProduct(p: Product): Promise<IdentifiableReference<T>>
+abstract class ProductModel<T = Product, M = WithMetadata<T>> {
+    abstract createProduct(p: T): Promise<IdentifiableReference<M>>
     abstract getProduct(id: string): Reference<T>
     abstract updateProduct(id: string, params: UpdateProductParams): Promise<void>
     abstract deleteProduct(id: string): Promise<void>
