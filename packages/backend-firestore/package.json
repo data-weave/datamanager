@@ -1,6 +1,6 @@
 {
     "name": "@data-weave/backend-firestore",
-    "version": "0.4.1",
+    "version": "0.4.2",
     "author": "",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
@@ -18,7 +18,7 @@
         "registry": "https://registry.npmjs.org/"
     },
     "peerDependencies": {
-        "@data-weave/datamanager": "0.4.1",
+        "@data-weave/datamanager": "0.4.2",
         "firebase": ">=11.0.0"
     }
 }
