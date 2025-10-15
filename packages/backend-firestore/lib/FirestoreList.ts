@@ -4,6 +4,7 @@ import { DocumentData, Firestore, FirestoreReadMode, FirestoreTypes } from './fi
 export interface FirestoreListContext {
     query: FirestoreTypes.Query<unknown>
     readMode?: FirestoreReadMode
+    type: 'list'
 }
 
 export interface FirestoreListOptions<T> extends LiveListOptions<T> {
@@ -88,6 +89,7 @@ export class FirestoreList<T extends DocumentData, S extends DocumentData> exten
         this.options?.errorInterceptor?.(error, {
             query: this.query,
             readMode: this.options?.readMode,
+            type: 'list',
         })
         super.onError(error)
     }

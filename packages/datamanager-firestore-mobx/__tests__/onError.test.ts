@@ -29,7 +29,16 @@ describe('Firebase error interceptor tests', () => {
             expect(error).toBeDefined()
         }
 
-        errorContextGlobal = errorContextGlobal as FirestoreReferenceContext
+        if (!errorContextGlobal) {
+            fail('errorContextGlobal is undefined')
+        }
+
+        if (errorContextGlobal?.type !== 'reference') {
+            fail('errorContextGlobal is not a reference context or undefined')
+        }
+
+        expect(errorContextGlobal).toBeDefined()
+        expect(errorContextGlobal.type).toBe('reference')
         expect(errorContextGlobal).toBeDefined()
         expect(errorGlobal).toBeDefined()
 
@@ -67,8 +76,11 @@ describe('Firebase error interceptor tests', () => {
                 expect(errorContextGlobal?.query).toBeDefined()
                 expect(errorContextGlobal?.readMode).toBe('realtime')
 
-                const errorMessage = (errorGlobal as Error).message
-                expect(errorMessage).toBeDefined()
+                if (!(errorGlobal instanceof Error)) {
+                    fail('errorGlobal is not an error')
+                }
+
+                expect(errorGlobal.message).toBeDefined()
             }
         }
     })
@@ -83,14 +95,23 @@ describe('Firebase error interceptor tests', () => {
         } catch (error) {
             expect(error).toBeDefined()
 
-            if (errorContextGlobal && errorGlobal) {
-                errorContextGlobal = errorContextGlobal as FirestoreListContext
-                expect(errorContextGlobal?.query).toBeDefined()
-                expect(errorContextGlobal?.readMode).toBe('realtime')
-
-                const errorMessage = (errorGlobal as Error).message
-                expect(errorMessage).toBeDefined()
+            if (!errorContextGlobal) {
+                fail('errorContextGlobal is undefined')
             }
+
+            if (errorContextGlobal.type !== 'list') {
+                fail('errorContextGlobal is not a list context or undefined')
+            }
+
+            expect(errorContextGlobal.type).toBe('list')
+            expect(errorContextGlobal.query).toBeDefined()
+            expect(errorContextGlobal.readMode).toBe('realtime')
+
+            if (!(errorGlobal instanceof Error)) {
+                fail('errorGlobal is not an error')
+            }
+
+            expect(errorGlobal.message).toBeDefined()
         }
     })
 })

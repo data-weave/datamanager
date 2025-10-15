@@ -7,6 +7,7 @@ export interface FirestoreReferenceContext {
     id: string
     readMode?: FirestoreReadMode
     snapshotOptions?: FirestoreTypes.SnapshotOptions
+    type: 'reference'
 }
 
 export interface FirestoreReferenceOptions<T> extends LiveReferenceOptions<T> {
@@ -74,6 +75,7 @@ export class FirestoreReference<T extends DocumentData, S extends DocumentData> 
             id: this.docRef.id,
             readMode: this.options?.readMode,
             snapshotOptions: this.options?.snapshotOptions,
+            type: 'reference',
         })
         super.onError(error)
     }
