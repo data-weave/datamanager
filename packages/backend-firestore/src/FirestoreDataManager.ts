@@ -38,6 +38,11 @@ import { MergeConverters, checkIfReferenceExists } from './utils'
 
 export type FirebaseDataManagerDeleteMode = 'soft' | 'hard'
 
+type Constructor<T = {}> = new (...args: any[]) => T
+
+export type FirestoreReferenceClass = Constructor<IdentifiableReference<any>>
+export type FirestoreListClass = Constructor<List<any>>
+
 export interface FirebaseDataManagerOptions {
     readonly idResolver?: () => string
     readonly deleteMode?: FirebaseDataManagerDeleteMode
@@ -46,8 +51,8 @@ export interface FirebaseDataManagerOptions {
     readonly errorInterceptor?: (error: unknown, ctx: FirestoreReferenceContext | FirestoreListContext) => void
     readonly snapshotOptions?: FirestoreTypes.SnapshotOptions
     // TODO: Add preventUpdateIfNotExists?
-    readonly Reference?: typeof FirestoreReference
-    readonly List?: typeof FirestoreList
+    readonly Reference?: FirestoreReferenceClass
+    readonly List?: FirestoreListClass
     readonly listCache?: Cache
     readonly refCache?: Cache
 }

@@ -11,12 +11,6 @@
         "strict": true,
         "noImplicitAny": true,
         "skipLibCheck": true,
-        "baseUrl": ".",
-        "paths": {
-            "@data-weave/datamanager": ["./packages/datamanager/src"],
-            "@data-weave/backend-firestore": ["./packages/backend-firestore/src"],
-            "@data-weave/backend-firestore-admin": ["./packages/backend-firestore-admin/src"],
-            "@data-weave/datamanager-firestore-mobx": ["./packages/datamanager-firestore-mobx/src"]
-        }
+        "baseUrl": "."
     }
 }

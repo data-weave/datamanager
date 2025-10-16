@@ -7,11 +7,16 @@ import {
     FirestoreListOptions,
     FirestoreTypes,
 } from '@data-weave/backend-firestore'
+import { ListPaginationParams } from '@data-weave/datamanager'
 
 export class ObservableFirestoreList<T extends DocumentData, S extends DocumentData> extends FirestoreList<T, S> {
     private readonly _atom: IAtom
 
-    constructor(firestore: Firestore, query: FirestoreTypes.Query<T, S>, options: FirestoreListOptions<T>) {
+    constructor(
+        firestore: Firestore,
+        query: FirestoreTypes.Query<T, S>,
+        options: FirestoreListOptions<T> & ListPaginationParams
+    ) {
         super(firestore, query, options)
         this._atom = createAtom(
             'ObservableFirestoreList',

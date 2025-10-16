@@ -1,6 +1,6 @@
 import { describe, test } from '@jest/globals'
 import { autorun } from 'mobx'
-import { ObservableFirestoreList } from '../src'
+import { ObservableFirestoreList } from '../src/ObservableFirestoreList'
 import { sdk } from './main.js.test'
 import { FirebaseProductModel, productConverter } from './product'
 import { sleep } from './utils'
