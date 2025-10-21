@@ -144,14 +144,6 @@ export abstract class FieldValues {
     public abstract arrayRemove(...elements: any[]): FirestoreTypes.FieldValue
 }
 
-/**********
- *
- *
- * INJECTABLES
- *
- *
- * **********/
-
 export interface FirestoreAppSettings {
     persistence?: boolean
     cacheSizeBytes?: number
