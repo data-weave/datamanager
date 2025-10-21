@@ -1,5 +1,3 @@
-import { injectable } from 'inversify'
-
 import { Cache, MapCache } from '@data-weave/datamanager/src/Cache'
 import { CreateOptions, DataManager, Metadata, WithMetadata } from '@data-weave/datamanager/src/DataManager'
 import { List, ListPaginationParams } from '@data-weave/datamanager/src/List'
@@ -57,7 +55,6 @@ export interface QueryParams<T extends FirestoreTypes.DocumentData> {
     readonly orderBy?: Array<OrderBy<T & FirestoreSerializedMetadata>>
 }
 
-@injectable()
 export class FirestoreDataManager<
     T extends FirestoreTypes.DocumentData,
     SerializedT extends FirestoreTypes.DocumentData = T,

@@ -3,7 +3,6 @@ import type * as FirestoreTypes from '@firebase/firestore'
 import type { FieldPath, WithFieldValue as FirestoreWithFieldValue, QueryConstraint } from '@firebase/firestore'
 import type { HttpsCallable, HttpsCallableOptions } from '@firebase/functions-types'
 import { FieldValue, Transaction } from '@google-cloud/firestore'
-import { injectable } from 'inversify'
 
 export type DocumentData = FirestoreTypes.DocumentData
 
@@ -174,7 +173,6 @@ export abstract class FirestoreApp {
     ): Promise<T>
 }
 
-@injectable()
 export abstract class Firestore {
     public abstract app: FirestoreApp
     public abstract collection(reference: FirestoreTypes.CollectionReference | FirestoreApp, path: string): any
@@ -227,19 +225,16 @@ export abstract class Firestore {
     ): Promise<T>
 }
 
-@injectable()
 export abstract class FirestoreSettings {
     public abstract readMode: FirestoreReadMode
 }
 
-@injectable()
 export abstract class FirestoreFunctions {
     public abstract httpsCallable(name: string, options?: HttpsCallableOptions): HttpsCallable
     public abstract useEmulator(host: string, port: number): void
     public abstract useFunctionsEmulator(origin: string): void
 }
 
-@injectable()
 export class DummyFirestoreFunctions implements FirestoreFunctions {
     public httpsCallable(): HttpsCallable {
         return () => {
