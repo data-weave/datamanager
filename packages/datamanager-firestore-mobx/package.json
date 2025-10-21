@@ -28,6 +28,8 @@
         "@data-weave/backend-firestore-admin": "0.4.3",
         "mobx": ">=6.0.0"
     },
-    "devDependencies": {},
+    "devDependencies": {
+        "mobx": "6.15.0"
+    },
     "gitHead": "df44d823b93b392d9e3b685fafb0d17399001291"
 }
