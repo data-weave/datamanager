@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.6](https://github.com/js-state-reactity-models/datamanger/compare/v0.4.4...v0.4.6) (2025-10-22)
+
+### Bug Fixes
+
+- add missing datamanager-firestore-mobx dev dependency ([8520f5b](https://github.com/js-state-reactity-models/datamanger/commit/8520f5bd3b18fb271769fb9bb643ee22b1f53657))
+
 ## [0.4.5](https://github.com/js-state-reactity-models/datamanger/compare/v0.4.4...v0.4.5) (2025-10-22)
 
 ### Bug Fixes
