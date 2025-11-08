@@ -52,7 +52,7 @@ const defaultFirebaseDataManagerOptions: FirebaseDataManagerOptions = {
     List: FirestoreList,
 }
 
-export interface QueryParams<T extends FirestoreTypes.DocumentData> {
+export interface QueryParams<T> {
     readonly filters?: Array<FilterBy<T & FirestoreSerializedMetadata>>
     readonly orderBy?: Array<OrderBy<T & FirestoreSerializedMetadata>>
 }
