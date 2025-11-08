@@ -1,6 +1,6 @@
 {
     "name": "data-weave",
-    "version": "0.4.17",
+    "version": "0.4.18",
     "main": "build/index.js",
     "types": "src/index.ts",
     "files": [
@@ -12,7 +12,7 @@
         "registry": "https://registry.npmjs.org/"
     },
     "scripts": {
-        "version": "node ./scripts/version.js && yarn lerna:prepare && git add packages/**/src/version.js",
+        "version": "node ./scripts/version.js && git add packages/**/src/version.js",
         "lerna:prepare": "lerna run prepare",
         "lerna:publish": "lerna publish --sync-dist-version --force-publish",
         "artifactregistry-login": "npx google-artifactregistry-auth",
