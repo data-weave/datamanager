@@ -42,6 +42,7 @@ packages.forEach(pkg => {
   // console.log(`Examining package ${package.name} for local peerDepencenies...`);
 
   if (!packageJsonContents.peerDependencies) {
+    console.log(`No peer dependencies found for package ${packageJsonContents.name}`);
     return;
   }
 
