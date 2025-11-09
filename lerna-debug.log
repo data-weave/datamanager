@@ -1,0 +1,22 @@
+78 error Error: Command failed with exit code 1: npm install --package-lock-only --ignore-scripts
+78 error npm warn ERESOLVE overriding peer dependency
+78 error npm warn While resolving: @data-weave/backend-firestore@0.4.20
+78 error npm warn Found: @data-weave/datamanager@undefined
+78 error npm warn node_modules/@data-weave/datamanager
+78 error npm warn   workspace packages/datamanager from the root project
+78 error npm warn
+78 error npm warn Could not resolve dependency:
+78 error npm warn peer @data-weave/datamanager@"0.4.20" from @data-weave/backend-firestore@0.4.20
+78 error npm warn packages/backend-firestore
+78 error npm warn   @data-weave/backend-firestore@0.4.19
+78 error npm warn   node_modules/@data-weave/backend-firestore
+78 error npm error code ETARGET
+78 error npm error notarget No matching version found for @data-weave/datamanager@0.4.20.
+78 error npm error notarget In most cases you or one of your dependencies are requesting
+78 error npm error notarget a package version that doesn't exist.
+78 error npm error A complete log of this run can be found in: /Users/johnthomasvalanidas/.npm/_logs/2025-11-09T04_17_14_838Z-debug-0.log
+78 error     at makeError (/Users/johnthomasvalanidas/projects/datamanger/node_modules/lerna/node_modules/execa/lib/error.js:59:11)
+78 error     at handlePromise (/Users/johnthomasvalanidas/projects/datamanger/node_modules/lerna/node_modules/execa/index.js:114:26)
+78 error     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+78 error     at async VersionCommand.updatePackageVersions (/Users/johnthomasvalanidas/projects/datamanger/node_modules/lerna/dist/index.js:9904:13)
+78 error     at async Promise.all (index 0)

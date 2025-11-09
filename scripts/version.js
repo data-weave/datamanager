@@ -55,7 +55,7 @@ packages.forEach(pkg => {
       return;
     }
 
-    packageJsonContents.peerDependencies[possiblePeerDependency.name] = lernaVersion;
+    packageJsonContents.peerDependencies[possiblePeerDependency.name] = `~${lernaVersion}`;
 
     writeFileSync(packageJsonPath, JSON.stringify(packageJsonContents, null, 2) + '\n');
 
@@ -63,7 +63,7 @@ packages.forEach(pkg => {
       `Updated '${possiblePeerDependency.name}' peer dependency on package`,
       packageJsonContents.name,
       'to',
-      packageJsonContents.peerDependencies[possiblePeerDependency.name],
+      `~${packageJsonContents.peerDependencies[possiblePeerDependency.name]}`,
     );
   });
 });
