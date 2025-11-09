@@ -1,6 +1,6 @@
 {
     "name": "data-weave",
-    "version": "0.4.20",
+    "version": "0.4.19",
     "main": "build/index.js",
     "types": "src/index.ts",
     "files": [
