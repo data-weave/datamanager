@@ -2,7 +2,7 @@ import { WithoutId } from '@data-weave/datamanager'
 import type * as FirestoreTypes from '@firebase/firestore'
 import type { FieldPath, WithFieldValue as FirestoreWithFieldValue, QueryConstraint } from '@firebase/firestore'
 import type { HttpsCallable, HttpsCallableOptions } from '@firebase/functions-types'
-import { FieldValue, Transaction } from '@google-cloud/firestore'
+import type { FieldValue, Transaction } from '@google-cloud/firestore'
 import { injectable } from 'inversify'
 
 export type DocumentData = FirestoreTypes.DocumentData
