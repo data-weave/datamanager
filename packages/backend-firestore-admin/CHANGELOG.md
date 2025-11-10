@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.23](https://github.com/data-weave/datamanager/compare/v0.4.22...v0.4.23) (2025-11-10)
+
+**Note:** Version bump only for package @data-weave/backend-firestore-admin
+
 ## [0.4.22](https://github.com/data-weave/datamanager/compare/v0.4.21...v0.4.22) (2025-11-09)
 
 **Note:** Version bump only for package @data-weave/backend-firestore-admin
