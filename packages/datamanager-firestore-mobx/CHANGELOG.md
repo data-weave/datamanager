@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.24](https://github.com/data-weave/datamanager/compare/v0.4.23...v0.4.24) (2025-11-10)
+
+**Note:** Version bump only for package @data-weave/datamanager-firestore-mobx
+
 ## [0.4.23](https://github.com/data-weave/datamanager/compare/v0.4.22...v0.4.23) (2025-11-10)
 
 **Note:** Version bump only for package @data-weave/datamanager-firestore-mobx
