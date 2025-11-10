@@ -64,6 +64,8 @@ export class FirestoreList<T extends DocumentData, S extends DocumentData> exten
     }
 
     protected handleSubsequentDataChanges(changes: FirestoreTypes.DocumentChange<T, S>[]) {
+        const newValues = [...this.values]
+
         changes.forEach(change => {
             if (change.type === 'added') {
                 this.onAddAtIndex(change.newIndex, change.doc.data())
@@ -73,8 +75,10 @@ export class FirestoreList<T extends DocumentData, S extends DocumentData> exten
                 this.onRemoveAtIndex(change.oldIndex)
             }
         })
+
+        this.onUpdateAll(newValues)
         // TODO: handle onUpdate in the parent class - make sure it's only called once after all changes are processed
-        this.onUpdate()
+        // this.onUpdate()
     }
 
     public unSubscribe() {
