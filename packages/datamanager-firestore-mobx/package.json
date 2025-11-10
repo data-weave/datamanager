@@ -1,6 +1,6 @@
 {
     "name": "@data-weave/datamanager-firestore-mobx",
-    "version": "0.4.26",
+    "version": "0.4.27",
     "author": "",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
@@ -23,14 +23,14 @@
         "registry": "https://registry.npmjs.org/"
     },
     "peerDependencies": {
-        "@data-weave/backend-firestore": "~0.4.26",
-        "@data-weave/datamanager": "~0.4.26",
+        "@data-weave/backend-firestore": "~0.4.27",
+        "@data-weave/datamanager": "~0.4.27",
         "mobx": ">=6.0.0"
     },
     "devDependencies": {
-        "@data-weave/backend-firestore": "0.4.26",
-        "@data-weave/backend-firestore-admin": "0.4.26",
-        "@data-weave/datamanager": "0.4.26",
+        "@data-weave/backend-firestore": "0.4.27",
+        "@data-weave/backend-firestore-admin": "0.4.27",
+        "@data-weave/datamanager": "0.4.27",
         "mobx": "6.15.0"
     },
     "gitHead": "df44d823b93b392d9e3b685fafb0d17399001291"
