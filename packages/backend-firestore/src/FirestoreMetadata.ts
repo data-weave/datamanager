@@ -1,4 +1,4 @@
-import { Metadata, WithoutId } from '@data-weave/datamanager/src'
+import { Metadata, WithoutId } from '@data-weave/datamanager'
 import {
     DocumentData,
     FirestoreQuery,
@@ -45,8 +45,8 @@ export class FirestoreMetadataConverter
         return {
             id: snapshot.ref.id,
             // TODO: add warning in case data type is not as expected
-            createdAt: data[FIRESTORE_INTERAL_KEYS.CREATED_AT]?.toDate(),
-            updatedAt: data[FIRESTORE_INTERAL_KEYS.UPDATED_AT]?.toDate(),
+            createdAt: data[FIRESTORE_INTERAL_KEYS.CREATED_AT]?.toDate() ?? new Date(),
+            updatedAt: data[FIRESTORE_INTERAL_KEYS.UPDATED_AT]?.toDate() ?? new Date(),
             deleted: data[FIRESTORE_INTERAL_KEYS.DELETED],
         }
     }

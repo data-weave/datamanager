@@ -6,7 +6,7 @@ import {
     FirestoreList,
     FirestoreListOptions,
     FirestoreTypes,
-} from '@data-weave/backend-firestore/src'
+} from '@data-weave/backend-firestore'
 
 export class ObservableFirestoreList<T extends DocumentData, S extends DocumentData> extends FirestoreList<T, S> {
     private readonly _atom: IAtom

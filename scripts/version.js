@@ -42,6 +42,7 @@ packages.forEach(pkg => {
   // console.log(`Examining package ${package.name} for local peerDepencenies...`);
 
   if (!packageJsonContents.peerDependencies) {
+    console.log(`No peer dependencies found for package ${packageJsonContents.name}`);
     return;
   }
 
@@ -54,7 +55,7 @@ packages.forEach(pkg => {
       return;
     }
 
-    packageJsonContents.peerDependencies[possiblePeerDependency.name] = lernaVersion;
+    packageJsonContents.peerDependencies[possiblePeerDependency.name] = `~${lernaVersion}`;
 
     writeFileSync(packageJsonPath, JSON.stringify(packageJsonContents, null, 2) + '\n');
 
@@ -62,7 +63,7 @@ packages.forEach(pkg => {
       `Updated '${possiblePeerDependency.name}' peer dependency on package`,
       packageJsonContents.name,
       'to',
-      packageJsonContents.peerDependencies[possiblePeerDependency.name],
+      `~${packageJsonContents.peerDependencies[possiblePeerDependency.name]}`,
     );
   });
 });

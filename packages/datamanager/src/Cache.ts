@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface Cache<K = any, V = any> {
     get(key: K): V | undefined
     set(key: K, value: V): void

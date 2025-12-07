@@ -1,7 +1,15 @@
-import { Cache, MapCache } from '@data-weave/datamanager/src/Cache'
-import { CreateOptions, DataManager, Metadata, WithMetadata } from '@data-weave/datamanager/src/DataManager'
-import { List, ListPaginationParams } from '@data-weave/datamanager/src/List'
-import { IdentifiableReference, WithoutId } from '@data-weave/datamanager/src/Reference'
+import {
+    Cache,
+    CreateOptions,
+    DataManager,
+    IdentifiableReference,
+    List,
+    ListPaginationParams,
+    MapCache,
+    Metadata,
+    WithMetadata,
+    WithoutId,
+} from '@data-weave/datamanager'
 import { FirestoreList, FirestoreListContext } from './FirestoreList'
 import {
     FIRESTORE_KEYS,
@@ -40,6 +48,7 @@ export interface FirebaseDataManagerOptions {
     readonly List?: typeof FirestoreList
     readonly listCache?: Cache
     readonly refCache?: Cache
+    readonly disableCache?: boolean
 }
 
 const defaultFirebaseDataManagerOptions: FirebaseDataManagerOptions = {
@@ -50,7 +59,7 @@ const defaultFirebaseDataManagerOptions: FirebaseDataManagerOptions = {
     List: FirestoreList,
 }
 
-export interface QueryParams<T extends FirestoreTypes.DocumentData> {
+export interface QueryParams<T> {
     readonly filters?: Array<FilterBy<T & FirestoreSerializedMetadata>>
     readonly orderBy?: Array<OrderBy<T & FirestoreSerializedMetadata>>
 }
@@ -188,7 +197,7 @@ export class FirestoreDataManager<
     public getRef(id: string) {
         if (!this.managerOptions?.Reference) throw new Error('ReferenceClass not defined')
 
-        if (this.refCache.has(id)) {
+        if (this.refCache.has(id) && !this.managerOptions.disableCache) {
             return this.refCache.get(id)!
         }
 
@@ -197,7 +206,9 @@ export class FirestoreDataManager<
             errorInterceptor: this.managerOptions.errorInterceptor,
             snapshotOptions: this.managerOptions.snapshotOptions,
         })
-        this.refCache.set(id, newRef)
+        if (!this.managerOptions.disableCache) {
+            this.refCache.set(id, newRef)
+        }
         return newRef
     }
 
@@ -221,7 +232,7 @@ export class FirestoreDataManager<
         const compoundQuery = this._getFilteredQuery(params)
 
         const key = JSON.stringify(params || {})
-        if (this.listCache.has(key)) {
+        if (this.listCache.has(key) && !this.managerOptions.disableCache) {
             return this.listCache.get(key)!
         }
         const newList = new this.managerOptions.List(this.firestore, compoundQuery, {
@@ -229,7 +240,9 @@ export class FirestoreDataManager<
             errorInterceptor: this.managerOptions.errorInterceptor,
             ...params,
         })
-        this.listCache.set(key, newList)
+        if (!this.managerOptions.disableCache) {
+            this.listCache.set(key, newList)
+        }
         return newList
     }
 

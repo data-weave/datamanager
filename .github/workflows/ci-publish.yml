@@ -29,12 +29,9 @@ jobs:
 
             - name: Install dependencies
               run: npm ci
-
-            - name: Build packages
-              run: npm run lerna:prepare
-
+                
             - name: Version and Publish to NPM Registry
-              run: npx lerna publish --conventional-commits --yes
+              run: yarn run lerna:publish
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

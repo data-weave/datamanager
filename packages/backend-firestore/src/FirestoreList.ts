@@ -1,4 +1,4 @@
-import { ListPaginationParams, LiveList, LiveListOptions } from '@data-weave/datamanager/src'
+import { ListPaginationParams, LiveList, LiveListOptions } from '@data-weave/datamanager'
 import { DocumentData, Firestore, FirestoreReadMode, FirestoreTypes } from './firestoreTypes'
 
 export interface FirestoreListContext {
@@ -35,7 +35,9 @@ export class FirestoreList<T extends DocumentData, S extends DocumentData> exten
                                 initialLoad = false
                                 this.handleInitialDataChange(querySnapshot.docs)
                             } else {
-                                this.handleSubsequentDataChanges(querySnapshot.docChanges())
+                                // handle every change as inital dataload
+                                this.handleInitialDataChange(querySnapshot.docs)
+                                // this.handleSubsequentDataChanges(querySnapshot.docChanges())
                             }
                             // TODO: When calling ".resolve()" with realtime listener,
                             // the snapshot data might be stale from cache.
@@ -73,6 +75,7 @@ export class FirestoreList<T extends DocumentData, S extends DocumentData> exten
                 this.onRemoveAtIndex(change.oldIndex)
             }
         })
+
         // TODO: handle onUpdate in the parent class - make sure it's only called once after all changes are processed
         this.onUpdate()
     }

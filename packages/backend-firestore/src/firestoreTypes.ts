@@ -1,8 +1,8 @@
-import { WithoutId } from '@data-weave/datamanager/src'
+import { WithoutId } from '@data-weave/datamanager'
 import type * as FirestoreTypes from '@firebase/firestore'
 import type { FieldPath, WithFieldValue as FirestoreWithFieldValue, QueryConstraint } from '@firebase/firestore'
 import type { HttpsCallable, HttpsCallableOptions } from '@firebase/functions-types'
-import { FieldValue, Transaction } from '@google-cloud/firestore'
+import type { FieldValue, Transaction } from '@google-cloud/firestore'
 
 export type DocumentData = FirestoreTypes.DocumentData
 
@@ -37,7 +37,8 @@ export type WithTimestamps<T> = {
             : T[K] extends Date | null | undefined
               ? FirestoreTypes.Timestamp | null | undefined
               : T[K] extends object
-                ? T[K] extends any[]
+                ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  T[K] extends any[]
                     ? T[K] extends (infer U)[]
                         ? WithTimestamps<U>[]
                         : T[K]
@@ -63,8 +64,10 @@ export declare interface FirestoreDataConverter<ModelObject, SerializedModelObje
 
 export type FirestoreQuery<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData> = (
     reference: FirestoreTypes.Query<AppModelType, DbModelType>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     filter: any
 ) => FirestoreTypes.Query<AppModelType, DbModelType>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type FirestoreWhere = (field: string | FieldPath, op: string, value: unknown) => any
 
 export type FirestoreReadMode = 'realtime' | 'static'
@@ -167,6 +170,7 @@ export abstract class FirestoreApp {
 
 export abstract class Firestore {
     public abstract app: FirestoreApp
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public abstract collection(reference: FirestoreTypes.CollectionReference | FirestoreApp, path: string): any
     public abstract getDocs<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
         reference: FirestoreTypes.Query<AppModelType, DbModelType>
@@ -179,18 +183,23 @@ export abstract class Firestore {
     public abstract increment(n: number): FirestoreTypes.FieldValue
     public abstract query<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
         reference: FirestoreTypes.Query<AppModelType, DbModelType>,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         filter: any
     ): FirestoreTypes.Query<AppModelType, DbModelType>
     public abstract where(field: string | FieldPath, op: string, value: unknown): QueryConstraint
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public abstract limit(limit: number): any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public abstract orderBy(orderBy: string, direction: FirestoreTypes.OrderByDirection): any
     public abstract setDoc<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
         reference: FirestoreTypes.DocumentReference<AppModelType, DbModelType>,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data: any,
         options?: FirestoreTypes.SetOptions
     ): Promise<void>
     public abstract updateDoc<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
         reference: FirestoreTypes.DocumentReference<AppModelType, DbModelType>,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data: any
     ): Promise<void>
     public abstract doc<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
