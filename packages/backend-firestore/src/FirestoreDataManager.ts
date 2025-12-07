@@ -1,5 +1,3 @@
-import { injectable } from 'inversify'
-
 import {
     Cache,
     CreateOptions,
@@ -66,7 +64,6 @@ export interface QueryParams<T> {
     readonly orderBy?: Array<OrderBy<T & FirestoreSerializedMetadata>>
 }
 
-@injectable()
 export class FirestoreDataManager<
     T extends FirestoreTypes.DocumentData,
     SerializedT extends FirestoreTypes.DocumentData = T,
