@@ -28,10 +28,10 @@ jobs:
                   git config user.email "github-actions[bot]@users.noreply.github.com"
 
             - name: Install dependencies
-              run: npm ci
+              run: yarn install --frozen-lockfile
                 
             - name: Version and Publish to NPM Registry
-              run: yarn run lerna:publish
+              run: yarn run publish-packages
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
