@@ -859,28 +859,25 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@data-weave/backend-firestore-admin@npm:0.4.27, @data-weave/backend-firestore-admin@workspace:packages/backend-firestore-admin":
+"@data-weave/backend-firestore-admin@npm:~0.5.0, @data-weave/backend-firestore-admin@workspace:packages/backend-firestore-admin":
   version: 0.0.0-use.local
   resolution: "@data-weave/backend-firestore-admin@workspace:packages/backend-firestore-admin"
   dependencies:
-    "@data-weave/backend-firestore": "npm:0.4.27"
-    "@data-weave/datamanager": "npm:0.4.27"
+    "@data-weave/backend-firestore": "npm:~0.5.0"
+    "@data-weave/datamanager": "npm:~0.5.0"
     typescript: "npm:5.9.3"
   peerDependencies:
-    "@data-weave/backend-firestore": ~0.4.27
-    "@data-weave/datamanager": ~0.4.27
     firebase-admin: ">=13.0.0"
   languageName: unknown
   linkType: soft
 
-"@data-weave/backend-firestore@npm:0.4.27, @data-weave/backend-firestore@workspace:packages/backend-firestore":
+"@data-weave/backend-firestore@npm:~0.5.0, @data-weave/backend-firestore@workspace:packages/backend-firestore":
   version: 0.0.0-use.local
   resolution: "@data-weave/backend-firestore@workspace:packages/backend-firestore"
   dependencies:
-    "@data-weave/datamanager": "npm:0.4.27"
+    "@data-weave/datamanager": "npm:~0.5.0"
     typescript: "npm:5.9.3"
   peerDependencies:
-    "@data-weave/datamanager": ~0.4.27
     firebase: ">=11.0.0"
   languageName: unknown
   linkType: soft
@@ -889,19 +886,17 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@data-weave/datamanager-firestore-mobx@workspace:packages/datamanager-firestore-mobx"
   dependencies:
-    "@data-weave/backend-firestore": "npm:0.4.27"
-    "@data-weave/backend-firestore-admin": "npm:0.4.27"
-    "@data-weave/datamanager": "npm:0.4.27"
+    "@data-weave/backend-firestore": "npm:~0.5.0"
+    "@data-weave/backend-firestore-admin": "npm:~0.5.0"
+    "@data-weave/datamanager": "npm:0.5.0"
     mobx: "npm:6.15.0"
     typescript: "npm:5.9.3"
   peerDependencies:
-    "@data-weave/backend-firestore": ~0.4.27
-    "@data-weave/datamanager": ~0.4.27
     mobx: ">=6.0.0"
   languageName: unknown
   linkType: soft
 
-"@data-weave/datamanager@npm:0.4.27, @data-weave/datamanager@workspace:packages/datamanager":
+"@data-weave/datamanager@npm:0.5.0, @data-weave/datamanager@npm:~0.5.0, @data-weave/datamanager@workspace:packages/datamanager":
   version: 0.0.0-use.local
   resolution: "@data-weave/datamanager@workspace:packages/datamanager"
   dependencies:
