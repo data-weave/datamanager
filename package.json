@@ -57,6 +57,7 @@
         "typescript-eslint": "^8.19.0",
         "uuid": "^11.1.0"
     },
+    "private": true,
     "workspaces": [
         "packages/*"
     ],
