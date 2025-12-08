@@ -1,6 +1,10 @@
 node_modules*
 build*
 
-/packages/*/lib
+/packages/*/dist
 serviceAccount.json
 firestore-debug.log
+
+.turbo
+packages/*/.turbo
+*.tsbuildinfo

@@ -1,24 +1,17 @@
 {
     "name": "data-weave",
     "version": "0.4.27",
-    "main": "build/index.js",
-    "types": "src/index.ts",
-    "files": [
-        "src/**/*",
-        "tsconfig.json",
-        "build"
-    ],
     "publishConfig": {
         "registry": "https://registry.npmjs.org/"
     },
     "scripts": {
+        "clean": "npx turbo clean",
+        "build": "npx turbo build",
+        "build:clean": "yarn clean && yarn build",
         "version": "node ./scripts/version.js && yarn lerna:prepare && git add packages/**/src/version.js",
         "lerna:prepare": "lerna run prepare",
         "lerna:publish": "lerna publish --sync-dist-version --force-publish",
         "artifactregistry-login": "npx google-artifactregistry-auth",
-        "clean": "npx lerna run clean",
-        "build": "npx lerna run build",
-        "build:clean": "npx lerna run build:clean",
         "compile": "tsc --project .",
         "format": "prettier --write \"packages/**/*.{js,ts,json}\"",
         "format:check": "prettier --check \"packages/**/*.{js,ts,json}\"",
@@ -66,20 +59,19 @@
         "prettier-plugin-organize-imports": "^4.1.0",
         "ts-jest": "^29.2.5",
         "ts-node": "^10.9.2",
-        "typescript": "^5.7.2",
+        "turbo": "^2.6.3",
+        "typescript": "^5.9.3",
         "typescript-eslint": "^8.19.0",
         "uuid": "^11.1.0"
     },
-    "workspaces": {
-        "packages": [
-            "packages/*"
-        ]
-    },
+    "workspaces": [
+        "packages/*"
+    ],
     "lint-staged": {
         "packages/*": [
             "eslint --max-warnings=0 --fix"
         ],
         "**/*.{js,ts,json}": "prettier --write"
     },
-    "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+    "packageManager": "yarn@4.12.0"
 }

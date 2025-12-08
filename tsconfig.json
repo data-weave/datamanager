@@ -6,12 +6,26 @@
         "resolveJsonModule": true,
         "allowJs": false,
         "declaration": true,
+        "declarationMap": true,
+        "composite": true,
         "forceConsistentCasingInFileNames": true,
-        "sourceMap": false,
+        "sourceMap": true,
         "strict": true,
         "noImplicitAny": true,
         "skipLibCheck": true,
-        "composite": true
+        "baseUrl": ".",
+        "paths": {
+            "@data-weave/datamanager": ["packages/datamanager/src"],
+            "@data-weave/backend-firestore": ["packages/backend-firestore/src"],
+            "@data-weave/backend-firestore-admin": ["packages/backend-firestore-admin/src"],
+            "@data-weave/datamanager-firestore-mobx": ["packages/datamanager-firestore-mobx/src"]
+        }
     },
+    "references": [
+        { "path": "packages/datamanager" },
+        { "path": "packages/backend-firestore" },
+        { "path": "packages/backend-firestore-admin" },
+        { "path": "packages/datamanager-firestore-mobx" }
+    ],
     "exclude": ["node_modules", "**/__tests__", "**/dist"]
 }
