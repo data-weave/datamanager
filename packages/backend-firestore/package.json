@@ -9,7 +9,7 @@
         "dist/**/*.d.ts"
     ],
     "devDependencies": {
-        "@data-weave/datamanager": "0.4.27",
+        "@data-weave/datamanager": "~0.4.27",
         "typescript": "5.9.3"
     },
     "scripts": {

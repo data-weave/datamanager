@@ -28,8 +28,8 @@
         "mobx": ">=6.0.0"
     },
     "devDependencies": {
-        "@data-weave/backend-firestore": "0.4.27",
-        "@data-weave/backend-firestore-admin": "0.4.27",
+        "@data-weave/backend-firestore": "~0.4.27",
+        "@data-weave/backend-firestore-admin": "~0.4.27",
         "@data-weave/datamanager": "0.4.27",
         "mobx": "6.15.0",
         "typescript": "5.9.3"
