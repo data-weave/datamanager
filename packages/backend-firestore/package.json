@@ -27,8 +27,10 @@
         "registry": "https://registry.npmjs.org/"
     },
     "peerDependencies": {
-        "@data-weave/datamanager": "~0.4.27",
         "firebase": ">=11.0.0"
+    },
+    "dependencies": {
+        "@data-weave/datamanager": "~0.4.27"
     },
     "gitHead": "df44d823b93b392d9e3b685fafb0d17399001291"
 }
