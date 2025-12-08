@@ -11,6 +11,7 @@
         "format": "prettier --write \"packages/**/*.{js,ts,json}\"",
         "format:check": "prettier --check \"packages/**/*.{js,ts,json}\"",
         "circular-dep-check": "madge --circular --extensions ts ./",
+        "publish-packages": "turbo run build && changeset version && changeset publish",
         "lint": "npm run lint:packages",
         "lint:packages": "eslint packages/* --max-warnings=0",
         "test": "./scripts/test-with-emulator.sh",
