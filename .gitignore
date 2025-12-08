@@ -8,3 +8,4 @@ firestore-debug.log
 .turbo
 packages/*/.turbo
 *.tsbuildinfo
+site/
