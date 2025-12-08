@@ -2,15 +2,19 @@
     "name": "@data-weave/backend-firestore",
     "version": "0.4.27",
     "author": "",
-    "main": "lib/index.js",
-    "types": "lib/index.d.ts",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
     "files": [
-        "lib/**/*.js",
-        "lib/**/*.d.ts"
+        "dist/**/*.js",
+        "dist/**/*.d.ts"
     ],
+    "devDependencies": {
+        "@data-weave/datamanager": "0.4.27",
+        "typescript": "5.9.3"
+    },
     "scripts": {
-        "clean": "rm -rf lib",
-        "build": "genversion --force --semi src/version.js && tsc",
+        "clean": "rm -rf dist tsconfig.tsbuildinfo",
+        "build": "tsc",
         "build:clean": "npm run clean && npm run build",
         "prepare": "npm run build"
     },

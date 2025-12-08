@@ -2,15 +2,15 @@
     "name": "@data-weave/datamanager-firestore-mobx",
     "version": "0.4.27",
     "author": "",
-    "main": "lib/index.js",
-    "types": "lib/index.d.ts",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
     "files": [
-        "lib/**/*.js",
-        "lib/**/*.d.ts"
+        "dist/**/*.js",
+        "dist/**/*.d.ts"
     ],
     "scripts": {
-        "clean": "rm -rf lib",
-        "build": "genversion --force --semi src/version.js && tsc",
+        "clean": "rm -rf dist tsconfig.tsbuildinfo",
+        "build": "tsc",
         "build:clean": "npm run clean && npm run build",
         "prepare": "npm run build"
     },
@@ -31,7 +31,8 @@
         "@data-weave/backend-firestore": "0.4.27",
         "@data-weave/backend-firestore-admin": "0.4.27",
         "@data-weave/datamanager": "0.4.27",
-        "mobx": "6.15.0"
+        "mobx": "6.15.0",
+        "typescript": "5.9.3"
     },
     "gitHead": "df44d823b93b392d9e3b685fafb0d17399001291"
 }
