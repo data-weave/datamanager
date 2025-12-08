@@ -1,6 +1,6 @@
 {
     "name": "@data-weave/backend-firestore",
-    "version": "0.4.27",
+    "version": "0.5.0",
     "author": "",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -9,7 +9,7 @@
         "dist/**/*.d.ts"
     ],
     "devDependencies": {
-        "@data-weave/datamanager": "~0.4.27",
+        "@data-weave/datamanager": "~0.5.0",
         "typescript": "5.9.3"
     },
     "scripts": {
@@ -30,7 +30,7 @@
         "firebase": ">=11.0.0"
     },
     "dependencies": {
-        "@data-weave/datamanager": "~0.4.27"
+        "@data-weave/datamanager": "~0.5.0"
     },
     "gitHead": "df44d823b93b392d9e3b685fafb0d17399001291"
 }

@@ -1,6 +1,6 @@
 {
     "name": "@data-weave/backend-firestore-admin",
-    "version": "0.4.27",
+    "version": "0.5.0",
     "author": "",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -9,8 +9,8 @@
         "dist/**/*.d.ts"
     ],
     "devDependencies": {
-        "@data-weave/backend-firestore": "~0.4.27",
-        "@data-weave/datamanager": "~0.4.27",
+        "@data-weave/backend-firestore": "~0.5.0",
+        "@data-weave/datamanager": "~0.5.0",
         "typescript": "5.9.3"
     },
     "scripts": {
@@ -28,8 +28,8 @@
         "registry": "https://registry.npmjs.org/"
     },
     "dependencies": {
-        "@data-weave/backend-firestore": "~0.4.27",
-        "@data-weave/datamanager": "~0.4.27"
+        "@data-weave/backend-firestore": "~0.5.0",
+        "@data-weave/datamanager": "~0.5.0"
     },
     "peerDependencies": {
         "firebase-admin": ">=13.0.0"
