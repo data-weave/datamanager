@@ -1,5 +1,17 @@
 # Change Log
 
+## 0.5.0
+
+### Minor Changes
+
+- c97f739: test bump with changessets
+
+### Patch Changes
+
+- Updated dependencies [c97f739]
+    - @data-weave/backend-firestore@0.5.0
+    - @data-weave/datamanager@0.5.0
+
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
