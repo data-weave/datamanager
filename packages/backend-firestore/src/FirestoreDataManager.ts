@@ -67,8 +67,7 @@ export interface QueryParams<T> {
 export class FirestoreDataManager<
     T extends FirestoreTypes.DocumentData,
     SerializedT extends FirestoreTypes.DocumentData = T,
-> implements DataManager<T>
-{
+> implements DataManager<T> {
     private mergedConverter: InternalFirestoreDataConverter<T & Metadata, SerializedT & FirestoreSerializedMetadata>
     private collection: FirestoreTypes.CollectionReference<T & Metadata, SerializedT & FirestoreSerializedMetadata>
     private collectionQuery: FirestoreTypes.Query<T & Metadata, SerializedT & FirestoreSerializedMetadata>

@@ -26,9 +26,10 @@ export type FirestoreSerializedMetadata = {
     [FIRESTORE_INTERAL_KEYS.UPDATED_AT]: FirestoreTypes.Timestamp
 }
 
-export class FirestoreMetadataConverter
-    implements InternalFirestoreDataConverter<Metadata, FirestoreSerializedMetadata>
-{
+export class FirestoreMetadataConverter implements InternalFirestoreDataConverter<
+    Metadata,
+    FirestoreSerializedMetadata
+> {
     toFirestore(data: WithFieldValue<WithoutId<Metadata>>) {
         return {
             [FIRESTORE_INTERAL_KEYS.DELETED]: data[FIRESTORE_KEYS.DELETED],
