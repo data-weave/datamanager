@@ -5,8 +5,8 @@
         "registry": "https://registry.npmjs.org/"
     },
     "scripts": {
-        "clean": "npx turbo clean",
-        "build": "npx turbo build",
+        "clean": "turbo clean",
+        "build": "turbo build",
         "build:clean": "yarn clean && yarn build",
         "format": "prettier --write \"packages/**/*.{js,ts,json}\"",
         "format:check": "prettier --check \"packages/**/*.{js,ts,json}\"",

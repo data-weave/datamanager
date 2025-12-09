@@ -865,6 +865,8 @@ __metadata:
   dependencies:
     "@data-weave/backend-firestore": "npm:~0.5.0"
     "@data-weave/datamanager": "npm:~0.5.0"
+    "@types/node": "npm:^22.10.2"
+    firebase-admin: "npm:^13.0.2"
     typescript: "npm:5.9.3"
   peerDependencies:
     firebase-admin: ">=13.0.0"
@@ -876,6 +878,9 @@ __metadata:
   resolution: "@data-weave/backend-firestore@workspace:packages/backend-firestore"
   dependencies:
     "@data-weave/datamanager": "npm:~0.5.0"
+    "@types/node": "npm:^22.10.2"
+    firebase: "npm:^11.9.0"
+    firebase-admin: "npm:^13.0.2"
     typescript: "npm:5.9.3"
   peerDependencies:
     firebase: ">=11.0.0"
