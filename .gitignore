@@ -9,3 +9,4 @@ firestore-debug.log
 packages/*/.turbo
 *.tsbuildinfo
 site/
+.venv/
