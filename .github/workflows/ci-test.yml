@@ -31,6 +31,9 @@ jobs:
                   distribution: 'temurin'
                   java-version: '17'
 
+            - name: Compile
+              run: yarn run build
+
             - name: Run tests
               shell: bash
               run: yarn test
