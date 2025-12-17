@@ -12,6 +12,7 @@
         "sourceMap": true,
         "strict": true,
         "noImplicitAny": true,
+        "isolatedModules": true,
         "skipLibCheck": true,
         "baseUrl": ".",
         "paths": {
