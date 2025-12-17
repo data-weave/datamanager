@@ -1,17 +1,32 @@
 {
     "compilerOptions": {
-        "target": "es2016",
+        "target": "esnext",
         "lib": ["es6"],
-        "module": "commonjs",
+        "module": "NodeNext",
         "resolveJsonModule": true,
-        "allowJs": true,
+        "allowJs": false,
         "declaration": true,
-        "declarationDir": "build/types",
-        "esModuleInterop": true,
+        "declarationMap": true,
+        "composite": true,
         "forceConsistentCasingInFileNames": true,
+        "sourceMap": true,
         "strict": true,
         "noImplicitAny": true,
-        "skipLibCheck": true
+        "isolatedModules": true,
+        "skipLibCheck": true,
+        "baseUrl": ".",
+        "paths": {
+            "@data-weave/datamanager": ["packages/datamanager/src"],
+            "@data-weave/backend-firestore": ["packages/backend-firestore/src"],
+            "@data-weave/backend-firestore-admin": ["packages/backend-firestore-admin/src"],
+            "@data-weave/datamanager-firestore-mobx": ["packages/datamanager-firestore-mobx/src"]
+        }
     },
-    "exclude": ["node_modules", "**/__tests__", "**/lib"]
+    "references": [
+        { "path": "packages/datamanager" },
+        { "path": "packages/backend-firestore" },
+        { "path": "packages/backend-firestore-admin" },
+        { "path": "packages/datamanager-firestore-mobx" }
+    ],
+    "exclude": ["node_modules", "**/__tests__", "**/dist"]
 }

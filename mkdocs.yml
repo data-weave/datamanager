@@ -1,0 +1,5 @@
+# yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json
+site_name: Data Weave
+site_url: https://data-weave.github.io/
+theme:
+  name: material

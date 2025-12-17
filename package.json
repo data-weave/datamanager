@@ -1,47 +1,33 @@
 {
     "name": "data-weave",
     "version": "0.4.27",
-    "main": "build/index.js",
-    "types": "src/index.ts",
-    "files": [
-        "src/**/*",
-        "tsconfig.json",
-        "build"
-    ],
     "publishConfig": {
         "registry": "https://registry.npmjs.org/"
     },
     "scripts": {
-        "version": "node ./scripts/version.js && yarn lerna:prepare && git add packages/**/src/version.js",
-        "lerna:prepare": "lerna run prepare",
-        "lerna:publish": "lerna publish --sync-dist-version --force-publish",
-        "artifactregistry-login": "npx google-artifactregistry-auth",
-        "clean": "npx lerna run clean",
-        "build": "npx lerna run build",
-        "build:clean": "npx lerna run build:clean",
-        "compile": "tsc --project .",
+        "clean": "turbo clean",
+        "build": "turbo build",
+        "build:clean": "yarn clean && yarn build",
         "format": "prettier --write \"packages/**/*.{js,ts,json}\"",
         "format:check": "prettier --check \"packages/**/*.{js,ts,json}\"",
         "circular-dep-check": "madge --circular --extensions ts ./",
+        "publish-packages": "turbo run build && changeset version && changeset publish",
         "lint": "npm run lint:packages",
         "lint:packages": "eslint packages/* --max-warnings=0",
-        "start:dev": "npx nodemon",
-        "prepublish": "npm run build",
-        "start": "npm run build && node build/index.js",
         "test": "./scripts/test-with-emulator.sh",
         "test:js-sdk": "export FIRESTORE_EMULATOR_HOST=localhost:8080 && SDK_TYPE=JS_SDK jest",
         "test:admin-sdk": "export FIRESTORE_EMULATOR_HOST=localhost:8080 && SDK_TYPE=ADMIN_SDK jest",
         "test:watch": "export FIRESTORE_EMULATOR_HOST=localhost:8080 && jest --watch",
         "test:watch-js": "export FIRESTORE_EMULATOR_HOST=localhost:8080 && SDK_TYPE=JS_SDK jest --watch",
         "test:watch-admin": "export FIRESTORE_EMULATOR_HOST=localhost:8080 && SDK_TYPE=ADMIN_SDK jest --watch",
-        "test:emulator": "./scripts/test-with-emulator.sh",
-        "prepare": "npm run build"
+        "test:emulator": "./scripts/test-with-emulator.sh"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "description": "",
     "devDependencies": {
+        "@changesets/cli": "^2.29.8",
         "@commitlint/cli": "^19.8.1",
         "@commitlint/config-conventional": "^19.8.1",
         "@eslint/js": "^9.17.0",
@@ -66,20 +52,20 @@
         "prettier-plugin-organize-imports": "^4.1.0",
         "ts-jest": "^29.2.5",
         "ts-node": "^10.9.2",
-        "typescript": "^5.7.2",
+        "turbo": "^2.6.3",
+        "typescript": "^5.9.3",
         "typescript-eslint": "^8.19.0",
         "uuid": "^11.1.0"
     },
-    "workspaces": {
-        "packages": [
-            "packages/*"
-        ]
-    },
+    "private": true,
+    "workspaces": [
+        "packages/*"
+    ],
     "lint-staged": {
         "packages/*": [
             "eslint --max-warnings=0 --fix"
         ],
         "**/*.{js,ts,json}": "prettier --write"
     },
-    "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+    "packageManager": "yarn@4.12.0"
 }
