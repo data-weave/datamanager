@@ -11,47 +11,46 @@ import {
     WithoutId,
 } from '@data-weave/datamanager'
 import { FirestoreList, FirestoreListContext } from './FirestoreList'
-import {
-    FIRESTORE_KEYS,
-    FirestoreMetadataConverter,
-    FirestoreSerializedMetadata,
-    queryNotDeleted,
-} from './FirestoreMetadata'
+import { DefaultConverter, FIRESTORE_KEYS, FirestoreSerializedMetadata, MetadataConverter } from './FirestoreMetadata'
 import { FirestoreReference, FirestoreReferenceContext } from './FirestoreReference'
 import {
+    CollectionReference,
     DocumentData,
+    DocumentReference,
     FilterBy,
     FirebaseCreateOptions,
     Firestore,
     FirestoreDataConverter,
     FirestoreReadMode,
     FirestoreReadOptions,
-    FirestoreTypes,
     FirestoreWriteOptions,
-    InternalFirestoreDataConverter,
     OrderBy,
+    Query,
+    SnapshotOptions,
+    UpdateData,
     WithFieldValue,
 } from './firestoreTypes'
-import { MergeConverters, checkIfReferenceExists } from './utils'
+import { MergeConverters, checkIfReferenceExists, queryNotDeleted } from './utils'
 
 export type FirebaseDataManagerDeleteMode = 'soft' | 'hard'
 
-export interface FirebaseDataManagerOptions {
+export interface FirebaseDataManagerOptions<T extends DocumentData, SerializedT extends DocumentData = T> {
     readonly idResolver?: () => string
     readonly deleteMode?: FirebaseDataManagerDeleteMode
     readonly readMode?: FirestoreReadMode
     readonly preventOverwriteOnCreate?: boolean
     readonly errorInterceptor?: (error: unknown, ctx: FirestoreReferenceContext | FirestoreListContext) => void
-    readonly snapshotOptions?: FirestoreTypes.SnapshotOptions
+    readonly snapshotOptions?: SnapshotOptions
     // TODO: Add preventUpdateIfNotExists?
     readonly Reference?: typeof FirestoreReference
     readonly List?: typeof FirestoreList
     readonly listCache?: Cache
     readonly refCache?: Cache
     readonly disableCache?: boolean
+    readonly converter?: FirestoreDataConverter<T, SerializedT>
 }
 
-const defaultFirebaseDataManagerOptions: FirebaseDataManagerOptions = {
+const defaultFirebaseDataManagerOptions: FirebaseDataManagerOptions<DocumentData, DocumentData> = {
     deleteMode: 'soft',
     preventOverwriteOnCreate: true,
     readMode: 'static',
@@ -64,15 +63,13 @@ export interface QueryParams<T> {
     readonly orderBy?: Array<OrderBy<T & FirestoreSerializedMetadata>>
 }
 
-export class FirestoreDataManager<
-    T extends FirestoreTypes.DocumentData,
-    SerializedT extends FirestoreTypes.DocumentData = T,
-> implements DataManager<T>
+export class FirestoreDataManager<T extends DocumentData, SerializedT extends DocumentData = T>
+    implements DataManager<T & Metadata>
 {
-    private mergedConverter: InternalFirestoreDataConverter<T & Metadata, SerializedT & FirestoreSerializedMetadata>
-    private collection: FirestoreTypes.CollectionReference<T & Metadata, SerializedT & FirestoreSerializedMetadata>
-    private collectionQuery: FirestoreTypes.Query<T & Metadata, SerializedT & FirestoreSerializedMetadata>
-    private managerOptions: FirebaseDataManagerOptions
+    private converter: FirestoreDataConverter<T & Metadata, SerializedT & FirestoreSerializedMetadata>
+    private collection: CollectionReference<T & Metadata, SerializedT & FirestoreSerializedMetadata>
+    private collectionQuery: Query<T & Metadata, SerializedT & FirestoreSerializedMetadata>
+    private managerOptions: FirebaseDataManagerOptions<T, SerializedT>
 
     private refCache: Cache<string, IdentifiableReference<WithMetadata<T>>>
     private listCache: Cache<string, List<WithMetadata<T>>>
@@ -80,11 +77,10 @@ export class FirestoreDataManager<
     constructor(
         private readonly firestore: Firestore,
         private readonly collectionPath: string,
-        private readonly converter: FirestoreDataConverter<T, SerializedT>,
-        private readonly opts?: FirebaseDataManagerOptions
+        private readonly opts?: FirebaseDataManagerOptions<T, SerializedT>
     ) {
-        // @ts-expect-error - Force merge FirestoreDataConverter and InternalFirestoreDataConverter
-        this.mergedConverter = new MergeConverters(this.converter, new FirestoreMetadataConverter())
+        const dataConverter = opts?.converter ?? new DefaultConverter<T, SerializedT>()
+        this.converter = new MergeConverters(dataConverter, new MetadataConverter())
         this.managerOptions = Object.assign(defaultFirebaseDataManagerOptions, this.opts)
 
         this.refCache = this.managerOptions.refCache || new MapCache(100)
@@ -92,11 +88,16 @@ export class FirestoreDataManager<
 
         this.collection = this.firestore
             .collection(this.firestore.app, this.collectionPath)
-            .withConverter(this.mergedConverter)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .withConverter(this.converter as any) as any
 
         this.collectionQuery =
             this.managerOptions.deleteMode === 'soft'
-                ? queryNotDeleted(this.collection, this.firestore.query, this.firestore.where)
+                ? queryNotDeleted<T & Metadata, SerializedT & FirestoreSerializedMetadata>(
+                      this.collection,
+                      this.firestore.query,
+                      this.firestore.where
+                  )
                 : this.collection
     }
 
@@ -123,7 +124,7 @@ export class FirestoreDataManager<
             id = this.managerOptions.idResolver()
         }
 
-        let docRef: FirestoreTypes.DocumentReference
+        let docRef: DocumentReference
         let docExists: boolean = false
 
         if (id) {
@@ -151,27 +152,29 @@ export class FirestoreDataManager<
         return this.getRef(docRef.id)
     }
 
-    private async _update(
-        id: string,
-        data: WithoutId<Partial<WithFieldValue<T & Metadata>>>,
-        options?: FirestoreWriteOptions
-    ) {
+    private async _update(id: string, data: UpdateData<T & Metadata>, options?: FirestoreWriteOptions) {
         const extendedData = {
             ...data,
             [FIRESTORE_KEYS.UPDATED_AT]: this.firestore.serverTimestamp(),
         }
         // Firestore update method doesn't call converter like setDoc does, so we need to serialize the data manually.
-        const serializedData = this.mergedConverter.toFirestore(extendedData)
+        const serializedData = this.converter.toFirestore(extendedData)
 
         const ref = this.firestore.doc(this.collection, id)
 
         if (options?.transaction) {
             return options.transaction.update<DocumentData, DocumentData>(ref, serializedData)
         }
-        return this.firestore.updateDoc(ref, serializedData)
+        // Cast due to manual converter use
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return this.firestore.updateDoc(ref as any, serializedData as any)
     }
 
-    public async update(id: string, data: WithoutId<Partial<WithFieldValue<T>>>, options?: FirestoreWriteOptions) {
+    public async update(id: string, data: Partial<T>, options?: FirestoreWriteOptions) {
+        await this._update(id, data, options)
+    }
+
+    public async updateWithFieldValue(id: string, data: UpdateData<T>, options?: FirestoreWriteOptions) {
         await this._update(id, data, options)
     }
 
@@ -184,9 +187,8 @@ export class FirestoreDataManager<
             await this._update(
                 id,
                 {
-                    ...({} as Partial<T>),
-                    [FIRESTORE_KEYS.DELETED]: true,
-                },
+                    deleted: true,
+                } as UpdateData<T & Metadata>,
                 options
             )
             return
@@ -246,7 +248,7 @@ export class FirestoreDataManager<
         return newList
     }
 
-    private async preventOverwriteOnCreate(docRef: FirestoreTypes.DocumentReference, createOptions?: CreateOptions) {
+    private async preventOverwriteOnCreate(docRef: DocumentReference, createOptions?: CreateOptions) {
         const doc = await this.firestore.getDoc(docRef)
         const docExists = checkIfReferenceExists(doc)
         if (docExists && this.managerOptions.preventOverwriteOnCreate && createOptions?.merge !== true) {

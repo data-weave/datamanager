@@ -4,6 +4,7 @@ import {
     FirestoreDataConverter,
     FirestoreDataManager,
     QueryParams,
+    UpdateData,
     withTransaction,
 } from '@data-weave/backend-firestore/src'
 import { IdentifiableReference, Reference, WithMetadata } from '@data-weave/datamanager/src'
@@ -13,12 +14,30 @@ interface Product {
     name: string
     desciption: string
     qty: number
+    nested: {
+        name: string
+    }
+    data: Date
+    nested2: {
+        name: string
+        nested3?: {
+            name: string
+        }
+    }
 }
 
-// type SerializedProduct = Product & { temp: boolean }
-
-// type test = WithTimestamps<Product>
-// type test = Product
+const test: UpdateData<Product> = {
+    name: 'test',
+    desciption: 'test',
+    qty: 1,
+    nested: {
+        name: 'test',
+    },
+    data: new Date(),
+    nested2: {
+        name: 'test',
+    },
+}
 
 export const productConverter: FirestoreDataConverter<Product> = {
     toFirestore: function (modelObject) {
@@ -26,6 +45,8 @@ export const productConverter: FirestoreDataConverter<Product> = {
             name: modelObject.name,
             desciption: modelObject.desciption,
             qty: modelObject.qty,
+            'nested.name': modelObject.nested?.name,
+            'nested2.name': modelObject.nested2?.name,
         }
     },
     fromFirestore: function (snapshot, options): Product {
@@ -34,6 +55,9 @@ export const productConverter: FirestoreDataConverter<Product> = {
             name: data.name,
             desciption: data.desciption,
             qty: data.qty,
+            data: data.data.toDate(),
+            nested: data.nested,
+            nested2: data.nested2,
         }
     },
 }
@@ -52,11 +76,10 @@ export class FirebaseProductModel implements ProductModel {
     private collectionName = `products_${uuidv4()}`
 
     constructor(
-        readonly db: Firestore,
-        readonly converter: FirestoreDataConverter<Product>,
-        readonly options?: FirebaseDataManagerOptions
+        private readonly db: Firestore,
+        options?: FirebaseDataManagerOptions<Product, Product>
     ) {
-        this.datamanager = new FirestoreDataManager<Product>(db, this.collectionName, converter, options)
+        this.datamanager = new FirestoreDataManager<Product, Product>(db, this.collectionName, options)
     }
 
     createProduct(p: Product) {

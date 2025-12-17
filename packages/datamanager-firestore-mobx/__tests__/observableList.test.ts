@@ -8,9 +8,10 @@ import { sleep } from './utils'
 let productModel: FirebaseProductModel
 
 beforeEach(() => {
-    productModel = new FirebaseProductModel(sdk, productConverter, {
+    productModel = new FirebaseProductModel(sdk, {
         readMode: 'realtime',
         List: ObservableFirestoreList,
+        converter: productConverter,
     })
 })
 

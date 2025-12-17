@@ -1,4 +1,14 @@
-import { FieldValues, Firestore, FirestoreApp, FirestoreTypes, Transaction } from '@data-weave/backend-firestore'
+import { Firestore, FirestoreApp, FirestoreTypes, Transaction } from '@data-weave/backend-firestore'
+
+export abstract class FieldValues {
+    public abstract serverTimestamp(): FirestoreTypes.FieldValue
+    public abstract delete(): FirestoreTypes.FieldValue
+    public abstract increment(n: number): FirestoreTypes.FieldValue
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public abstract arrayUnion(...elements: any[]): FirestoreTypes.FieldValue
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public abstract arrayRemove(...elements: any[]): FirestoreTypes.FieldValue
+}
 
 /*
  *  FirestoreAdminAdapter creates an interface between modular and namespaced
@@ -6,15 +16,13 @@ import { FieldValues, Firestore, FirestoreApp, FirestoreTypes, Transaction } fro
  *   - admin sdk doesn't support modular imports
  */
 
-// TODO: add types
-/* eslint-disable @typescript-eslint/no-explicit-any */
-export class FirestoreAdminAdapter extends Firestore {
+
+export class FirestoreAdminAdapter implements Firestore {
     public app: FirestoreApp
     constructor(
         readonly firestore: FirestoreApp,
         readonly fieldValues: FieldValues
     ) {
-        super()
         this.app = firestore
         this.fieldValues = fieldValues
     }
@@ -62,15 +70,15 @@ export class FirestoreAdminAdapter extends Firestore {
 
     public limit(limit: number) {
         return {
-            type: 'limit',
+            type: 'limit' as const,
             limit,
         }
     }
 
-    public orderBy(orderBy: string, direction: FirestoreTypes.OrderByDirection) {
+    public orderBy(orderBy: string | FirestoreTypes.FieldPath, direction: FirestoreTypes.OrderByDirection |) {
         return {
-            type: 'orderBy',
-            orderBy,
+            type: 'orderBy' as const,
+            field: orderBy,
             direction,
         }
     }

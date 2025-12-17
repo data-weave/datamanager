@@ -1,8 +1,15 @@
 import { ListPaginationParams, LiveList, LiveListOptions } from '@data-weave/datamanager'
-import { DocumentData, Firestore, FirestoreReadMode, FirestoreTypes } from './firestoreTypes'
+import {
+    DocumentChange,
+    DocumentData,
+    Firestore,
+    FirestoreReadMode,
+    Query,
+    QueryDocumentSnapshot,
+} from './firestoreTypes'
 
 export interface FirestoreListContext {
-    query: FirestoreTypes.Query<unknown>
+    query: Query<unknown>
     readMode?: FirestoreReadMode
     type: 'list'
 }
@@ -17,7 +24,7 @@ export class FirestoreList<T extends DocumentData, S extends DocumentData> exten
 
     constructor(
         private readonly firestore: Firestore,
-        private readonly query: FirestoreTypes.Query<T, S>,
+        private readonly query: Query<T, S>,
         private readonly options: FirestoreListOptions<T> & ListPaginationParams
     ) {
         super(options)
@@ -60,12 +67,12 @@ export class FirestoreList<T extends DocumentData, S extends DocumentData> exten
         }
     }
 
-    protected handleInitialDataChange(values: FirestoreTypes.QueryDocumentSnapshot<T, S>[]) {
+    protected handleInitialDataChange(values: QueryDocumentSnapshot<T, S>[]) {
         const newValues = values.map(v => v.data())
         this.onUpdateAll(newValues)
     }
 
-    protected handleSubsequentDataChanges(changes: FirestoreTypes.DocumentChange<T, S>[]) {
+    protected handleSubsequentDataChanges(changes: DocumentChange<T, S>[]) {
         changes.forEach(change => {
             if (change.type === 'added') {
                 this.onAddAtIndex(change.newIndex, change.doc.data())

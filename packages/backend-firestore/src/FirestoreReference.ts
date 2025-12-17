@@ -1,18 +1,26 @@
+import type {
+    DocumentData,
+    DocumentReference,
+    DocumentSnapshot,
+    Firestore,
+    FirestoreReadMode,
+    SnapshotOptions,
+} from './firestoreTypes'
+
 import { LiveReference, LiveReferenceOptions } from '@data-weave/datamanager'
-import { DocumentData, Firestore, FirestoreReadMode, FirestoreTypes } from './firestoreTypes'
 import { checkIfReferenceExists } from './utils'
 
 export interface FirestoreReferenceContext {
     path: string
     id: string
     readMode?: FirestoreReadMode
-    snapshotOptions?: FirestoreTypes.SnapshotOptions
+    snapshotOptions?: SnapshotOptions
     type: 'reference'
 }
 
 export interface FirestoreReferenceOptions<T> extends LiveReferenceOptions<T> {
     readMode?: FirestoreReadMode
-    snapshotOptions?: FirestoreTypes.SnapshotOptions
+    snapshotOptions?: SnapshotOptions
     errorInterceptor?: (error: unknown, ctx: FirestoreReferenceContext) => void
 }
 
@@ -21,7 +29,7 @@ export class FirestoreReference<T extends DocumentData, S extends DocumentData> 
 
     constructor(
         private readonly firestore: Firestore,
-        private readonly docRef: FirestoreTypes.DocumentReference<T, S>,
+        private readonly docRef: DocumentReference<T, S>,
         readonly options: FirestoreReferenceOptions<T>
     ) {
         super(options)
@@ -85,7 +93,7 @@ export class FirestoreReference<T extends DocumentData, S extends DocumentData> 
         this.setStale()
     }
 
-    private parseDocumentSnapshot(docSnapshot: FirestoreTypes.DocumentSnapshot<T, S>): T | undefined {
+    private parseDocumentSnapshot(docSnapshot: DocumentSnapshot<T, S>): T | undefined {
         if (!checkIfReferenceExists(docSnapshot)) throw new Error(`Document does not exist ${this.docRef.path}`)
         return docSnapshot.data(this.options?.snapshotOptions)
     }

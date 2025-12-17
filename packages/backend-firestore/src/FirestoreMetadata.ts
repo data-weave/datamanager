@@ -1,14 +1,17 @@
-import { Metadata, WithoutId } from '@data-weave/datamanager'
+import { Metadata } from '@data-weave/datamanager'
 import {
+    ConverterToFirestore,
     DocumentData,
-    FirestoreQuery,
-    FirestoreTypes,
-    FirestoreWhere,
-    InternalFirestoreDataConverter,
-    WithFieldValue,
+    FirestoreDataConverter,
+    QueryDocumentSnapshot,
+    SetOptions,
+    SnapshotOptions,
+    Timestamp,
+    UpdateData,
+    WithTimestamps,
 } from './firestoreTypes'
 
-enum FIRESTORE_INTERAL_KEYS {
+export enum FIRESTORE_INTERAL_KEYS {
     DELETED = '__deleted',
     CREATED_AT = '__createdAt',
     UPDATED_AT = '__updatedAt',
@@ -22,38 +25,75 @@ export enum FIRESTORE_KEYS {
 
 export type FirestoreSerializedMetadata = {
     [FIRESTORE_INTERAL_KEYS.DELETED]: boolean
-    [FIRESTORE_INTERAL_KEYS.CREATED_AT]: FirestoreTypes.Timestamp
-    [FIRESTORE_INTERAL_KEYS.UPDATED_AT]: FirestoreTypes.Timestamp
+    [FIRESTORE_INTERAL_KEYS.CREATED_AT]: Date
+    [FIRESTORE_INTERAL_KEYS.UPDATED_AT]: Date
 }
 
-export class FirestoreMetadataConverter
-    implements InternalFirestoreDataConverter<Metadata, FirestoreSerializedMetadata>
-{
-    toFirestore(data: WithFieldValue<WithoutId<Metadata>>) {
+export class MetadataConverter implements FirestoreDataConverter<Metadata, FirestoreSerializedMetadata> {
+    toFirestore(data: UpdateData<Metadata>) {
         return {
             [FIRESTORE_INTERAL_KEYS.DELETED]: data[FIRESTORE_KEYS.DELETED],
-            // Cast: Firestore handles conversion from Date to Timestamp internally
-            [FIRESTORE_INTERAL_KEYS.CREATED_AT]: data[FIRESTORE_KEYS.CREATED_AT] as unknown as FirestoreTypes.Timestamp,
-            [FIRESTORE_INTERAL_KEYS.UPDATED_AT]: data[FIRESTORE_KEYS.UPDATED_AT] as unknown as FirestoreTypes.Timestamp,
+            [FIRESTORE_INTERAL_KEYS.CREATED_AT]: data[FIRESTORE_KEYS.CREATED_AT],
+            [FIRESTORE_INTERAL_KEYS.UPDATED_AT]: data[FIRESTORE_KEYS.UPDATED_AT],
         }
     }
     fromFirestore(
-        snapshot: FirestoreTypes.QueryDocumentSnapshot<DocumentData, DocumentData>,
-        options: FirestoreTypes.SnapshotOptions
+        snapshot: QueryDocumentSnapshot<WithTimestamps<FirestoreSerializedMetadata>>,
+        options: SnapshotOptions
     ) {
-        const data = snapshot.data(options) as FirestoreSerializedMetadata
+        const data = snapshot.data(options)
         return {
             id: snapshot.ref.id,
-            // TODO: add warning in case data type is not as expected
-            createdAt: data[FIRESTORE_INTERAL_KEYS.CREATED_AT]?.toDate() ?? new Date(),
-            updatedAt: data[FIRESTORE_INTERAL_KEYS.UPDATED_AT]?.toDate() ?? new Date(),
+            createdAt: parseTimestamp(data[FIRESTORE_INTERAL_KEYS.CREATED_AT]),
+            updatedAt: parseTimestamp(data[FIRESTORE_INTERAL_KEYS.UPDATED_AT]),
             deleted: data[FIRESTORE_INTERAL_KEYS.DELETED],
         }
     }
 }
 
-export const queryNotDeleted = <T extends DocumentData, SerializedT extends DocumentData>(
-    query: FirestoreTypes.Query<T, SerializedT>,
-    firestoreQuery: FirestoreQuery<T, SerializedT>,
-    firestoreWhere: FirestoreWhere
-) => firestoreQuery(query, firestoreWhere(FIRESTORE_INTERAL_KEYS.DELETED, '==', false))
+export class DefaultConverter<T extends DocumentData, SerializedT extends DocumentData = T>
+    implements FirestoreDataConverter<T, SerializedT>
+{
+    toFirestore(modelObject: UpdateData<T>, _options?: SetOptions) {
+        return deepSerialize<T, SerializedT>(modelObject)
+    }
+    fromFirestore(snapshot: QueryDocumentSnapshot<WithTimestamps<SerializedT>>, options?: SnapshotOptions) {
+        const data = snapshot.data(options)
+        return deepDeserialize(data)
+    }
+}
+
+const deepSerialize = <T, SerializedT>(data: UpdateData<T>, parentKey?: string): ConverterToFirestore<SerializedT> => {
+    const result: Record<string, unknown> = {}
+    const keys = Object.keys(data)
+
+    keys.forEach(key => {
+        const value = data[key as keyof T]
+        const fullPath = parentKey + key
+        // arrays
+        if (Array.isArray(value)) {
+            result[fullPath] = value.map(item => deepSerialize(item))
+        }
+        // objects
+        else if (typeof value === 'object' && value !== null) {
+            result[fullPath] = deepSerialize(value, `${fullPath}.`)
+        }
+        // primitive values
+        else if (value !== undefined) {
+            result[fullPath] = value
+        }
+    })
+    return result as ConverterToFirestore<SerializedT>
+}
+
+const deepDeserialize = <T, SerializedT>(data: ConverterToFirestore<SerializedT>): UpdateData<T> => {
+    return data
+}
+
+const parseTimestamp = (timestamp: Timestamp | undefined) => {
+    if (!timestamp) throw new Error('Provided timestamp is undefined')
+    if (typeof timestamp.toDate === 'function') {
+        return timestamp.toDate()
+    }
+    throw new Error('Provided timestamp is not a valid Timestamp')
+}

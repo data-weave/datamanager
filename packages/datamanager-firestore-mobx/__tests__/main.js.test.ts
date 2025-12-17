@@ -20,12 +20,17 @@ beforeAll(() => {
 let productModel: FirebaseProductModel
 
 beforeEach(() => {
-    productModel = new FirebaseProductModel(sdk, productConverter, { readMode: 'static' })
+    productModel = new FirebaseProductModel(sdk, { readMode: 'static', converter: productConverter })
 })
 
 describe('Firebase static tests', () => {
     test('Product creation', async () => {
-        const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        const productRef = await productModel.createProduct({
+            name: 'test',
+            desciption: 'test',
+            qty: 1,
+            nested: { name: 'test', nested2: { name: 'test' } },
+        })
         const product = await productRef.resolve()
 
         expect(product?.name).toEqual('test')
@@ -59,7 +64,7 @@ describe('Firebase static tests', () => {
     })
 
     test('Product delete hard', async () => {
-        const productModelHardDelete = new FirebaseProductModel(sdk, productConverter, {
+        const productModelHardDelete = new FirebaseProductModel(sdk, {
             deleteMode: 'hard',
             readMode: 'static',
         })

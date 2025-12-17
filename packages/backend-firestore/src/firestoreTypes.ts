@@ -1,49 +1,148 @@
-import { WithoutId } from '@data-weave/datamanager'
-import type * as FirestoreTypes from '@firebase/firestore'
-import type { FieldPath, WithFieldValue as FirestoreWithFieldValue, QueryConstraint } from '@firebase/firestore'
-import type { HttpsCallable, HttpsCallableOptions } from '@firebase/functions-types'
-import type { FieldValue, Transaction } from '@google-cloud/firestore'
+import type {
+    collection,
+    deleteDoc,
+    doc,
+    DocumentData,
+    FieldPath,
+    FieldValue,
+    Firestore as FirebaseFirestore,
+    WithFieldValue as FirestoreWithFieldValue,
+    getDoc,
+    getDocs,
+    increment,
+    limit,
+    NestedUpdateFields,
+    onSnapshot,
+    orderBy,
+    OrderByDirection,
+    query,
+    Query,
+    QueryDocumentSnapshot,
+    QueryFieldFilterConstraint,
+    runTransaction,
+    serverTimestamp,
+    setDoc,
+    SetOptions,
+    SnapshotOptions,
+    Timestamp,
+    Transaction,
+    TransactionOptions,
+    updateDoc,
+    where,
+    WhereFilterOp,
+    WriteBatch,
+} from '@firebase/firestore'
 
-export type DocumentData = FirestoreTypes.DocumentData
+export type {
+    collection,
+    CollectionReference,
+    deleteDoc,
+    doc,
+    DocumentChange,
+    DocumentData,
+    DocumentReference,
+    DocumentSnapshot,
+    FieldPath,
+    FieldValue,
+    getDoc,
+    getDocs,
+    increment,
+    limit,
+    NestedUpdateFields,
+    onSnapshot,
+    orderBy,
+    OrderByDirection,
+    query,
+    Query,
+    QueryDocumentSnapshot,
+    QueryFieldFilterConstraint,
+    runTransaction,
+    serverTimestamp,
+    setDoc,
+    SetOptions,
+    SnapshotOptions,
+    Timestamp,
+    Transaction,
+    TransactionOptions,
+    updateDoc,
+    where,
+    WhereFilterOp,
+    WriteBatch,
+    // UpdateData,
+} from '@firebase/firestore'
 
-export { FieldValue, FirestoreTypes, Transaction }
 
-/**
- * Same as Partial but all fields are required to be included
- */
-type OptionallyUndefined<T> = { [P in keyof T]: T[P] | undefined }
+export declare type Primitive = string | number | boolean | undefined | null;
 
-export declare interface InternalFirestoreDataConverter<
-    T extends DocumentData,
-    SerializedT extends DocumentData = DocumentData,
-> {
-    toFirestore(
-        modelObject: Partial<WithFieldValue<WithoutId<T>>>,
-        options?: FirestoreTypes.SetOptions
-    ): WithFieldValue<WithoutId<SerializedT>>
-    fromFirestore(
-        snapshot: FirestoreTypes.QueryDocumentSnapshot<T, SerializedT>,
-        options?: FirestoreTypes.SnapshotOptions
-    ): T
+
+type UpdateFields<T> =
+    T extends Record<string, unknown>
+        ? {
+              [K in keyof T]?: UpdateFields<T[K]> | null
+          } & NestedUpdateFields<T>
+        : Partial<T>
+
+type Nullable<T> = { [P in keyof T]: T[P] | null }
+
+export type ConverterToFirestore<T> = WithFieldValue<Nullable<UpdateFields<T>>>
+
+type UpdateDataChild<T> = T extends Record<string, unknown>
+? {
+    [K in keyof T]?: T[K] extends Record<string, unknown> ? UpdateDataChild<T[K]> | null : T[K] | FieldValue | null
+} : Partial<T | null>;
+
+export type UpdateData<T> = {
+    [K in keyof T]?: T[K] extends Record<string, unknown> ? UpdateDataChild<T[K]> | null : T[K] | FieldValue | null
+}
+
+type Test = {
+    a: string
+    b: {
+        c: string
+        f: number
+        g: Date
+        d?: {
+            e: string
+        }
+    }
+}
+
+// type Test2 = ConverterToFirestore<Test>
+
+// const _: Test2 = {
+//     a: 'test',
+//     b: {
+//         c: 'test',
+//     },
+//     'b.c': 'test',
+// }
+
+type Test3 = UpdateData<Test>
+
+const __: Test3 = {
+    a: 'test',
+    b: {
+        c: 'test',
+        f: 1,
+        g: new Date(),
+        d: {
+            e: 'test',
+        }
+    },
+    // 'b.c': 'test',
 }
 
 export type WithTimestamps<T> = {
     [K in keyof T]: T[K] extends Date
-        ? FirestoreTypes.Timestamp
-        : T[K] extends Date | null
-          ? FirestoreTypes.Timestamp | null
-          : T[K] extends Date | undefined
-            ? FirestoreTypes.Timestamp | undefined
-            : T[K] extends Date | null | undefined
-              ? FirestoreTypes.Timestamp | null | undefined
-              : T[K] extends object
-                ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  T[K] extends any[]
-                    ? T[K] extends (infer U)[]
-                        ? WithTimestamps<U>[]
-                        : T[K]
-                    : WithTimestamps<T[K]>
-                : T[K]
+        ? Timestamp
+        : T[K] extends Record<string, unknown>
+          ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            T[K] extends any[]
+              ? T[K] extends (infer U)[]
+                  ? WithTimestamps<U>[]
+                  : T[K]
+              : WithTimestamps<T[K]>
+          : T[K]
 }
 
 /**
@@ -51,34 +150,31 @@ export type WithTimestamps<T> = {
  * by using `OptionallyUndefined` and `Required` to ensure that all fields are included in de/serialization
  * even if some model defined properties are optional.
  */
-export declare interface FirestoreDataConverter<ModelObject, SerializedModelObject = ModelObject> {
-    toFirestore(
-        modelObject: WithoutId<ModelObject>,
-        options?: FirestoreTypes.SetOptions
-    ): OptionallyUndefined<Required<WithoutId<WithFieldValue<SerializedModelObject>>>>
-    fromFirestore(
-        snapshot: FirestoreTypes.QueryDocumentSnapshot<WithTimestamps<SerializedModelObject>>,
-        options?: FirestoreTypes.SnapshotOptions
-    ): ModelObject
+export declare interface FirestoreDataConverter<Object, SerializedObject = Object> {
+    toFirestore(modelObject: UpdateData<Object>, options?: SetOptions): ConverterToFirestore<SerializedObject>
+    fromFirestore(snapshot: QueryDocumentSnapshot<WithTimestamps<SerializedObject>>, options?: SnapshotOptions): Object
 }
 
 export type FirestoreQuery<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData> = (
-    reference: FirestoreTypes.Query<AppModelType, DbModelType>,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    filter: any
-) => FirestoreTypes.Query<AppModelType, DbModelType>
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type FirestoreWhere = (field: string | FieldPath, op: string, value: unknown) => any
+    reference: Query<AppModelType, DbModelType>,
+    filter: QueryFieldFilterConstraint
+) => Query<AppModelType, DbModelType>
+
+export type FirestoreWhere = (
+    field: string | FieldPath,
+    op: WhereFilterOp,
+    value: unknown
+) => QueryFieldFilterConstraint
 
 export type FirestoreReadMode = 'realtime' | 'static'
 
 export interface FirestoreReadOptions {
-    readonly transaction?: FirestoreTypes.Transaction
+    readonly transaction?: Transaction
 }
 
 export interface FirestoreWriteOptions {
-    readonly transaction?: FirestoreTypes.Transaction
-    readonly batcher?: FirestoreTypes.WriteBatch
+    readonly transaction?: Transaction
+    readonly batcher?: WriteBatch
 }
 
 export interface FirebaseCreateOptions extends FirestoreWriteOptions {
@@ -87,8 +183,14 @@ export interface FirebaseCreateOptions extends FirestoreWriteOptions {
 }
 
 export declare type WithFieldValue<T> = {
-    [K in keyof T]: FirestoreWithFieldValue<T[K]> | FirestoreTypes.FieldValue
+    [K in keyof T]: FirestoreWithFieldValue<T[K]> | FieldValue
 }
+
+
+
+
+
+export declare type PartialWithFieldValue<T> = Partial<WithFieldValue<T>>
 
 type GenNode<K extends string, IsRoot extends boolean> = IsRoot extends true ? `${K}` : `.${K}`
 
@@ -98,7 +200,7 @@ export type FilterableFields<
     K extends keyof T = keyof T,
 > = K extends string
     ? // Handle firebase timestamp fields
-      T[K] extends FirestoreTypes.Timestamp
+      T[K] extends Timestamp
         ? `${K}`
         : // Handle Date fields
           T[K] extends Date
@@ -117,7 +219,7 @@ type GetValue<T, K extends string> = K extends `${infer L}.${infer R}`
         : never
     : K extends keyof T
       ? T[K] extends Date
-          ? Date | FirestoreTypes.Timestamp
+          ? Date | Timestamp
           : T[K]
       : K extends string
         ? string | number | boolean
@@ -129,23 +231,10 @@ export type FilterBy<T extends object, Field extends string = FilterableFields<T
     ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
       GetValue<T, Field> extends any[]
         ? [Field, 'array-contains', string] | [Field, 'array-contains-any', string[]]
-        : [Field, PrimitiveFilterOp, GetValue<T, Field>] | [Field, 'in', string[]]
+        : [Field, PrimitiveFilterOp, GetValue<T, Field>] | [Field, 'in', string[]] | [Field, 'not-in', string[]]
     : never
 
-export type OrderBy<T extends DocumentData, Fields extends string = FilterableFields<T>> = [
-    Fields,
-    FirestoreTypes.OrderByDirection,
-]
-
-export abstract class FieldValues {
-    public abstract serverTimestamp(): FirestoreTypes.FieldValue
-    public abstract delete(): FirestoreTypes.FieldValue
-    public abstract increment(n: number): FirestoreTypes.FieldValue
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public abstract arrayUnion(...elements: any[]): FirestoreTypes.FieldValue
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public abstract arrayRemove(...elements: any[]): FirestoreTypes.FieldValue
-}
+export type OrderBy<T extends DocumentData, Fields extends string = FilterableFields<T>> = [Fields, OrderByDirection]
 
 export interface FirestoreAppSettings {
     persistence?: boolean
@@ -164,84 +253,25 @@ export abstract class FirestoreApp {
     public abstract useEmulator?(host: string, port: number): void
     public abstract runTransaction?<T>(
         updateFunction: (transaction: Transaction) => Promise<T>,
-        options?: FirestoreTypes.TransactionOptions
+        options?: TransactionOptions
     ): Promise<T>
 }
 
-export abstract class Firestore {
-    public abstract app: FirestoreApp
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public abstract collection(reference: FirestoreTypes.CollectionReference | FirestoreApp, path: string): any
-    public abstract getDocs<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
-        reference: FirestoreTypes.Query<AppModelType, DbModelType>
-    ): Promise<FirestoreTypes.QuerySnapshot<AppModelType, DbModelType>>
-    public abstract getDoc<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
-        reference: FirestoreTypes.DocumentReference<AppModelType, DbModelType>,
-        path?: string
-    ): Promise<FirestoreTypes.DocumentSnapshot<AppModelType, DbModelType>>
-    public abstract serverTimestamp(): FirestoreTypes.FieldValue
-    public abstract increment(n: number): FirestoreTypes.FieldValue
-    public abstract query<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
-        reference: FirestoreTypes.Query<AppModelType, DbModelType>,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        filter: any
-    ): FirestoreTypes.Query<AppModelType, DbModelType>
-    public abstract where(field: string | FieldPath, op: string, value: unknown): QueryConstraint
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public abstract limit(limit: number): any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public abstract orderBy(orderBy: string, direction: FirestoreTypes.OrderByDirection): any
-    public abstract setDoc<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
-        reference: FirestoreTypes.DocumentReference<AppModelType, DbModelType>,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        data: any,
-        options?: FirestoreTypes.SetOptions
-    ): Promise<void>
-    public abstract updateDoc<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
-        reference: FirestoreTypes.DocumentReference<AppModelType, DbModelType>,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        data: any
-    ): Promise<void>
-    public abstract doc<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
-        reference: FirestoreTypes.Query<AppModelType, DbModelType>,
-        path?: string
-    ): FirestoreTypes.DocumentReference<AppModelType, DbModelType>
-    public abstract deleteDoc<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
-        reference: FirestoreTypes.DocumentReference<AppModelType, DbModelType>
-    ): Promise<void>
-    public abstract onSnapshot<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
-        reference: FirestoreTypes.DocumentReference<AppModelType, DbModelType>,
-        onNext: (snapshot: FirestoreTypes.DocumentSnapshot<AppModelType, DbModelType>) => void,
-        onError?: (error: Error) => void
-    ): () => void
-    public abstract onSnapshot<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
-        reference: FirestoreTypes.Query<AppModelType, DbModelType>,
-        onNext: (snapshot: FirestoreTypes.QuerySnapshot<AppModelType, DbModelType>) => void,
-        onError?: (error: Error) => void
-    ): () => void
-    public abstract runTransaction<T>(
-        firestore: FirestoreApp,
-        transaction: (transaction: Transaction) => Promise<T>,
-        options?: FirestoreTypes.TransactionOptions
-    ): Promise<T>
-}
-
-export abstract class FirestoreSettings {
-    public abstract readMode: FirestoreReadMode
-}
-
-export abstract class FirestoreFunctions {
-    public abstract httpsCallable(name: string, options?: HttpsCallableOptions): HttpsCallable
-    public abstract useEmulator(host: string, port: number): void
-    public abstract useFunctionsEmulator(origin: string): void
-}
-
-export class DummyFirestoreFunctions implements FirestoreFunctions {
-    public httpsCallable(): HttpsCallable {
-        return () => {
-            throw new Error('httpsCallable not implemented - DummyFirestoreFunctions')
-        }
-    }
-    public useEmulator() {}
-    public useFunctionsEmulator() {}
+export interface Firestore {
+    app: FirebaseFirestore
+    collection: typeof collection
+    getDocs: typeof getDocs
+    getDoc: typeof getDoc
+    serverTimestamp: typeof serverTimestamp
+    query: typeof query
+    where: typeof where
+    limit: typeof limit
+    orderBy: typeof orderBy
+    setDoc: typeof setDoc
+    updateDoc: typeof updateDoc
+    deleteDoc: typeof deleteDoc
+    doc: typeof doc
+    onSnapshot: typeof onSnapshot
+    increment: typeof increment
+    runTransaction: typeof runTransaction
 }
