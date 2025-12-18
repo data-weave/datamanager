@@ -1,4 +1,4 @@
-import { Metadata } from '@data-weave/datamanager'
+import { Metadata, UpdateData } from '@data-weave/datamanager'
 import {
     ConverterToFirestore,
     DocumentData,
@@ -7,7 +7,6 @@ import {
     SetOptions,
     SnapshotOptions,
     Timestamp,
-    UpdateData,
     WithTimestamps,
 } from './firestoreTypes'
 

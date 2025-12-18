@@ -1,3 +1,4 @@
+import { UpdateData } from '@data-weave/datamanager'
 import type {
     collection,
     deleteDoc,
@@ -79,22 +80,6 @@ type UpdateFields<T> =
 type Nullable<T> = { [P in keyof T]: T[P] | null }
 
 export type ConverterToFirestore<T> = WithFieldValue<Nullable<UpdateFields<T>>>
-
-type IsNested<T> = {
-    [K in keyof T]-?: T[K] extends Record<string, unknown> ? K : never
-}[keyof T]
-
-type IsOptional<T> = {
-    [K in keyof T]-?: object extends Pick<T, K> ? K : never
-}[keyof T]
-
-export type UpdateData<T> = {
-    [K in keyof T]?: K extends IsNested<Required<T>>
-        ? UpdateData<T[K]> | null
-        : K extends IsOptional<T>
-          ? T[K] | FieldValue | null
-          : T[K] | FieldValue
-}
 
 export type WithTimestamps<T> = {
     [K in keyof T]: T[K] extends Date

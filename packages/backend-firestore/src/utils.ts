@@ -12,10 +12,10 @@ import {
     SnapshotOptions,
     Transaction,
     TransactionOptions,
-    UpdateData,
     WithTimestamps,
 } from './firestoreTypes'
 
+import { UpdateData } from '@data-weave/datamanager'
 import {
     Firestore as FirebaseFirestore,
     collection,
