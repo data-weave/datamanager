@@ -4,39 +4,29 @@ import {
     FirestoreDataConverter,
     FirestoreDataManager,
     QueryParams,
-    UpdateData,
     withTransaction,
 } from '@data-weave/backend-firestore/src'
+import { CreateData } from '@data-weave/datamanager'
 import { IdentifiableReference, Reference, WithMetadata } from '@data-weave/datamanager/src'
 import { v4 as uuidv4 } from 'uuid'
 
 interface Product {
     name: string
     desciption: string
-    qty: number
+    qty?: number
     nested: {
-        name: string
-    }
-    data: Date
-    nested2: {
-        name: string
-        nested3?: {
-            name: string
+        field1: string
+        deep: {
+            field2: string
         }
     }
-}
-
-const test: UpdateData<Product> = {
-    name: 'test',
-    desciption: 'test',
-    qty: 1,
-    nested: {
-        name: 'test',
-    },
-    data: new Date(),
-    nested2: {
-        name: 'test',
-    },
+    nestedOptional?: {
+        field1: string
+        deepOptional?: {
+            fieldOptional?: string
+        }
+    }
+    date: Date
 }
 
 export const productConverter: FirestoreDataConverter<Product> = {
@@ -45,19 +35,18 @@ export const productConverter: FirestoreDataConverter<Product> = {
             name: modelObject.name,
             desciption: modelObject.desciption,
             qty: modelObject.qty,
-            'nested.name': modelObject.nested?.name,
-            'nested2.name': modelObject.nested2?.name,
+            'nested.name': modelObject.nested?.field1,
+            'nested.deep.field2': modelObject.nested?.deep?.field2,
         }
     },
-    fromFirestore: function (snapshot, options): Product {
+    fromFirestore: function (snapshot, options) {
         const data = snapshot.data(options)
         return {
             name: data.name,
             desciption: data.desciption,
             qty: data.qty,
-            data: data.data.toDate(),
+            date: data.date.toDate(),
             nested: data.nested,
-            nested2: data.nested2,
         }
     },
 }
@@ -65,7 +54,7 @@ export const productConverter: FirestoreDataConverter<Product> = {
 type UpdateProductParams = Partial<Pick<Product, 'qty' | 'desciption' | 'name'>>
 
 abstract class ProductModel<T = Product, M = WithMetadata<T>> {
-    abstract createProduct(p: T): Promise<IdentifiableReference<M>>
+    abstract createProduct(p: CreateData<T>): Promise<IdentifiableReference<M>>
     abstract getProduct(id: string): Reference<T>
     abstract updateProduct(id: string, params: UpdateProductParams): Promise<void>
     abstract deleteProduct(id: string): Promise<void>
@@ -82,7 +71,7 @@ export class FirebaseProductModel implements ProductModel {
         this.datamanager = new FirestoreDataManager<Product, Product>(db, this.collectionName, options)
     }
 
-    createProduct(p: Product) {
+    createProduct(p: CreateData<Product>) {
         return this.datamanager.create(p)
     }
 

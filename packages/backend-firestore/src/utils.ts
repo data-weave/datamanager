@@ -50,8 +50,8 @@ export class MergeConverters<
 
     toFirestore(modelObject: UpdateData<T & G>, options?: SetOptions) {
         return {
-            ...this.converter1.toFirestore(modelObject, options),
-            ...this.converter2.toFirestore(modelObject, options),
+            ...this.converter1.toFirestore(modelObject as UpdateData<T>, options),
+            ...this.converter2.toFirestore(modelObject as UpdateData<G>, options),
         } as ConverterToFirestore<SerializedT & SerializedG>
     }
     fromFirestore(

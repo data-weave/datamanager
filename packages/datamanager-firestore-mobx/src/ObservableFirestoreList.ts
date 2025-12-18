@@ -1,17 +1,11 @@
 import { IAtom, createAtom, when } from 'mobx'
 
-import {
-    DocumentData,
-    Firestore,
-    FirestoreList,
-    FirestoreListOptions,
-    FirestoreTypes,
-} from '@data-weave/backend-firestore'
+import { DocumentData, Firestore, FirestoreList, FirestoreListOptions, Query } from '@data-weave/backend-firestore'
 
 export class ObservableFirestoreList<T extends DocumentData, S extends DocumentData> extends FirestoreList<T, S> {
     private readonly _atom: IAtom
 
-    constructor(firestore: Firestore, query: FirestoreTypes.Query<T, S>, options: FirestoreListOptions<T>) {
+    constructor(firestore: Firestore, query: Query<T, S>, options: FirestoreListOptions<T>) {
         super(firestore, query, options)
         this._atom = createAtom(
             'ObservableFirestoreList',

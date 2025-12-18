@@ -5,7 +5,6 @@ import type {
     DocumentData,
     FieldPath,
     FieldValue,
-    Firestore as FirebaseFirestore,
     WithFieldValue as FirestoreWithFieldValue,
     getDoc,
     getDocs,
@@ -68,76 +67,40 @@ export type {
     where,
     WhereFilterOp,
     WriteBatch,
-    // UpdateData,
 } from '@firebase/firestore'
-
-
-export declare type Primitive = string | number | boolean | undefined | null;
-
 
 type UpdateFields<T> =
     T extends Record<string, unknown>
         ? {
-              [K in keyof T]?: UpdateFields<T[K]> | null
-          } & NestedUpdateFields<T>
+              [K in keyof T]?: NestedUpdateFields<T>
+          }
         : Partial<T>
 
 type Nullable<T> = { [P in keyof T]: T[P] | null }
 
 export type ConverterToFirestore<T> = WithFieldValue<Nullable<UpdateFields<T>>>
 
-type UpdateDataChild<T> = T extends Record<string, unknown>
-? {
-    [K in keyof T]?: T[K] extends Record<string, unknown> ? UpdateDataChild<T[K]> | null : T[K] | FieldValue | null
-} : Partial<T | null>;
+type IsNested<T> = {
+    [K in keyof T]-?: T[K] extends Record<string, unknown> ? K : never
+}[keyof T]
+
+type IsOptional<T> = {
+    [K in keyof T]-?: object extends Pick<T, K> ? K : never
+}[keyof T]
 
 export type UpdateData<T> = {
-    [K in keyof T]?: T[K] extends Record<string, unknown> ? UpdateDataChild<T[K]> | null : T[K] | FieldValue | null
-}
-
-type Test = {
-    a: string
-    b: {
-        c: string
-        f: number
-        g: Date
-        d?: {
-            e: string
-        }
-    }
-}
-
-// type Test2 = ConverterToFirestore<Test>
-
-// const _: Test2 = {
-//     a: 'test',
-//     b: {
-//         c: 'test',
-//     },
-//     'b.c': 'test',
-// }
-
-type Test3 = UpdateData<Test>
-
-const __: Test3 = {
-    a: 'test',
-    b: {
-        c: 'test',
-        f: 1,
-        g: new Date(),
-        d: {
-            e: 'test',
-        }
-    },
-    // 'b.c': 'test',
+    [K in keyof T]?: K extends IsNested<Required<T>>
+        ? UpdateData<T[K]> | null
+        : K extends IsOptional<T>
+          ? T[K] | FieldValue | null
+          : T[K] | FieldValue
 }
 
 export type WithTimestamps<T> = {
     [K in keyof T]: T[K] extends Date
         ? Timestamp
         : T[K] extends Record<string, unknown>
-          ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            T[K] extends any[]
+          ? T[K] extends unknown[]
               ? T[K] extends (infer U)[]
                   ? WithTimestamps<U>[]
                   : T[K]
@@ -185,10 +148,6 @@ export interface FirebaseCreateOptions extends FirestoreWriteOptions {
 export declare type WithFieldValue<T> = {
     [K in keyof T]: FirestoreWithFieldValue<T[K]> | FieldValue
 }
-
-
-
-
 
 export declare type PartialWithFieldValue<T> = Partial<WithFieldValue<T>>
 
@@ -246,19 +205,28 @@ export interface FirestoreAppSettings {
 }
 
 export abstract class FirestoreApp {
-    public abstract type?: string
-    public abstract toJSON?(): object
+    public abstract readonly name: string
+    public abstract readonly options: Record<string, unknown>
+    public abstract readonly automaticDataCollectionEnabled: boolean
+
     public abstract terminate?(): Promise<void>
     public abstract settings?(settings: FirestoreAppSettings): void
-    public abstract useEmulator?(host: string, port: number): void
     public abstract runTransaction?<T>(
         updateFunction: (transaction: Transaction) => Promise<T>,
         options?: TransactionOptions
     ): Promise<T>
 }
 
+export abstract class FirebaseFirestore {
+    public abstract type: 'firestore-lite' | 'firestore'
+    public abstract app(): FirestoreApp
+    public abstract toJSON(): object
+}
+
 export interface Firestore {
-    app: FirebaseFirestore
+    // TODO:
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    app: any
     collection: typeof collection
     getDocs: typeof getDocs
     getDoc: typeof getDoc

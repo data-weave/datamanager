@@ -20,7 +20,7 @@ export interface FirestoreListOptions<T> extends LiveListOptions<T> {
 }
 
 export class FirestoreList<T extends DocumentData, S extends DocumentData> extends LiveList<T> {
-    private unsubscribeFromSnapshot: undefined | (() => void)
+    private unsubscribeFromSnapshot: (() => void) | undefined
 
     constructor(
         private readonly firestore: Firestore,

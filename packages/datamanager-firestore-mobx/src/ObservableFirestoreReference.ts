@@ -2,10 +2,10 @@ import { IAtom, createAtom } from 'mobx'
 
 import {
     DocumentData,
+    DocumentReference,
     Firestore,
     FirestoreReference,
     FirestoreReferenceOptions,
-    FirestoreTypes,
 } from '@data-weave/backend-firestore'
 
 export class ObservableFirestoreReference<T extends DocumentData, S extends DocumentData> extends FirestoreReference<
@@ -14,11 +14,7 @@ export class ObservableFirestoreReference<T extends DocumentData, S extends Docu
 > {
     private readonly _atom: IAtom
 
-    constructor(
-        firestore: Firestore,
-        doc: FirestoreTypes.DocumentReference<T, S>,
-        options: FirestoreReferenceOptions<T>
-    ) {
+    constructor(firestore: Firestore, doc: DocumentReference<T, S>, options: FirestoreReferenceOptions<T>) {
         super(firestore, doc, options)
         this._atom = createAtom(
             'ObservableFirestoreReference',

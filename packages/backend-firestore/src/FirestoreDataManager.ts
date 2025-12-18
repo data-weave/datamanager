@@ -1,5 +1,6 @@
 import {
     Cache,
+    CreateData,
     CreateOptions,
     DataManager,
     IdentifiableReference,
@@ -7,8 +8,8 @@ import {
     ListPaginationParams,
     MapCache,
     Metadata,
+    UpdateData,
     WithMetadata,
-    WithoutId,
 } from '@data-weave/datamanager'
 import { FirestoreList, FirestoreListContext } from './FirestoreList'
 import { DefaultConverter, FIRESTORE_KEYS, FirestoreSerializedMetadata, MetadataConverter } from './FirestoreMetadata'
@@ -27,7 +28,6 @@ import {
     OrderBy,
     Query,
     SnapshotOptions,
-    UpdateData,
     WithFieldValue,
 } from './firestoreTypes'
 import { MergeConverters, checkIfReferenceExists, queryNotDeleted } from './utils'
@@ -64,7 +64,7 @@ export interface QueryParams<T> {
 }
 
 export class FirestoreDataManager<T extends DocumentData, SerializedT extends DocumentData = T>
-    implements DataManager<T & Metadata>
+    implements DataManager<T>
 {
     private converter: FirestoreDataConverter<T & Metadata, SerializedT & FirestoreSerializedMetadata>
     private collection: CollectionReference<T & Metadata, SerializedT & FirestoreSerializedMetadata>
@@ -116,7 +116,7 @@ export class FirestoreDataManager<T extends DocumentData, SerializedT extends Do
         return await ref.resolve()
     }
 
-    public async create(data: WithFieldValue<WithoutId<T>>, options?: FirebaseCreateOptions) {
+    public async create(data: WithFieldValue<CreateData<T>>, options?: FirebaseCreateOptions) {
         let id: string | undefined = undefined
         if (options?.id) {
             id = options?.id
@@ -152,33 +152,29 @@ export class FirestoreDataManager<T extends DocumentData, SerializedT extends Do
         return this.getRef(docRef.id)
     }
 
-    private async _update(id: string, data: UpdateData<T & Metadata>, options?: FirestoreWriteOptions) {
+    private async _update(id: string, data: UpdateData<T | Metadata>, options?: FirestoreWriteOptions) {
         const extendedData = {
             ...data,
             [FIRESTORE_KEYS.UPDATED_AT]: this.firestore.serverTimestamp(),
         }
-        // Firestore update method doesn't call converter like setDoc does, so we need to serialize the data manually.
-        const serializedData = this.converter.toFirestore(extendedData)
+        // @ts-expect-error - Firestore update method doesn't call converter like setDoc does, so we need to serialize the data manually.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const serializedData = this.converter.toFirestore(extendedData) as any
 
         const ref = this.firestore.doc(this.collection, id)
 
         if (options?.transaction) {
             return options.transaction.update<DocumentData, DocumentData>(ref, serializedData)
         }
-        // Cast due to manual converter use
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return this.firestore.updateDoc(ref as any, serializedData as any)
+
+        return this.firestore.updateDoc(ref, serializedData)
     }
 
-    public async update(id: string, data: Partial<T>, options?: FirestoreWriteOptions) {
+    public async update(id: string, data: WithFieldValue<UpdateData<T>>, options?: FirestoreWriteOptions) {
         await this._update(id, data, options)
     }
 
-    public async updateWithFieldValue(id: string, data: UpdateData<T>, options?: FirestoreWriteOptions) {
-        await this._update(id, data, options)
-    }
-
-    public async upsert(id: string, data: WithFieldValue<WithoutId<T>>, options?: FirestoreWriteOptions) {
+    public async upsert(id: string, data: WithFieldValue<CreateData<T>>, options?: FirestoreWriteOptions) {
         this.create(data, { ...options, id, merge: true })
     }
 
@@ -188,7 +184,7 @@ export class FirestoreDataManager<T extends DocumentData, SerializedT extends Do
                 id,
                 {
                     deleted: true,
-                } as UpdateData<T & Metadata>,
+                },
                 options
             )
             return

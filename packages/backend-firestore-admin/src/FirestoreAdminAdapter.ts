@@ -1,13 +1,23 @@
-import { Firestore, FirestoreApp, FirestoreTypes, Transaction } from '@data-weave/backend-firestore'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import {
+    FieldPath,
+    FieldValue,
+    Firestore,
+    FirestoreApp,
+    OrderByDirection,
+    SetOptions,
+    Transaction,
+    TransactionOptions,
+} from '@data-weave/backend-firestore'
 
 export abstract class FieldValues {
-    public abstract serverTimestamp(): FirestoreTypes.FieldValue
-    public abstract delete(): FirestoreTypes.FieldValue
-    public abstract increment(n: number): FirestoreTypes.FieldValue
+    public abstract serverTimestamp(): FieldValue
+    public abstract delete(): FieldValue
+    public abstract increment(n: number): FieldValue
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public abstract arrayUnion(...elements: any[]): FirestoreTypes.FieldValue
+    public abstract arrayUnion(...elements: any[]): FieldValue
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public abstract arrayRemove(...elements: any[]): FirestoreTypes.FieldValue
+    public abstract arrayRemove(...elements: any[]): FieldValue
 }
 
 /*
@@ -16,9 +26,10 @@ export abstract class FieldValues {
  *   - admin sdk doesn't support modular imports
  */
 
-
 export class FirestoreAdminAdapter implements Firestore {
-    public app: FirestoreApp
+    // TODO:
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public app: any
     constructor(
         readonly firestore: FirestoreApp,
         readonly fieldValues: FieldValues
@@ -59,7 +70,7 @@ export class FirestoreAdminAdapter implements Firestore {
         }
     }
 
-    public where(field: string | FirestoreTypes.FieldPath, op: string, value: unknown): any {
+    public where(field: string | FieldPath, op: string, value: unknown): any {
         return {
             type: 'where',
             field,
@@ -75,7 +86,7 @@ export class FirestoreAdminAdapter implements Firestore {
         }
     }
 
-    public orderBy(orderBy: string | FirestoreTypes.FieldPath, direction: FirestoreTypes.OrderByDirection |) {
+    public orderBy(orderBy: string | FieldPath, direction: OrderByDirection | undefined) {
         return {
             type: 'orderBy' as const,
             field: orderBy,
@@ -83,7 +94,7 @@ export class FirestoreAdminAdapter implements Firestore {
         }
     }
 
-    public setDoc(reference: any, data: any, options?: FirestoreTypes.SetOptions) {
+    public setDoc(reference: any, data: any, options?: SetOptions) {
         return reference.set(data, options)
     }
 
@@ -100,14 +111,14 @@ export class FirestoreAdminAdapter implements Firestore {
         return reference.doc(path)
     }
 
-    public onSnapshot(reference: any, onNext: (snapshot: any) => void, onError?: (error: Error) => void) {
-        return reference.onSnapshot(onNext, onError)
+    public onSnapshot(reference: any, onNext: any, onError?: any, onCompletion?: any) {
+        return reference.onSnapshot(onNext, onError, onCompletion)
     }
 
     public runTransaction<T>(
-        firestore: FirestoreApp,
+        firestore: any,
         transaction: (transaction: Transaction) => Promise<T>,
-        options?: FirestoreTypes.TransactionOptions
+        options?: TransactionOptions
     ) {
         return firestore.runTransaction!(transaction, options)
     }

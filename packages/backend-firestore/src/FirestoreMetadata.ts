@@ -59,7 +59,7 @@ export class DefaultConverter<T extends DocumentData, SerializedT extends Docume
     }
     fromFirestore(snapshot: QueryDocumentSnapshot<WithTimestamps<SerializedT>>, options?: SnapshotOptions) {
         const data = snapshot.data(options)
-        return deepDeserialize(data)
+        return deepDeserialize<T, SerializedT>(data)
     }
 }
 
@@ -86,8 +86,10 @@ const deepSerialize = <T, SerializedT>(data: UpdateData<T>, parentKey?: string):
     return result as ConverterToFirestore<SerializedT>
 }
 
-const deepDeserialize = <T, SerializedT>(data: ConverterToFirestore<SerializedT>): UpdateData<T> => {
-    return data
+const deepDeserialize = <T, SerializedT>(data: WithTimestamps<SerializedT>): T => {
+    // TODO:
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return data as any
 }
 
 const parseTimestamp = (timestamp: Timestamp | undefined) => {

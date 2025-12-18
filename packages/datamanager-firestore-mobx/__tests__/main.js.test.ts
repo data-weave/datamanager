@@ -11,6 +11,7 @@ beforeAll(() => {
 
     if (sdkType === 'ADMIN_SDK') {
         const adminSdk = initializeAdmin_SDK()
+        // @ts-expect-error - TODO: fix this
         sdk = new FirestoreAdminAdapter(adminSdk.db, adminSdk.fieldValue) as Firestore
     } else {
         sdk = initializeJS_SDK()
@@ -29,7 +30,12 @@ describe('Firebase static tests', () => {
             name: 'test',
             desciption: 'test',
             qty: 1,
-            nested: { name: 'test', nested2: { name: 'test' } },
+            date: new Date(),
+            nested: { field1: 'test', deep: { field2: 'test' } },
+            nestedOptional: {
+                field1: 'test',
+                deepOptional: null,
+            },
         })
         const product = await productRef.resolve()
 
@@ -39,7 +45,14 @@ describe('Firebase static tests', () => {
     })
 
     test('Product updates', async () => {
-        const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        const productRef = await productModel.createProduct({
+            name: 'test',
+            desciption: 'test',
+            qty: 1,
+            date: new Date(),
+            nested: { field1: 'test', deep: { field2: 'test' } },
+            nestedOptional: null,
+        })
         const product = await productRef.resolve()
 
         await sleep(500)
@@ -55,7 +68,14 @@ describe('Firebase static tests', () => {
     })
 
     test('Product delete soft', async () => {
-        const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        const productRef = await productModel.createProduct({
+            name: 'test',
+            desciption: 'test',
+            qty: 1,
+            date: new Date(),
+            nested: { field1: 'test', deep: { field2: 'test' } },
+            nestedOptional: null,
+        })
         await sleep(500)
         await productModel.deleteProduct(productRef.id)
 
@@ -69,7 +89,14 @@ describe('Firebase static tests', () => {
             readMode: 'static',
         })
 
-        const productRef = await productModelHardDelete.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        const productRef = await productModelHardDelete.createProduct({
+            name: 'test',
+            desciption: 'test',
+            qty: 1,
+            date: new Date(),
+            nested: { field1: 'test', deep: { field2: 'test' } },
+            nestedOptional: null,
+        })
         await sleep(500)
         const productBeforeDelete = await productRef.resolve()
         expect(productBeforeDelete).not.toBeUndefined()
@@ -82,21 +109,49 @@ describe('Firebase static tests', () => {
 
     test('Product query', async () => {
         const qty = Math.floor(Math.random() * 1000 + 10000)
-        await productModel.createProduct({ name: 'test', desciption: 'test', qty })
+        await productModel.createProduct({
+            name: 'test',
+            desciption: 'test',
+            qty,
+            date: new Date(),
+            nested: { field1: 'test', deep: { field2: 'test' } },
+            nestedOptional: null,
+        })
 
         const listRef = productModel.getProductList({ filters: [['qty', '==', qty]] })
         await listRef.resolve()
 
         expect(listRef.values.length).toEqual(1)
-        await productModel.createProduct({ name: 'test', desciption: 'test', qty })
-        await productModel.createProduct({ name: 'test', desciption: 'test', qty })
+        await productModel.createProduct({
+            name: 'test',
+            desciption: 'test',
+            qty,
+            date: new Date(),
+            nested: { field1: 'test', deep: { field2: 'test' } },
+            nestedOptional: null,
+        })
+        await productModel.createProduct({
+            name: 'test',
+            desciption: 'test',
+            qty,
+            date: new Date(),
+            nested: { field1: 'test', deep: { field2: 'test' } },
+            nestedOptional: null,
+        })
 
         await listRef.resolve()
         expect(listRef.values.length).toEqual(3)
     })
 
     test('Product transaction static', async () => {
-        const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        const productRef = await productModel.createProduct({
+            name: 'test',
+            desciption: 'test',
+            qty: 1,
+            date: new Date(),
+            nested: { field1: 'test', deep: { field2: 'test' } },
+            nestedOptional: null,
+        })
         await sleep(500)
         await productModel.updateStockTwiceWithTransaction(productRef.id, 10)
         await productRef.resolve()
@@ -105,7 +160,14 @@ describe('Firebase static tests', () => {
     })
 
     test('Product transaction on failed transaction', async () => {
-        const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        const productRef = await productModel.createProduct({
+            name: 'test',
+            desciption: 'test',
+            qty: 1,
+            date: new Date(),
+            nested: { field1: 'test', deep: { field2: 'test' } },
+            nestedOptional: null,
+        })
         await sleep(500)
         await expect(productModel.updateStockWithTransactionWithError(productRef.id, 10)).rejects.toThrow()
         await productRef.resolve()

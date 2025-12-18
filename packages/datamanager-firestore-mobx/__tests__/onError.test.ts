@@ -2,7 +2,7 @@ import { FirestoreListContext, FirestoreReferenceContext } from '@data-weave/bac
 import { describe, test } from '@jest/globals'
 import { ObservableFirestoreList } from '../src'
 import { sdk } from './main.js.test'
-import { FirebaseProductModel, productConverter } from './product'
+import { FirebaseProductModel } from './product'
 
 let productModel: FirebaseProductModel
 let errorContextGlobal: FirestoreReferenceContext | FirestoreListContext | undefined = undefined
@@ -12,8 +12,9 @@ beforeEach(() => {
     errorContextGlobal = undefined
     errorGlobal = undefined
 
-    productModel = new FirebaseProductModel(sdk, productConverter, {
+    productModel = new FirebaseProductModel(sdk, {
         readMode: 'realtime',
+        // @ts-expect-error - TODO: fix this
         List: ObservableFirestoreList,
         errorInterceptor: (error, ctx) => {
             errorContextGlobal = ctx

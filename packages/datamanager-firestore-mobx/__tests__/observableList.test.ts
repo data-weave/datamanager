@@ -10,6 +10,7 @@ let productModel: FirebaseProductModel
 beforeEach(() => {
     productModel = new FirebaseProductModel(sdk, {
         readMode: 'realtime',
+        // @ts-expect-error - TODO: broken due to generated types
         List: ObservableFirestoreList,
         converter: productConverter,
     })
@@ -21,7 +22,14 @@ describe('Firebase observable list tests', () => {
     })
 
     test('List initialization', async () => {
-        await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        await productModel.createProduct({
+            name: 'test',
+            desciption: 'test',
+            qty: 1,
+            date: new Date(),
+            nested: { field1: 'test', deep: { field2: 'test' } },
+            nestedOptional: { field1: 'test', deepOptional: null },
+        })
         const productList = productModel.getProductList()
         // it should not resolve by itself
         expect(productList.resolved).toEqual(false)
@@ -70,7 +78,14 @@ describe('Firebase observable list tests', () => {
             return productList.values
         })
 
-        await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        await productModel.createProduct({
+            name: 'test',
+            desciption: 'test',
+            qty: 1,
+            date: new Date(),
+            nested: { field1: 'test', deep: { field2: 'test' } },
+            nestedOptional: { field1: 'test', deepOptional: null },
+        })
         await sleep(500)
 
         expect(productList.values.length).toBeGreaterThan(originalLength)
