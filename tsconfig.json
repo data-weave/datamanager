@@ -7,7 +7,7 @@
         "allowJs": false,
         "declaration": true,
         "declarationMap": true,
-        "composite": true,
+        "composite": false,
         "forceConsistentCasingInFileNames": true,
         "sourceMap": true,
         "strict": true,
