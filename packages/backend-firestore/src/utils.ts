@@ -32,8 +32,7 @@ export class MergeConverters<
     SerializedT extends DocumentData,
     G extends DocumentData,
     SerializedG extends DocumentData,
-> implements InternalFirestoreDataConverter<T & G, SerializedT & SerializedG>
-{
+> implements InternalFirestoreDataConverter<T & G, SerializedT & SerializedG> {
     constructor(
         private converter1: InternalFirestoreDataConverter<T, SerializedT>,
         private converter2: InternalFirestoreDataConverter<G, SerializedG>
