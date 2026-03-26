@@ -2,6 +2,7 @@ import {
     Cache,
     CreateOptions,
     DataManager,
+    GetListOptions,
     IdentifiableReference,
     List,
     ListPaginationParams,
@@ -182,6 +183,18 @@ export class FirestoreDataManager<
 
     public async upsert(id: string, data: WithFieldValue<WithoutId<T>>, options?: FirestoreWriteOptions) {
         await this.create(data, { ...options, id, merge: true })
+    }
+
+    public async count(params?: QueryParams<SerializedT> & ListPaginationParams) {
+        const compoundQuery = this._getFilteredQuery(params)
+        const snapshot = await this.firestore.getDocs(compoundQuery)
+        return snapshot.size
+    }
+
+    public async exists(id: string) {
+        const ref = this.firestore.doc(this.collection, id)
+        const snapshot = await this.firestore.getDoc(ref)
+        return checkIfReferenceExists(snapshot)
     }
 
     public async delete(id: string, options?: FirestoreWriteOptions) {

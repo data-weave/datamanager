@@ -45,6 +45,9 @@ export abstract class DataManager<T> {
     public abstract update(id: string, data: Partial<WithoutId<T>>): Promise<void>
     public abstract upsert(id: string, data: WithoutId<T>): Promise<void>
 
+    public abstract count(params?: GetListOptions): Promise<number> 
+    public abstract exists(id: string): Promise<boolean>
+
     public abstract getRef(id: string): IdentifiableReference<WithMetadata<T>>
     public abstract getList(params?: GetListOptions): List<WithMetadata<T>>
 }
