@@ -27,6 +27,11 @@ export class FirestoreList<T extends DocumentData, S extends DocumentData> exten
         if (this.options?.readMode === 'realtime') {
             let initialLoad = true
             return new Promise<T[]>((resolve, reject) => {
+                // Unsubscribe from any existing snapshot listener
+                if (this.unsubscribeFromSnapshot) {
+                    this.unsubscribeFromSnapshot()
+                }
+
                 this.unsubscribeFromSnapshot = this.firestore.onSnapshot(
                     this.query,
                     querySnapshot => {

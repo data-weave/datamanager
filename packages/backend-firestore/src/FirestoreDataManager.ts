@@ -17,7 +17,7 @@ import {
     FirestoreSerializedMetadata,
     queryNotDeleted,
 } from './FirestoreMetadata'
-import { FirestoreReference, FirestoreReferenceContext } from './FirestoreReference'
+import { FirestoreReference, FirestoreReferenceContext, FirestoreReferenceOptions } from './FirestoreReference'
 import {
     DocumentData,
     FilterBy,
@@ -76,6 +76,8 @@ export class FirestoreDataManager<
     private refCache: Cache<string, IdentifiableReference<WithMetadata<T>>>
     private listCache: Cache<string, List<WithMetadata<T>>>
 
+    private referenceOptions: FirestoreReferenceOptions<T>
+
     constructor(
         private readonly firestore: Firestore,
         private readonly collectionPath: string,
@@ -84,7 +86,7 @@ export class FirestoreDataManager<
     ) {
         // @ts-expect-error - Force merge FirestoreDataConverter and InternalFirestoreDataConverter
         this.mergedConverter = new MergeConverters(this.converter, new FirestoreMetadataConverter())
-        this.managerOptions = Object.assign(defaultFirebaseDataManagerOptions, this.opts)
+        this.managerOptions = { ...defaultFirebaseDataManagerOptions, ...this.opts }
 
         this.refCache = this.managerOptions.refCache || new MapCache(100)
         this.listCache = this.managerOptions.listCache || new MapCache(100)
@@ -97,11 +99,15 @@ export class FirestoreDataManager<
             this.managerOptions.deleteMode === 'soft'
                 ? queryNotDeleted(this.collection, this.firestore.query, this.firestore.where)
                 : this.collection
+
+        this.referenceOptions = {
+            readMode: this.managerOptions.readMode,
+            snapshotOptions: this.managerOptions.snapshotOptions,
+            errorInterceptor: this.managerOptions.errorInterceptor,
+        }
     }
 
     public async read(id: string, options?: FirestoreReadOptions): Promise<WithMetadata<T> | undefined> {
-        if (!this.managerOptions?.Reference) throw new Error('ReferenceClass not defined')
-
         const ref = this.getRef(id)
 
         if (options?.transaction) {
@@ -175,7 +181,7 @@ export class FirestoreDataManager<
     }
 
     public async upsert(id: string, data: WithFieldValue<WithoutId<T>>, options?: FirestoreWriteOptions) {
-        this.create(data, { ...options, id, merge: true })
+        await this.create(data, { ...options, id, merge: true })
     }
 
     public async delete(id: string, options?: FirestoreWriteOptions) {
@@ -190,7 +196,11 @@ export class FirestoreDataManager<
             )
             return
         }
-        return this.firestore.deleteDoc(this.firestore.doc(this.collection, id))
+        if (options?.transaction) {
+            options.transaction.delete(this.firestore.doc(this.collection, id))
+        } else {
+            await this.firestore.deleteDoc(this.firestore.doc(this.collection, id))
+        }
     }
 
     public getRef(id: string) {
@@ -200,11 +210,12 @@ export class FirestoreDataManager<
             return this.refCache.get(id)!
         }
 
-        const newRef = new this.managerOptions.Reference(this.firestore, this.firestore.doc(this.collection, id), {
-            readMode: this.managerOptions.readMode,
-            errorInterceptor: this.managerOptions.errorInterceptor,
-            snapshotOptions: this.managerOptions.snapshotOptions,
-        })
+        const newRef = new this.managerOptions.Reference(
+            this.firestore,
+            this.firestore.doc(this.collection, id),
+            this.referenceOptions
+        )
+
         if (!this.managerOptions.disableCache) {
             this.refCache.set(id, newRef)
         }

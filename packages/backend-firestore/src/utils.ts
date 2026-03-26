@@ -27,6 +27,13 @@ import {
     where,
 } from 'firebase/firestore'
 
+class ConverterError extends Error {
+    constructor(message: string) {
+        super(message)
+        this.name = 'ConverterError'
+    }
+}
+
 export class MergeConverters<
     T extends DocumentData,
     SerializedT extends DocumentData,
@@ -42,16 +49,20 @@ export class MergeConverters<
         modelObject: WithoutId<Partial<WithFieldValue<T>>> & WithoutId<Partial<WithFieldValue<G>>>,
         options?: FirestoreTypes.SetOptions
     ) {
-        if (options) {
-            return {
-                ...this.converter1.toFirestore(modelObject, options),
-                ...this.converter2.toFirestore(modelObject, options),
+        try {
+            if (options) {
+                return {
+                    ...this.converter1.toFirestore(modelObject, options),
+                    ...this.converter2.toFirestore(modelObject, options),
+                }
+            } else {
+                return {
+                    ...this.converter1.toFirestore(modelObject),
+                    ...this.converter2.toFirestore(modelObject),
+                }
             }
-        } else {
-            return {
-                ...this.converter1.toFirestore(modelObject),
-                ...this.converter2.toFirestore(modelObject),
-            }
+        } catch (error) {
+            throw new ConverterError(`Failed to convert model object to firestore: ${error}`)
         }
     }
 
@@ -59,9 +70,13 @@ export class MergeConverters<
         snapshot: FirestoreTypes.QueryDocumentSnapshot<T & G, SerializedT & SerializedG>,
         options: FirestoreTypes.SnapshotOptions
     ) {
-        return {
-            ...this.converter1.fromFirestore(snapshot, options),
-            ...this.converter2.fromFirestore(snapshot, options),
+        try {
+            return {
+                ...this.converter1.fromFirestore(snapshot, options),
+                ...this.converter2.fromFirestore(snapshot, options),
+            }
+        } catch (error) {
+            throw new ConverterError(`Failed to convert snapshot to model object: ${error}`)
         }
     }
 }

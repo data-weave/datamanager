@@ -8,6 +8,7 @@ export interface Resolvable<T> {
     readonly resolved: boolean
     readonly hasError: boolean
     resolve(): Promise<T>
+    error: unknown | undefined
 }
 
 export interface Reference<T> extends Resolvable<T | undefined> {
@@ -26,6 +27,7 @@ export function createInitializedIdentifiableReference<T>(
         resolved: true,
         hasError: false,
         resolve: async () => value,
+        error: undefined,
     }
 }
 
