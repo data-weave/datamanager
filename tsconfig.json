@@ -22,11 +22,5 @@
             "@data-weave/datamanager-firestore-mobx": ["packages/datamanager-firestore-mobx/src"]
         }
     },
-    "references": [
-        { "path": "packages/datamanager" },
-        { "path": "packages/backend-firestore" },
-        { "path": "packages/backend-firestore-admin" },
-        { "path": "packages/datamanager-firestore-mobx" }
-    ],
     "exclude": ["node_modules", "**/__tests__", "**/dist"]
 }
