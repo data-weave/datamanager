@@ -1,1 +1,0 @@
-export { FirestoreAdminAdapter } from './FirestoreAdminAdapter'

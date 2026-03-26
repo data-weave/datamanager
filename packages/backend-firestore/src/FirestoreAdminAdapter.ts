@@ -1,4 +1,4 @@
-import { FieldValues, Firestore, FirestoreApp, FirestoreTypes, Transaction } from '@data-weave/backend-firestore'
+import { FieldValues, Firestore, FirestoreApp, FirestoreTypes } from './firestoreTypes'
 
 /*
  *  FirestoreAdminAdapter creates an interface between modular and namespaced
@@ -98,10 +98,11 @@ export class FirestoreAdminAdapter extends Firestore {
 
     public runTransaction<T>(
         firestore: FirestoreApp,
-        transaction: (transaction: Transaction) => Promise<T>,
+        transaction: (transaction: FirestoreTypes.Transaction) => Promise<T>,
         options?: FirestoreTypes.TransactionOptions
     ) {
-        return firestore.runTransaction!(transaction, options)
+        // firestore.runTransaction is Admin SDK specific
+        return firestore.runTransaction!(transaction as any, options) as Promise<T>
     }
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
