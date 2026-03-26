@@ -79,6 +79,26 @@ export class FirebaseProductModel implements ProductModel {
         return this.datamanager.delete(id)
     }
 
+    countProducts(params?: QueryParams<Product>) {
+        return this.datamanager.count(params)
+    }
+
+    sumQty(params?: QueryParams<Product>) {
+        return this.datamanager.sum('qty', params)
+    }
+
+    averageQty(params?: QueryParams<Product>) {
+        return this.datamanager.average('qty', params)
+    }
+
+    minQty(params?: QueryParams<Product>) {
+        return this.datamanager.min('qty', params)
+    }
+
+    maxQty(params?: QueryParams<Product>) {
+        return this.datamanager.max('qty', params)
+    }
+
     updateStockTwiceWithTransaction(id: string, addQty: number) {
         return withTransaction(this.db, async transaction => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

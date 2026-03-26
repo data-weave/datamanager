@@ -1,5 +1,7 @@
 import { WithoutId } from '@data-weave/datamanager'
 import {
+    AggregateResult,
+    AggregateSpec,
     DocumentData,
     Firestore,
     FirestoreTypes,
@@ -9,10 +11,14 @@ import {
 } from './firestoreTypes'
 
 import {
-    Firestore as FirebaseFirestore,
     collection,
     deleteDoc,
     doc,
+    Firestore as FirebaseFirestore,
+    getAggregateFromServer as firebaseGetAggregateFromServer,
+    average as firestoreAverage,
+    count as firestoreCount,
+    sum as firestoreSum,
     getDoc,
     getDocs,
     increment,
@@ -86,6 +92,23 @@ export function createModularFirestoreAdapter(firestore: FirebaseFirestore): Fir
         app: firestore,
         collection,
         getDocs,
+        async getAggregateFromServer<Spec extends AggregateSpec>(
+            ref: FirestoreTypes.Query,
+            spec: Spec
+        ): Promise<AggregateResult<Spec>> {
+            const sdkSpec = Object.fromEntries(
+                Object.keys(spec).map(alias => {
+                    const fieldSpec = spec[alias]
+                    if (fieldSpec.type === 'count') {
+                        return [alias, firestoreCount()]
+                    }
+                    const factory = fieldSpec.type === 'sum' ? firestoreSum : firestoreAverage
+                    return [alias, factory(fieldSpec.field)]
+                })
+            )
+            const snapshot = await firebaseGetAggregateFromServer(ref, sdkSpec)
+            return snapshot.data() as AggregateResult<Spec>
+        },
         getDoc,
         serverTimestamp,
         query,

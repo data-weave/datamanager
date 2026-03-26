@@ -1,8 +1,14 @@
-import { FirestoreListContext, FirestoreReferenceContext } from '@data-weave/backend-firestore/src'
+import { Firestore, FirestoreListContext, FirestoreReferenceContext } from '@data-weave/backend-firestore/src'
 import { describe, test } from '@jest/globals'
+import { FirebaseProductModel, productConverter } from '@test-fixtures/product'
+import { getSDK } from '@test-fixtures/utils'
 import { ObservableFirestoreList } from '../src'
-import { sdk } from './main.js.test'
-import { FirebaseProductModel, productConverter } from './product'
+
+let sdk: Firestore
+
+beforeAll(() => {
+    sdk = getSDK()
+})
 
 let productModel: FirebaseProductModel
 let errorContextGlobal: FirestoreReferenceContext | FirestoreListContext | undefined = undefined

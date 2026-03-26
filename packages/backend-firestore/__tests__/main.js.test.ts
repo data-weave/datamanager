@@ -1,20 +1,11 @@
-import { FirestoreAdminAdapter } from '@data-weave/backend-firestore-admin'
 import { Firestore } from '@data-weave/backend-firestore/src'
-import { initializeAdmin_SDK, initializeJS_SDK } from './intitialize'
-import { FirebaseProductModel, productConverter } from './product'
-import { sleep } from './utils'
+import { FirebaseProductModel, productConverter } from '@test-fixtures/product'
+import { getSDK, sleep } from '@test-fixtures/utils'
 
-export let sdk: Firestore
+let sdk: Firestore
 
 beforeAll(() => {
-    const sdkType = process.env.SDK_TYPE || 'JS_SDK'
-
-    if (sdkType === 'ADMIN_SDK') {
-        const adminSdk = initializeAdmin_SDK()
-        sdk = new FirestoreAdminAdapter(adminSdk.db, adminSdk.fieldValue) as Firestore
-    } else {
-        sdk = initializeJS_SDK()
-    }
+    sdk = getSDK()
 })
 
 let productModel: FirebaseProductModel
@@ -71,8 +62,11 @@ describe('Firebase static tests', () => {
 
         await productModelHardDelete.deleteProduct(productRef.id)
 
-        // expect error
-        await expect(productRef.resolve()).rejects.toThrow(/Document does not exist.*$/)
+        await productRef.resolve()
+        expect(productRef.hasError).toBe(true)
+        expect(productRef.error).toEqual(
+            expect.objectContaining({ message: expect.stringMatching(/Document does not exist/) })
+        )
     })
 
     test('Product query', async () => {

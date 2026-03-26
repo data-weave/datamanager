@@ -1,9 +1,15 @@
+import { Firestore } from '@data-weave/backend-firestore/src'
 import { describe, test } from '@jest/globals'
+import { FirebaseProductModel, productConverter } from '@test-fixtures/product'
+import { getSDK, sleep } from '@test-fixtures/utils'
 import { autorun } from 'mobx'
 import { ObservableFirestoreList } from '../src'
-import { sdk } from './main.js.test'
-import { FirebaseProductModel, productConverter } from './product'
-import { sleep } from './utils'
+
+let sdk: Firestore
+
+beforeAll(() => {
+    sdk = getSDK()
+})
 
 let productModel: FirebaseProductModel
 

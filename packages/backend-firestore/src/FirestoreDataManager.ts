@@ -2,12 +2,12 @@ import {
     Cache,
     CreateOptions,
     DataManager,
-    GetListOptions,
     IdentifiableReference,
     List,
     ListPaginationParams,
     MapCache,
     Metadata,
+    NumericKeys,
     WithMetadata,
     WithoutId,
 } from '@data-weave/datamanager'
@@ -185,10 +185,50 @@ export class FirestoreDataManager<
         await this.create(data, { ...options, id, merge: true })
     }
 
-    public async count(params?: QueryParams<SerializedT> & ListPaginationParams) {
+    public async count(params?: QueryParams<SerializedT>): Promise<number> {
         const compoundQuery = this._getFilteredQuery(params)
-        const snapshot = await this.firestore.getDocs(compoundQuery)
-        return snapshot.size
+        const result = await this.firestore.getAggregateFromServer(compoundQuery, {
+            result: { type: 'count' },
+        })
+        return result.result ?? 0
+    }
+
+    public async sum(field: NumericKeys<T>, params?: QueryParams<SerializedT>): Promise<number> {
+        const compoundQuery = this._getFilteredQuery(params)
+        const result = await this.firestore.getAggregateFromServer(compoundQuery, {
+            result: { type: 'sum', field },
+        })
+        return result.result ?? 0
+    }
+
+    public async average(field: string, params?: QueryParams<SerializedT>): Promise<number | null> {
+        const compoundQuery = this._getFilteredQuery(params)
+        const result = await this.firestore.getAggregateFromServer(compoundQuery, {
+            result: { type: 'average', field },
+        })
+        return result.result ?? null
+    }
+
+    public async min<K extends string & keyof T>(field: K, params?: QueryParams<SerializedT>): Promise<T[K] | null> {
+        const compoundQuery = this._getFilteredQuery(params)
+        const limitedQuery = this.firestore.query(
+            this.firestore.query(compoundQuery, this.firestore.orderBy(field, 'asc')),
+            this.firestore.limit(1)
+        )
+        const snapshot = await this.firestore.getDocs(limitedQuery)
+        if (snapshot.empty) return null
+        return (snapshot.docs[0].get(field) as T[K]) ?? null
+    }
+
+    public async max<K extends string & keyof T>(field: K, params?: QueryParams<SerializedT>): Promise<T[K] | null> {
+        const compoundQuery = this._getFilteredQuery(params)
+        const limitedQuery = this.firestore.query(
+            this.firestore.query(compoundQuery, this.firestore.orderBy(field, 'desc')),
+            this.firestore.limit(1)
+        )
+        const snapshot = await this.firestore.getDocs(limitedQuery)
+        if (snapshot.empty) return null
+        return (snapshot.docs[0].get(field) as T[K]) ?? null
     }
 
     public async exists(id: string) {

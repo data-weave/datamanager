@@ -137,6 +137,18 @@ export type OrderBy<T extends DocumentData, Fields extends string = FilterableFi
     FirestoreTypes.OrderByDirection,
 ]
 
+export type AggregateFieldSpec =
+    | { readonly type: 'sum' | 'average'; readonly field: string }
+    | { readonly type: 'count' }
+
+export type AggregateSpec = {
+    readonly [alias: string]: AggregateFieldSpec
+}
+
+export type AggregateResult<T extends AggregateSpec> = {
+    [K in keyof T]: number | null
+}
+
 export abstract class FieldValues {
     public abstract serverTimestamp(): FirestoreTypes.FieldValue
     public abstract delete(): FirestoreTypes.FieldValue
@@ -175,6 +187,10 @@ export abstract class Firestore {
     public abstract getDocs<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
         reference: FirestoreTypes.Query<AppModelType, DbModelType>
     ): Promise<FirestoreTypes.QuerySnapshot<AppModelType, DbModelType>>
+    public abstract getAggregateFromServer<Spec extends AggregateSpec>(
+        query: FirestoreTypes.Query,
+        spec: Spec
+    ): Promise<AggregateResult<Spec>>
     public abstract getDoc<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
         reference: FirestoreTypes.DocumentReference<AppModelType, DbModelType>,
         path?: string

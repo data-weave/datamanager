@@ -8,6 +8,7 @@ module.exports = {
         '\\.(ts|tsx)$': ['ts-jest', {}],
     },
     moduleNameMapper: {
+        '^@test-fixtures/(.*)$': '<rootDir>/__tests__/fixtures/$1',
         '^@data-weave/([^/]+)$': '<rootDir>/packages/$1/dist',
         '^@data-weave/(.*)$': '<rootDir>/packages/$1',
     },
