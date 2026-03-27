@@ -19,8 +19,8 @@
         "typescript": "5.9.3"
     },
     "scripts": {
-        "clean": "rm -rf dist tsconfig.build.tsbuildinfo",
-        "build": "tsc -p tsconfig.build.json",
+        "clean": "rm -rf dist",
+        "build": "tsc",
         "build:clean": "npm run clean && npm run build",
         "prepare": "npm run build"
     },
