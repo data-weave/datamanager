@@ -11,14 +11,14 @@ import {
     WithMetadata,
     WithoutId,
 } from '@data-weave/datamanager'
-import { FirestoreList, FirestoreListContext } from './FirestoreList'
+import { FirestoreList } from './FirestoreList'
 import {
     FIRESTORE_KEYS,
     FirestoreMetadataConverter,
     FirestoreSerializedMetadata,
     queryNotDeleted,
 } from './FirestoreMetadata'
-import { FirestoreReference, FirestoreReferenceContext, FirestoreReferenceOptions } from './FirestoreReference'
+import { FirestoreReference, FirestoreReferenceOptions } from './FirestoreReference'
 import {
     DocumentData,
     FilterBy,
@@ -42,7 +42,6 @@ export interface FirebaseDataManagerOptions {
     readonly deleteMode?: FirebaseDataManagerDeleteMode
     readonly readMode?: FirestoreReadMode
     readonly preventOverwriteOnCreate?: boolean
-    readonly errorInterceptor?: (error: unknown, ctx: FirestoreReferenceContext | FirestoreListContext) => void
     readonly snapshotOptions?: FirestoreTypes.SnapshotOptions
     // TODO: Add preventUpdateIfNotExists?
     readonly Reference?: typeof FirestoreReference
@@ -104,7 +103,6 @@ export class FirestoreDataManager<
         this.referenceOptions = {
             readMode: this.managerOptions.readMode,
             snapshotOptions: this.managerOptions.snapshotOptions,
-            errorInterceptor: this.managerOptions.errorInterceptor,
         }
     }
 
@@ -300,7 +298,6 @@ export class FirestoreDataManager<
         }
         const newList = new this.managerOptions.List(this.firestore, compoundQuery, {
             readMode: this.managerOptions.readMode,
-            errorInterceptor: this.managerOptions.errorInterceptor,
             ...params,
         })
         if (!this.managerOptions.disableCache) {

@@ -1,4 +1,4 @@
-import { Firestore } from '@data-weave/backend-firestore/src'
+import { Firestore, FirestoreReferenceError } from '@data-weave/backend-firestore/src'
 import { FirebaseProductModel, productConverter } from '@test-fixtures/product'
 import { getSDK, sleep } from '@test-fixtures/utils'
 
@@ -64,7 +64,8 @@ describe('Firebase static tests', () => {
 
         await productRef.resolve()
         expect(productRef.hasError).toBe(true)
-        expect(productRef.error).toEqual(
+        expect(productRef.error).toBeInstanceOf(FirestoreReferenceError)
+        expect((productRef.error as FirestoreReferenceError).cause).toEqual(
             expect.objectContaining({ message: expect.stringMatching(/Document does not exist/) })
         )
     })
