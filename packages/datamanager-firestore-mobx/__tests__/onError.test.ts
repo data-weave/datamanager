@@ -12,6 +12,7 @@ beforeAll(() => {
 
 let productModel: FirebaseProductModel
 let restrictedProductModel: FirebaseProductModel
+// This is a workaround to skip tests that are only relevant for the JS SDK
 const jsOnlyTest = process.env.SDK_TYPE === 'ADMIN_SDK' ? test.skip : test
 
 beforeEach(() => {
