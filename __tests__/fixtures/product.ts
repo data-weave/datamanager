@@ -54,7 +54,7 @@ export class FirebaseProductModel implements ProductModel {
     constructor(
         readonly db: Firestore,
         readonly converter: FirestoreDataConverter<Product>,
-        readonly options?: FirebaseDataManagerOptions
+        readonly options?: Partial<FirebaseDataManagerOptions>
     ) {
         this.datamanager = new FirestoreDataManager<Product>(db, this.collectionName, converter, options)
     }

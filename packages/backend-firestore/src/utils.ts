@@ -87,28 +87,34 @@ export class MergeConverters<
     }
 }
 
+function buildAggregateSpec(spec: AggregateSpec) {
+    return Object.fromEntries(
+        Object.keys(spec).map(alias => {
+            const fieldSpec = spec[alias]
+            if (fieldSpec.type === 'count') {
+                return [alias, firestoreCount()]
+            }
+            const factory = fieldSpec.type === 'sum' ? firestoreSum : firestoreAverage
+            return [alias, factory(fieldSpec.field)]
+        })
+    )
+}
+
+async function modularGetAggregateFromServer<Spec extends AggregateSpec>(
+    ref: FirestoreTypes.Query,
+    spec: Spec
+): Promise<AggregateResult<Spec>> {
+    const sdkSpec = buildAggregateSpec(spec)
+    const snapshot = await firebaseGetAggregateFromServer(ref, sdkSpec)
+    return snapshot.data() as AggregateResult<Spec>
+}
+
 export function createModularFirestoreAdapter(firestore: FirebaseFirestore): Firestore {
     return {
         app: firestore,
         collection,
         getDocs,
-        async getAggregateFromServer<Spec extends AggregateSpec>(
-            ref: FirestoreTypes.Query,
-            spec: Spec
-        ): Promise<AggregateResult<Spec>> {
-            const sdkSpec = Object.fromEntries(
-                Object.keys(spec).map(alias => {
-                    const fieldSpec = spec[alias]
-                    if (fieldSpec.type === 'count') {
-                        return [alias, firestoreCount()]
-                    }
-                    const factory = fieldSpec.type === 'sum' ? firestoreSum : firestoreAverage
-                    return [alias, factory(fieldSpec.field)]
-                })
-            )
-            const snapshot = await firebaseGetAggregateFromServer(ref, sdkSpec)
-            return snapshot.data() as AggregateResult<Spec>
-        },
+        getAggregateFromServer: modularGetAggregateFromServer,
         getDoc,
         serverTimestamp,
         query,

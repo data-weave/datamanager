@@ -43,3 +43,10 @@ export class FirestoreListError extends FirestoreError {
         this.name = 'FirestoreListError'
     }
 }
+
+export class FirestoreDataManagerError extends FirestoreError {
+    constructor(message: string, cause?: unknown) {
+        super(message, cause)
+        this.name = 'FirestoreDataManagerError'
+    }
+}
