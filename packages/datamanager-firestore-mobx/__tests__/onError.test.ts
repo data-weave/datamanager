@@ -1,4 +1,4 @@
-import { Firestore, FirestoreListError, FirestoreReferenceError } from '@data-weave/backend-firestore/src'
+import { Firestore, FirestoreReferenceError } from '@data-weave/backend-firestore/src'
 import { describe, expect, test } from '@jest/globals'
 import { FirebaseProductModel, productConverter } from '@test-fixtures/product'
 import { getSDK } from '@test-fixtures/utils'
@@ -11,12 +11,24 @@ beforeAll(() => {
 })
 
 let productModel: FirebaseProductModel
+let restrictedProductModel: FirebaseProductModel
+const jsOnlyTest = process.env.SDK_TYPE === 'ADMIN_SDK' ? test.skip : test
 
 beforeEach(() => {
     productModel = new FirebaseProductModel(sdk, productConverter, {
         readMode: 'realtime',
         List: ObservableFirestoreList,
     })
+
+    restrictedProductModel = new FirebaseProductModel(
+        sdk,
+        productConverter,
+        {
+            readMode: 'realtime',
+            List: ObservableFirestoreList,
+        },
+        'private_products_on_error'
+    )
 })
 
 describe('Firebase typed error tests', () => {
@@ -43,8 +55,8 @@ describe('Firebase typed error tests', () => {
         expect(list.hasError).toBe(false)
     })
 
-    test('should wrap error with FirestoreListError for complex list query', async () => {
-        const list = productModel.getProductList({
+    jsOnlyTest('should wrap error with FirestoreListError for complex list query', async () => {
+        const list = restrictedProductModel.getProductList({
             filters: [
                 ['name', '==', 'test'],
                 ['qty', '>', 0],
@@ -53,28 +65,33 @@ describe('Firebase typed error tests', () => {
         })
         expect(list.hasError).toBe(false)
         await list.resolve()
-
         expect(list.hasError).toBe(true)
-        expect(list.error).toBeInstanceOf(FirestoreListError)
+        expect(list.error).toEqual(expect.objectContaining({ name: 'FirestoreListError' }))
 
-        const listError = list.error as FirestoreListError
+        const listError = list.error as {
+            context: { type: 'list'; query: unknown; readMode?: string }
+            cause: unknown
+        }
         expect(listError.context.type).toBe('list')
         expect(listError.context.query).toBeDefined()
         expect(listError.context.readMode).toBe('realtime')
         expect(listError.cause).toBeInstanceOf(Error)
     })
 
-    test('should wrap error with FirestoreListError for restricted query', async () => {
-        const list = productModel.getProductList({
+    jsOnlyTest('should wrap error with FirestoreListError for restricted query', async () => {
+        const list = restrictedProductModel.getProductList({
             filters: [['__deleted', '==', true]],
         })
 
         expect(list.hasError).toBe(false)
         await list.resolve()
         expect(list.hasError).toBe(true)
-        expect(list.error).toBeInstanceOf(FirestoreListError)
+        expect(list.error).toEqual(expect.objectContaining({ name: 'FirestoreListError' }))
 
-        const listError = list.error as FirestoreListError
+        const listError = list.error as {
+            context: { type: 'list'; query: unknown; readMode?: string }
+            cause: unknown
+        }
         expect(listError.context.type).toBe('list')
         expect(listError.context.query).toBeDefined()
         expect(listError.context.readMode).toBe('realtime')

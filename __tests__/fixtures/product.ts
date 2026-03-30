@@ -49,13 +49,15 @@ abstract class ProductModel<T = Product, M = WithMetadata<T>> {
 
 export class FirebaseProductModel implements ProductModel {
     private datamanager: FirestoreDataManager<Product>
-    private collectionName = `products_${uuidv4()}`
+    private collectionName: string
 
     constructor(
         readonly db: Firestore,
         readonly converter: FirestoreDataConverter<Product>,
-        readonly options?: Partial<FirebaseDataManagerOptions>
+        readonly options?: Partial<FirebaseDataManagerOptions>,
+        collectionName?: string
     ) {
+        this.collectionName = collectionName || `public_products_${uuidv4()}`
         this.datamanager = new FirestoreDataManager<Product>(db, this.collectionName, converter, options)
     }
 
