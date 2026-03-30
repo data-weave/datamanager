@@ -200,6 +200,12 @@ export class FirestoreDataManager<
         return result.result ?? 0
     }
 
+    /**
+     * Sum the values of a field in the collection
+     *
+     * NOTE: `field` is resolved against Firestore (serialized) field names.
+     * If user model fields differ from serialized fields, this can target a different field than expected.
+     */
     public async sum(field: NumericKeys<T>, params?: QueryParams<SerializedT>): Promise<number> {
         const compoundQuery = this._getFilteredQuery(params)
         const result = await this.firestore.getAggregateFromServer(compoundQuery, {
@@ -208,6 +214,12 @@ export class FirestoreDataManager<
         return result.result ?? 0
     }
 
+    /**
+     * Calculate the average value of a field in the collection.
+     *
+     * NOTE: `field` is resolved against Firestore (serialized) field names.
+     * If user model fields differ from serialized fields, this can target a different field than expected.
+     */
     public async average(field: NumericKeys<T>, params?: QueryParams<SerializedT>): Promise<number | null> {
         const compoundQuery = this._getFilteredQuery(params)
         const result = await this.firestore.getAggregateFromServer(compoundQuery, {
@@ -216,6 +228,12 @@ export class FirestoreDataManager<
         return result.result ?? null
     }
 
+    /**
+     * Read the minimum value for a field in the collection.
+     *
+     * NOTE: `field` is resolved against Firestore (serialized) field names.
+     * If user model fields differ from serialized fields, this can target a different field than expected.
+     */
     public async min<K extends string & keyof T>(field: K, params?: QueryParams<SerializedT>): Promise<T[K] | null> {
         const compoundQuery = this._getFilteredQuery(params)
         const limitedQuery = this.firestore.query(
@@ -227,6 +245,12 @@ export class FirestoreDataManager<
         return (snapshot.docs[0].get(field) as T[K]) ?? null
     }
 
+    /**
+     * Read the maximum value for a field in the collection.
+     *
+     * NOTE: `field` is resolved against Firestore (serialized) field names.
+     * If user model fields differ from serialized fields, this can target a different field than expected.
+     */
     public async max<K extends string & keyof T>(field: K, params?: QueryParams<SerializedT>): Promise<T[K] | null> {
         const compoundQuery = this._getFilteredQuery(params)
         const limitedQuery = this.firestore.query(
