@@ -1,4 +1,4 @@
-import { Firestore, FirestoreReferenceError } from '@data-weave/backend-firestore/src'
+import { Firestore, FirestoreReferenceError } from '@data-weave/backend-firestore'
 import { FirebaseProductModel, productConverter } from '@test-fixtures/product'
 import { getSDK, sleep } from '@test-fixtures/utils'
 
@@ -56,7 +56,7 @@ describe('Firebase static tests', () => {
         })
 
         const productRef = await productModelHardDelete.createProduct({ name: 'test', desciption: 'test', qty: 1 })
-        await sleep(500)
+        await sleep(1000)
         const productBeforeDelete = await productRef.resolve()
         expect(productBeforeDelete).not.toBeUndefined()
 

@@ -1,4 +1,4 @@
-import { Firestore, FirestoreReferenceError } from '@data-weave/backend-firestore/src'
+import { Firestore, FirestoreReferenceError } from '@data-weave/backend-firestore'
 import { describe, expect, test } from '@jest/globals'
 import { FirebaseProductModel, productConverter } from '@test-fixtures/product'
 import { getSDK } from '@test-fixtures/utils'
