@@ -49,13 +49,15 @@ abstract class ProductModel<T = Product, M = WithMetadata<T>> {
 
 export class FirebaseProductModel implements ProductModel {
     private datamanager: FirestoreDataManager<Product>
-    private collectionName = `products_${uuidv4()}`
+    private collectionName: string
 
     constructor(
         readonly db: Firestore,
         readonly converter: FirestoreDataConverter<Product>,
-        readonly options?: FirebaseDataManagerOptions
+        readonly options?: Partial<FirebaseDataManagerOptions>,
+        collectionName?: string
     ) {
+        this.collectionName = collectionName || `public_products_${uuidv4()}`
         this.datamanager = new FirestoreDataManager<Product>(db, this.collectionName, converter, options)
     }
 
@@ -77,6 +79,26 @@ export class FirebaseProductModel implements ProductModel {
 
     deleteProduct(id: string) {
         return this.datamanager.delete(id)
+    }
+
+    countProducts(params?: QueryParams<Product>) {
+        return this.datamanager.count(params)
+    }
+
+    sumQty(params?: QueryParams<Product>) {
+        return this.datamanager.sum('qty', params)
+    }
+
+    averageQty(params?: QueryParams<Product>) {
+        return this.datamanager.average('qty', params)
+    }
+
+    minQty(params?: QueryParams<Product>) {
+        return this.datamanager.min('qty', params)
+    }
+
+    maxQty(params?: QueryParams<Product>) {
+        return this.datamanager.max('qty', params)
     }
 
     updateStockTwiceWithTransaction(id: string, addQty: number) {

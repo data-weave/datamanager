@@ -15,6 +15,7 @@ export function createInitializedList<T>(values: ReadonlyArray<T>): List<T> {
         values,
         resolved: true,
         hasError: false,
+        error: undefined,
         resolve: async () => values,
     }
 }

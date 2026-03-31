@@ -3,12 +3,18 @@ import { List } from './List'
 export interface LiveListOptions<T> {
     onUpdate?: (newValues: T[]) => void
     onError?: (error: unknown) => void
+    /**
+     * If true, the values will be set to an empty array when an error occurs.
+     * Default is false.
+     */
+    setEmptyOnError?: boolean
 }
 
 export class LiveList<T> implements List<T> {
     private _values: T[] = []
     private _resolved: boolean = false
     private _hasError: boolean = false
+    private _error: unknown | undefined
     private _options: LiveListOptions<T>
 
     constructor(options: LiveListOptions<T>) {
@@ -33,6 +39,10 @@ export class LiveList<T> implements List<T> {
 
     protected setStale() {
         this._resolved = false
+    }
+
+    public get error() {
+        return this._error
     }
 
     protected onValuesChange(): void {}
@@ -62,8 +72,11 @@ export class LiveList<T> implements List<T> {
 
     protected onError(error: unknown): void {
         this._hasError = true
-        this._values = []
+        this._error = error
         this._resolved = true
+        if (this._options.setEmptyOnError) {
+            this._values = []
+        }
         this._options.onError?.(error)
         this.onValuesChange()
     }

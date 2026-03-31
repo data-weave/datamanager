@@ -31,6 +31,8 @@ export interface Metadata {
 }
 
 export type WithMetadata<T> = T & Metadata
+
+export type NumericKeys<T> = { [K in keyof T]: T[K] extends number ? K : never }[keyof T] & string
 /**
  * DataManager is the base class for all data managers.
  * It is responsible for reading, creating, deleting, and updating data.
@@ -44,6 +46,13 @@ export abstract class DataManager<T> {
     public abstract delete(id: string): Promise<void>
     public abstract update(id: string, data: Partial<WithoutId<T>>): Promise<void>
     public abstract upsert(id: string, data: WithoutId<T>): Promise<void>
+
+    public abstract count(params?: GetListOptions): Promise<number>
+    public abstract sum(field: NumericKeys<T>, params?: GetListOptions): Promise<number>
+    public abstract average(field: NumericKeys<T>, params?: GetListOptions): Promise<number | null>
+    public abstract min<K extends string & keyof T>(field: K, params?: GetListOptions): Promise<T[K] | null>
+    public abstract max<K extends string & keyof T>(field: K, params?: GetListOptions): Promise<T[K] | null>
+    public abstract exists(id: string): Promise<boolean>
 
     public abstract getRef(id: string): IdentifiableReference<WithMetadata<T>>
     public abstract getList(params?: GetListOptions): List<WithMetadata<T>>
