@@ -10,3 +10,4 @@ packages/*/.turbo
 *.tsbuildinfo
 site/
 .venv/
+.yarn/
