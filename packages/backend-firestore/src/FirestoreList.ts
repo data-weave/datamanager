@@ -1,15 +1,11 @@
 import { ListPaginationParams, LiveList, LiveListOptions } from '@data-weave/datamanager'
+import { FirestoreListError } from './errors'
 import { DocumentData, Firestore, FirestoreReadMode, FirestoreTypes } from './firestoreTypes'
 
-export interface FirestoreListContext {
-    query: FirestoreTypes.Query<unknown>
-    readMode?: FirestoreReadMode
-    type: 'list'
-}
+export type { FirestoreListContext } from './errors'
 
 export interface FirestoreListOptions<T> extends LiveListOptions<T> {
     readMode?: FirestoreReadMode
-    errorInterceptor?: (error: unknown, ctx: FirestoreListContext) => void
 }
 
 export class FirestoreList<T extends DocumentData, S extends DocumentData> extends LiveList<T> {
@@ -26,7 +22,12 @@ export class FirestoreList<T extends DocumentData, S extends DocumentData> exten
     public async resolve() {
         if (this.options?.readMode === 'realtime') {
             let initialLoad = true
-            return new Promise<T[]>((resolve, reject) => {
+            return new Promise<T[]>(resolve => {
+                // Unsubscribe from any existing snapshot listener
+                if (this.unsubscribeFromSnapshot) {
+                    this.unsubscribeFromSnapshot()
+                }
+
                 this.unsubscribeFromSnapshot = this.firestore.onSnapshot(
                     this.query,
                     querySnapshot => {
@@ -44,20 +45,25 @@ export class FirestoreList<T extends DocumentData, S extends DocumentData> exten
                             resolve(this.values)
                         } catch (error) {
                             this.onError(error)
-                            reject(error)
+                            resolve(this.values)
                         }
                     },
                     error => {
                         this.onError(error)
-                        reject(error)
+                        resolve(this.values)
                     }
                 )
             })
         } else {
-            const snapshot = await this.firestore.getDocs(this.query)
-            this.handleInitialDataChange(snapshot.docs)
-            return this.values
+            try {
+                const snapshot = await this.firestore.getDocs(this.query)
+                this.handleInitialDataChange(snapshot.docs)
+                return this.values
+            } catch (error) {
+                this.onError(error)
+            }
         }
+        return this.values
     }
 
     protected handleInitialDataChange(values: FirestoreTypes.QueryDocumentSnapshot<T, S>[]) {
@@ -86,14 +92,11 @@ export class FirestoreList<T extends DocumentData, S extends DocumentData> exten
     }
 
     protected onError(error: unknown) {
-        // Try to provide useful collection details using internal properties
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        console.error(`FirestoreList Collection: ${(this.query as any)?._collectionPath?.id} error`, error)
-        this.options?.errorInterceptor?.(error, {
+        const wrapped = new FirestoreListError(error, {
             query: this.query,
             readMode: this.options?.readMode,
             type: 'list',
         })
-        super.onError(error)
+        super.onError(wrapped)
     }
 }

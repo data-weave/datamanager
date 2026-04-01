@@ -7,17 +7,19 @@ import {
     ListPaginationParams,
     MapCache,
     Metadata,
+    NumericKeys,
     WithMetadata,
     WithoutId,
 } from '@data-weave/datamanager'
-import { FirestoreList, FirestoreListContext } from './FirestoreList'
+import { FirestoreDataManagerError } from './errors'
+import { FirestoreList } from './FirestoreList'
 import {
     FIRESTORE_KEYS,
     FirestoreMetadataConverter,
     FirestoreSerializedMetadata,
     queryNotDeleted,
 } from './FirestoreMetadata'
-import { FirestoreReference, FirestoreReferenceContext } from './FirestoreReference'
+import { FirestoreReference, FirestoreReferenceOptions } from './FirestoreReference'
 import {
     DocumentData,
     FilterBy,
@@ -38,14 +40,13 @@ export type FirebaseDataManagerDeleteMode = 'soft' | 'hard'
 
 export interface FirebaseDataManagerOptions {
     readonly idResolver?: () => string
-    readonly deleteMode?: FirebaseDataManagerDeleteMode
-    readonly readMode?: FirestoreReadMode
-    readonly preventOverwriteOnCreate?: boolean
-    readonly errorInterceptor?: (error: unknown, ctx: FirestoreReferenceContext | FirestoreListContext) => void
+    readonly deleteMode: FirebaseDataManagerDeleteMode
+    readonly readMode: FirestoreReadMode
+    readonly preventOverwriteOnCreate: boolean
     readonly snapshotOptions?: FirestoreTypes.SnapshotOptions
     // TODO: Add preventUpdateIfNotExists?
-    readonly Reference?: typeof FirestoreReference
-    readonly List?: typeof FirestoreList
+    readonly Reference: typeof FirestoreReference
+    readonly List: typeof FirestoreList
     readonly listCache?: Cache
     readonly refCache?: Cache
     readonly disableCache?: boolean
@@ -76,15 +77,17 @@ export class FirestoreDataManager<
     private refCache: Cache<string, IdentifiableReference<WithMetadata<T>>>
     private listCache: Cache<string, List<WithMetadata<T>>>
 
+    private referenceOptions: FirestoreReferenceOptions<T>
+
     constructor(
         private readonly firestore: Firestore,
         private readonly collectionPath: string,
         private readonly converter: FirestoreDataConverter<T, SerializedT>,
-        private readonly opts?: FirebaseDataManagerOptions
+        private readonly opts?: Partial<FirebaseDataManagerOptions>
     ) {
         // @ts-expect-error - Force merge FirestoreDataConverter and InternalFirestoreDataConverter
         this.mergedConverter = new MergeConverters(this.converter, new FirestoreMetadataConverter())
-        this.managerOptions = Object.assign(defaultFirebaseDataManagerOptions, this.opts)
+        this.managerOptions = this.validateOptions({ ...defaultFirebaseDataManagerOptions, ...this.opts })
 
         this.refCache = this.managerOptions.refCache || new MapCache(100)
         this.listCache = this.managerOptions.listCache || new MapCache(100)
@@ -97,19 +100,30 @@ export class FirestoreDataManager<
             this.managerOptions.deleteMode === 'soft'
                 ? queryNotDeleted(this.collection, this.firestore.query, this.firestore.where)
                 : this.collection
+
+        this.referenceOptions = {
+            readMode: this.managerOptions.readMode,
+            snapshotOptions: this.managerOptions.snapshotOptions,
+        }
+    }
+
+    private validateOptions(options: FirebaseDataManagerOptions): FirebaseDataManagerOptions {
+        if (!options.Reference) throw new FirestoreDataManagerError('ReferenceClass not defined')
+        if (!options.List) throw new FirestoreDataManagerError('ListClass not defined')
+
+        return options as FirebaseDataManagerOptions & {
+            Reference: typeof FirestoreReference
+            List: typeof FirestoreList
+        }
     }
 
     public async read(id: string, options?: FirestoreReadOptions): Promise<WithMetadata<T> | undefined> {
-        if (!this.managerOptions?.Reference) throw new Error('ReferenceClass not defined')
-
         const ref = this.getRef(id)
 
         if (options?.transaction) {
-            const snapshot = await options.transaction.get<WithMetadata<T>, DocumentData>(
-                this.firestore.doc(this.collection, id)
-            )
+            const snapshot = await options.transaction.get(this.firestore.doc(this.collection, id))
             if (!checkIfReferenceExists(snapshot)) return undefined
-            return snapshot.data()
+            return snapshot.data(this.referenceOptions.snapshotOptions)
         }
         return await ref.resolve()
     }
@@ -175,7 +189,83 @@ export class FirestoreDataManager<
     }
 
     public async upsert(id: string, data: WithFieldValue<WithoutId<T>>, options?: FirestoreWriteOptions) {
-        this.create(data, { ...options, id, merge: true })
+        await this.create(data, { ...options, id, merge: true })
+    }
+
+    public async count(params?: QueryParams<SerializedT>): Promise<number> {
+        const compoundQuery = this._getFilteredQuery(params)
+        const result = await this.firestore.getAggregateFromServer(compoundQuery, {
+            result: { type: 'count' },
+        })
+        return result.result ?? 0
+    }
+
+    /**
+     * Sum the values of a field in the collection
+     *
+     * NOTE: `field` is resolved against Firestore (serialized) field names.
+     * If user model fields differ from serialized fields, this can target a different field than expected.
+     */
+    public async sum(field: NumericKeys<T>, params?: QueryParams<SerializedT>): Promise<number> {
+        const compoundQuery = this._getFilteredQuery(params)
+        const result = await this.firestore.getAggregateFromServer(compoundQuery, {
+            result: { type: 'sum', field },
+        })
+        return result.result ?? 0
+    }
+
+    /**
+     * Calculate the average value of a field in the collection.
+     *
+     * NOTE: `field` is resolved against Firestore (serialized) field names.
+     * If user model fields differ from serialized fields, this can target a different field than expected.
+     */
+    public async average(field: NumericKeys<T>, params?: QueryParams<SerializedT>): Promise<number | null> {
+        const compoundQuery = this._getFilteredQuery(params)
+        const result = await this.firestore.getAggregateFromServer(compoundQuery, {
+            result: { type: 'average', field },
+        })
+        return result.result ?? null
+    }
+
+    /**
+     * Read the minimum value for a field in the collection.
+     *
+     * NOTE: `field` is resolved against Firestore (serialized) field names.
+     * If user model fields differ from serialized fields, this can target a different field than expected.
+     */
+    public async min<K extends string & keyof T>(field: K, params?: QueryParams<SerializedT>): Promise<T[K] | null> {
+        const compoundQuery = this._getFilteredQuery(params)
+        const limitedQuery = this.firestore.query(
+            this.firestore.query(compoundQuery, this.firestore.orderBy(field, 'asc')),
+            this.firestore.limit(1)
+        )
+        const snapshot = await this.firestore.getDocs(limitedQuery)
+        if (snapshot.empty) return null
+        return (snapshot.docs[0].get(field) as T[K]) ?? null
+    }
+
+    /**
+     * Read the maximum value for a field in the collection.
+     *
+     * NOTE: `field` is resolved against Firestore (serialized) field names.
+     * If user model fields differ from serialized fields, this can target a different field than expected.
+     */
+    public async max<K extends string & keyof T>(field: K, params?: QueryParams<SerializedT>): Promise<T[K] | null> {
+        const compoundQuery = this._getFilteredQuery(params)
+        const limitedQuery = this.firestore.query(
+            this.firestore.query(compoundQuery, this.firestore.orderBy(field, 'desc')),
+            this.firestore.limit(1)
+        )
+        const snapshot = await this.firestore.getDocs(limitedQuery)
+        if (snapshot.empty) return null
+        return (snapshot.docs[0].get(field) as T[K]) ?? null
+    }
+
+    public async exists(id: string) {
+        const ref = this.firestore.doc(this.collection, id)
+        const snapshot = await this.firestore.getDoc(ref)
+        return checkIfReferenceExists(snapshot)
     }
 
     public async delete(id: string, options?: FirestoreWriteOptions) {
@@ -190,21 +280,24 @@ export class FirestoreDataManager<
             )
             return
         }
-        return this.firestore.deleteDoc(this.firestore.doc(this.collection, id))
+        if (options?.transaction) {
+            options.transaction.delete(this.firestore.doc(this.collection, id))
+        } else {
+            await this.firestore.deleteDoc(this.firestore.doc(this.collection, id))
+        }
     }
 
     public getRef(id: string) {
-        if (!this.managerOptions?.Reference) throw new Error('ReferenceClass not defined')
-
         if (this.refCache.has(id) && !this.managerOptions.disableCache) {
             return this.refCache.get(id)!
         }
 
-        const newRef = new this.managerOptions.Reference(this.firestore, this.firestore.doc(this.collection, id), {
-            readMode: this.managerOptions.readMode,
-            errorInterceptor: this.managerOptions.errorInterceptor,
-            snapshotOptions: this.managerOptions.snapshotOptions,
-        })
+        const newRef = new this.managerOptions.Reference(
+            this.firestore,
+            this.firestore.doc(this.collection, id),
+            this.referenceOptions
+        )
+
         if (!this.managerOptions.disableCache) {
             this.refCache.set(id, newRef)
         }
@@ -226,8 +319,6 @@ export class FirestoreDataManager<
     }
 
     public getList(params?: QueryParams<SerializedT> & ListPaginationParams) {
-        if (!this.managerOptions.List) throw new Error('ListClass not defined')
-
         const compoundQuery = this._getFilteredQuery(params)
 
         const key = JSON.stringify(params || {})
@@ -236,7 +327,6 @@ export class FirestoreDataManager<
         }
         const newList = new this.managerOptions.List(this.firestore, compoundQuery, {
             readMode: this.managerOptions.readMode,
-            errorInterceptor: this.managerOptions.errorInterceptor,
             ...params,
         })
         if (!this.managerOptions.disableCache) {
@@ -246,11 +336,17 @@ export class FirestoreDataManager<
     }
 
     private async preventOverwriteOnCreate(docRef: FirestoreTypes.DocumentReference, createOptions?: CreateOptions) {
+        if (!this.managerOptions.preventOverwriteOnCreate) return false
+
         const doc = await this.firestore.getDoc(docRef)
         const docExists = checkIfReferenceExists(doc)
-        if (docExists && this.managerOptions.preventOverwriteOnCreate && createOptions?.merge !== true) {
-            throw new Error(`Document already exists - ${doc.ref.path}`)
+
+        if (docExists && createOptions?.merge !== true) {
+            throw new FirestoreDataManagerError(
+                `Cannot create document at "${doc.ref.path}": document already exists. Use 'merge: true' or disable 'preventOverwriteOnCreate' to allow overwriting.`
+            )
         }
+
         return docExists
     }
 }
