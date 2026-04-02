@@ -1,15 +1,12 @@
 import { WithoutId } from '@data-weave/datamanager'
 import type * as FirestoreTypes from '@firebase/firestore'
-import type {
-    DocumentData,
-    FieldPath,
-    WithFieldValue as FirestoreWithFieldValue,
-    QueryConstraint,
-} from '@firebase/firestore'
+import type { FieldPath, WithFieldValue as FirestoreWithFieldValue, QueryConstraint } from '@firebase/firestore'
 import type { HttpsCallable, HttpsCallableOptions } from '@firebase/functions-types'
 import type { Transaction as AdminTransaction, FieldValue } from '@google-cloud/firestore'
 
-export { DocumentData, FieldValue, FirestoreTypes }
+export type DocumentData = FirestoreTypes.DocumentData
+
+export { FieldValue, FirestoreTypes }
 
 /**
  * Same as Partial but all fields are required to be included
