@@ -5,6 +5,8 @@ import {
     IdentifiableReference,
     List,
     ListPaginationParams,
+    LiveList,
+    LiveReference,
     MapCache,
     Metadata,
     NumericKeys,
@@ -45,19 +47,17 @@ export interface FirebaseDataManagerOptions {
     readonly preventOverwriteOnCreate: boolean
     readonly snapshotOptions?: FirestoreTypes.SnapshotOptions
     // TODO: Add preventUpdateIfNotExists?
-    readonly Reference: typeof FirestoreReference
-    readonly List: typeof FirestoreList
     readonly listCache?: Cache
     readonly refCache?: Cache
     readonly disableCache?: boolean
+    readonly ReferenceWrapper?: new <T>(reference: LiveReference<T>) => IdentifiableReference<T>
+    readonly ListWrapper?: new <T>(list: LiveList<T>) => List<T>
 }
 
 const defaultFirebaseDataManagerOptions: FirebaseDataManagerOptions = {
     deleteMode: 'soft',
     preventOverwriteOnCreate: true,
     readMode: 'static',
-    Reference: FirestoreReference,
-    List: FirestoreList,
 }
 
 export interface QueryParams<T> {
@@ -108,13 +108,7 @@ export class FirestoreDataManager<
     }
 
     private validateOptions(options: FirebaseDataManagerOptions): FirebaseDataManagerOptions {
-        if (!options.Reference) throw new FirestoreDataManagerError('ReferenceClass not defined')
-        if (!options.List) throw new FirestoreDataManagerError('ListClass not defined')
-
-        return options as FirebaseDataManagerOptions & {
-            Reference: typeof FirestoreReference
-            List: typeof FirestoreList
-        }
+        return options
     }
 
     public async read(id: string, options?: FirestoreReadOptions): Promise<WithMetadata<T> | undefined> {
@@ -287,21 +281,23 @@ export class FirestoreDataManager<
         }
     }
 
-    public getRef(id: string) {
+    public getRef(id: string): IdentifiableReference<WithMetadata<T>> {
         if (this.refCache.has(id) && !this.managerOptions.disableCache) {
             return this.refCache.get(id)!
         }
 
-        const newRef = new this.managerOptions.Reference(
+        const newRef = new FirestoreReference(
             this.firestore,
             this.firestore.doc(this.collection, id),
             this.referenceOptions
         )
 
+        const ref = this.managerOptions.ReferenceWrapper ? new this.managerOptions.ReferenceWrapper(newRef) : newRef
+
         if (!this.managerOptions.disableCache) {
-            this.refCache.set(id, newRef)
+            this.refCache.set(id, ref)
         }
-        return newRef
+        return ref
     }
 
     private _getFilteredQuery(params?: QueryParams<SerializedT>) {
@@ -318,21 +314,24 @@ export class FirestoreDataManager<
         return compoundQuery
     }
 
-    public getList(params?: QueryParams<SerializedT> & ListPaginationParams) {
+    public getList(params?: QueryParams<SerializedT> & ListPaginationParams): List<WithMetadata<T>> {
         const compoundQuery = this._getFilteredQuery(params)
 
         const key = JSON.stringify(params || {})
         if (this.listCache.has(key) && !this.managerOptions.disableCache) {
             return this.listCache.get(key)!
         }
-        const newList = new this.managerOptions.List(this.firestore, compoundQuery, {
+        const newList = new FirestoreList(this.firestore, compoundQuery, {
             readMode: this.managerOptions.readMode,
             ...params,
         })
+
+        const list = this.managerOptions.ListWrapper ? new this.managerOptions.ListWrapper(newList) : newList
+
         if (!this.managerOptions.disableCache) {
-            this.listCache.set(key, newList)
+            this.listCache.set(key, list)
         }
-        return newList
+        return list
     }
 
     private async preventOverwriteOnCreate(docRef: FirestoreTypes.DocumentReference, createOptions?: CreateOptions) {

@@ -18,7 +18,7 @@ export class FirestoreReference<T extends DocumentData, S extends DocumentData> 
         private readonly docRef: FirestoreTypes.DocumentReference<T, S>,
         readonly options: FirestoreReferenceOptions<T>
     ) {
-        super(options)
+        super(docRef.id, options)
     }
 
     public async resolve(): Promise<T | undefined> {
@@ -56,10 +56,6 @@ export class FirestoreReference<T extends DocumentData, S extends DocumentData> 
             this.onError(error)
         }
         return this.value
-    }
-
-    public get id(): string {
-        return this.docRef.id
     }
 
     public get path(): string {

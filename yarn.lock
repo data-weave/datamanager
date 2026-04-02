@@ -875,9 +875,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@data-weave/datamanager-firestore-mobx@workspace:packages/datamanager-firestore-mobx":
+"@data-weave/datamanager-mobx@workspace:packages/datamanager-mobx":
   version: 0.0.0-use.local
-  resolution: "@data-weave/datamanager-firestore-mobx@workspace:packages/datamanager-firestore-mobx"
+  resolution: "@data-weave/datamanager-mobx@workspace:packages/datamanager-mobx"
   dependencies:
     "@data-weave/backend-firestore": "npm:~0.5.0"
     "@data-weave/datamanager": "npm:0.5.0"

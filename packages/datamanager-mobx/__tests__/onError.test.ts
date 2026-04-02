@@ -2,7 +2,7 @@ import { Firestore, FirestoreReferenceError } from '@data-weave/backend-firestor
 import { describe, expect, test } from '@jest/globals'
 import { FirebaseProductModel, productConverter } from '@test-fixtures/product'
 import { getSDK } from '@test-fixtures/utils'
-import { ObservableFirestoreList } from '../src'
+import { ObservableList } from '../src'
 
 let sdk: Firestore
 
@@ -18,7 +18,7 @@ const jsOnlyTest = process.env.SDK_TYPE === 'ADMIN_SDK' ? test.skip : test
 beforeEach(() => {
     productModel = new FirebaseProductModel(sdk, productConverter, {
         readMode: 'realtime',
-        List: ObservableFirestoreList,
+        ListWrapper: ObservableList,
     })
 
     restrictedProductModel = new FirebaseProductModel(
@@ -26,7 +26,7 @@ beforeEach(() => {
         productConverter,
         {
             readMode: 'realtime',
-            List: ObservableFirestoreList,
+            ListWrapper: ObservableList,
         },
         'private_products_on_error'
     )

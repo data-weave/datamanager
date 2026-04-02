@@ -18,7 +18,7 @@
         "paths": {
             "@data-weave/datamanager": ["packages/datamanager/src"],
             "@data-weave/backend-firestore": ["packages/backend-firestore/src"],
-            "@data-weave/datamanager-firestore-mobx": ["packages/datamanager-firestore-mobx/src"],
+            "@data-weave/datamanager-mobx": ["packages/datamanager-mobx/src"],
             "@test-fixtures/*": ["__tests__/fixtures/*"]
         }
     },
