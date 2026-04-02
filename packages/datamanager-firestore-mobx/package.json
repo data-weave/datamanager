@@ -9,7 +9,7 @@
         "dist/**/*.d.ts"
     ],
     "scripts": {
-        "clean": "rm -rf dist tsconfig.tsbuildinfo",
+        "clean": "rm -rf dist",
         "build": "tsc",
         "build:clean": "npm run clean && npm run build",
         "prepare": "npm run build"

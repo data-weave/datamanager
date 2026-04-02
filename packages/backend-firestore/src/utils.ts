@@ -1,5 +1,7 @@
 import { WithoutId } from '@data-weave/datamanager'
 import {
+    AggregateResult,
+    AggregateSpec,
     DocumentData,
     Firestore,
     FirestoreTypes,
@@ -8,10 +10,14 @@ import {
 } from './firestoreTypes'
 
 import {
-    Firestore as FirebaseFirestore,
     collection,
     deleteDoc,
     doc,
+    Firestore as FirebaseFirestore,
+    getAggregateFromServer as firebaseGetAggregateFromServer,
+    average as firestoreAverage,
+    count as firestoreCount,
+    sum as firestoreSum,
     getDoc,
     getDocs,
     increment,
@@ -25,6 +31,13 @@ import {
     updateDoc,
     where,
 } from 'firebase/firestore'
+
+class ConverterError extends Error {
+    constructor(message: string) {
+        super(message)
+        this.name = 'ConverterError'
+    }
+}
 
 export class MergeConverters<
     T extends DocumentData,
@@ -41,16 +54,20 @@ export class MergeConverters<
         modelObject: WithoutId<Partial<WithFieldValue<T>>> & WithoutId<Partial<WithFieldValue<G>>>,
         options?: FirestoreTypes.SetOptions
     ) {
-        if (options) {
-            return {
-                ...this.converter1.toFirestore(modelObject, options),
-                ...this.converter2.toFirestore(modelObject, options),
+        try {
+            if (options) {
+                return {
+                    ...this.converter1.toFirestore(modelObject, options),
+                    ...this.converter2.toFirestore(modelObject, options),
+                }
+            } else {
+                return {
+                    ...this.converter1.toFirestore(modelObject),
+                    ...this.converter2.toFirestore(modelObject),
+                }
             }
-        } else {
-            return {
-                ...this.converter1.toFirestore(modelObject),
-                ...this.converter2.toFirestore(modelObject),
-            }
+        } catch (error) {
+            throw new ConverterError(`Failed to convert model object to firestore: ${error}`)
         }
     }
 
@@ -58,11 +75,37 @@ export class MergeConverters<
         snapshot: FirestoreTypes.QueryDocumentSnapshot<T & G, SerializedT & SerializedG>,
         options: FirestoreTypes.SnapshotOptions
     ) {
-        return {
-            ...this.converter1.fromFirestore(snapshot, options),
-            ...this.converter2.fromFirestore(snapshot, options),
+        try {
+            return {
+                ...this.converter1.fromFirestore(snapshot, options),
+                ...this.converter2.fromFirestore(snapshot, options),
+            }
+        } catch (error) {
+            throw new ConverterError(`Failed to convert snapshot to model object: ${error}`)
         }
     }
+}
+
+function buildAggregateSpec(spec: AggregateSpec) {
+    return Object.fromEntries(
+        Object.keys(spec).map(alias => {
+            const fieldSpec = spec[alias]
+            if (fieldSpec.type === 'count') {
+                return [alias, firestoreCount()]
+            }
+            const factory = fieldSpec.type === 'sum' ? firestoreSum : firestoreAverage
+            return [alias, factory(fieldSpec.field)]
+        })
+    )
+}
+
+async function modularGetAggregateFromServer<Spec extends AggregateSpec>(
+    ref: FirestoreTypes.Query,
+    spec: Spec
+): Promise<AggregateResult<Spec>> {
+    const sdkSpec = buildAggregateSpec(spec)
+    const snapshot = await firebaseGetAggregateFromServer(ref, sdkSpec)
+    return snapshot.data() as AggregateResult<Spec>
 }
 
 export function createModularFirestoreAdapter(firestore: FirebaseFirestore): Firestore {
@@ -70,6 +113,7 @@ export function createModularFirestoreAdapter(firestore: FirebaseFirestore): Fir
         app: firestore,
         collection,
         getDocs,
+        getAggregateFromServer: modularGetAggregateFromServer,
         getDoc,
         serverTimestamp,
         query,

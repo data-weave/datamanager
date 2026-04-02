@@ -1,118 +1,101 @@
-import { FirestoreListContext, FirestoreReferenceContext } from '@data-weave/backend-firestore/src'
-import { describe, test } from '@jest/globals'
+import { Firestore, FirestoreReferenceError } from '@data-weave/backend-firestore'
+import { describe, expect, test } from '@jest/globals'
+import { FirebaseProductModel, productConverter } from '@test-fixtures/product'
+import { getSDK } from '@test-fixtures/utils'
 import { ObservableFirestoreList } from '../src'
-import { sdk } from './main.js.test'
-import { FirebaseProductModel, productConverter } from './product'
+
+let sdk: Firestore
+
+beforeAll(() => {
+    sdk = getSDK()
+})
 
 let productModel: FirebaseProductModel
-let errorContextGlobal: FirestoreReferenceContext | FirestoreListContext | undefined = undefined
-let errorGlobal: unknown | undefined = undefined
+let restrictedProductModel: FirebaseProductModel
+// This is a workaround to skip tests that are only relevant for the JS SDK
+const jsOnlyTest = process.env.SDK_TYPE === 'ADMIN_SDK' ? test.skip : test
 
 beforeEach(() => {
-    errorContextGlobal = undefined
-    errorGlobal = undefined
-
     productModel = new FirebaseProductModel(sdk, productConverter, {
         readMode: 'realtime',
         List: ObservableFirestoreList,
-        errorInterceptor: (error, ctx) => {
-            errorContextGlobal = ctx
-            errorGlobal = error
-        },
     })
+
+    restrictedProductModel = new FirebaseProductModel(
+        sdk,
+        productConverter,
+        {
+            readMode: 'realtime',
+            List: ObservableFirestoreList,
+        },
+        'private_products_on_error'
+    )
 })
 
-describe('Firebase error interceptor tests', () => {
-    test('should intercept error and context for document reference', async () => {
-        try {
-            await productModel.getProduct('non-existent-id').resolve()
-        } catch (error) {
-            expect(error).toBeDefined()
-        }
+describe('Firebase typed error tests', () => {
+    test('should wrap error with FirestoreReferenceError and context for document reference', async () => {
+        const ref = productModel.getProduct('non-existent-id')
+        await ref.resolve()
 
-        if (!errorContextGlobal) {
-            fail('errorContextGlobal is undefined')
-        }
+        expect(ref.hasError).toBe(true)
+        expect(ref.error).toBeInstanceOf(FirestoreReferenceError)
 
-        if (errorContextGlobal?.type !== 'reference') {
-            fail('errorContextGlobal is not a reference context or undefined')
-        }
-
-        expect(errorContextGlobal).toBeDefined()
-        expect(errorContextGlobal.type).toBe('reference')
-        expect(errorContextGlobal).toBeDefined()
-        expect(errorGlobal).toBeDefined()
-
-        expect(errorContextGlobal?.path).toContain('products')
-        expect(errorContextGlobal?.id).toBe('non-existent-id')
-        expect(errorContextGlobal?.readMode).toBe('realtime')
-
-        expect(errorGlobal).toBeInstanceOf(Error)
+        const refError = ref.error as FirestoreReferenceError
+        expect(refError.context.type).toBe('reference')
+        expect(refError.context.path).toContain('products')
+        expect(refError.context.id).toBe('non-existent-id')
+        expect(refError.context.readMode).toBe('realtime')
+        expect(refError.cause).toBeInstanceOf(Error)
     })
 
-    test('should intercept error and context for list reference', async () => {
-        try {
-            await productModel.getProductList().resolve()
-        } catch (error) {
-            expect(error).toBeDefined()
-        }
+    test('should resolve without error for valid list reference', async () => {
+        const list = productModel.getProductList()
+        const values = await list.resolve()
+
+        expect(values).toBeDefined()
+        expect(list.hasError).toBe(false)
     })
 
-    test('should intercept index error for complex list query', async () => {
-        try {
-            await productModel
-                .getProductList({
-                    filters: [
-                        ['name', '==', 'test'],
-                        ['qty', '>', 0],
-                    ],
-                    orderBy: [['desciption', 'asc']],
-                })
-                .resolve()
-        } catch (error) {
-            expect(error).toBeDefined()
+    jsOnlyTest('should wrap error with FirestoreListError for complex list query', async () => {
+        const list = restrictedProductModel.getProductList({
+            filters: [
+                ['name', '==', 'test'],
+                ['qty', '>', 0],
+            ],
+            orderBy: [['desciption', 'asc']],
+        })
+        expect(list.hasError).toBe(false)
+        await list.resolve()
+        expect(list.hasError).toBe(true)
+        expect(list.error).toEqual(expect.objectContaining({ name: 'FirestoreListError' }))
 
-            if (errorContextGlobal && errorGlobal) {
-                errorContextGlobal = errorContextGlobal as FirestoreListContext
-                expect(errorContextGlobal?.query).toBeDefined()
-                expect(errorContextGlobal?.readMode).toBe('realtime')
-
-                if (!(errorGlobal instanceof Error)) {
-                    fail('errorGlobal is not an error')
-                }
-
-                expect(errorGlobal.message).toBeDefined()
-            }
+        const listError = list.error as {
+            context: { type: 'list'; query: unknown; readMode?: string }
+            cause: unknown
         }
+        expect(listError.context.type).toBe('list')
+        expect(listError.context.query).toBeDefined()
+        expect(listError.context.readMode).toBe('realtime')
+        expect(listError.cause).toBeInstanceOf(Error)
     })
 
-    test('should intercept permission denied error for restricted query', async () => {
-        try {
-            await productModel
-                .getProductList({
-                    filters: [['__deleted', '==', true]],
-                })
-                .resolve()
-        } catch (error) {
-            expect(error).toBeDefined()
+    jsOnlyTest('should wrap error with FirestoreListError for restricted query', async () => {
+        const list = restrictedProductModel.getProductList({
+            filters: [['__deleted', '==', true]],
+        })
 
-            if (!errorContextGlobal) {
-                fail('errorContextGlobal is undefined')
-            }
+        expect(list.hasError).toBe(false)
+        await list.resolve()
+        expect(list.hasError).toBe(true)
+        expect(list.error).toEqual(expect.objectContaining({ name: 'FirestoreListError' }))
 
-            if (errorContextGlobal.type !== 'list') {
-                fail('errorContextGlobal is not a list context or undefined')
-            }
-
-            expect(errorContextGlobal.type).toBe('list')
-            expect(errorContextGlobal.query).toBeDefined()
-            expect(errorContextGlobal.readMode).toBe('realtime')
-
-            if (!(errorGlobal instanceof Error)) {
-                fail('errorGlobal is not an error')
-            }
-
-            expect(errorGlobal.message).toBeDefined()
+        const listError = list.error as {
+            context: { type: 'list'; query: unknown; readMode?: string }
+            cause: unknown
         }
+        expect(listError.context.type).toBe('list')
+        expect(listError.context.query).toBeDefined()
+        expect(listError.context.readMode).toBe('realtime')
+        expect(listError.cause).toBeInstanceOf(Error)
     })
 })

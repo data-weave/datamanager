@@ -18,13 +18,9 @@
         "paths": {
             "@data-weave/datamanager": ["packages/datamanager/src"],
             "@data-weave/backend-firestore": ["packages/backend-firestore/src"],
-            "@data-weave/datamanager-firestore-mobx": ["packages/datamanager-firestore-mobx/src"]
+            "@data-weave/datamanager-firestore-mobx": ["packages/datamanager-firestore-mobx/src"],
+            "@test-fixtures/*": ["__tests__/fixtures/*"]
         }
     },
-    "references": [
-        { "path": "packages/datamanager" },
-        { "path": "packages/backend-firestore" },
-        { "path": "packages/datamanager-firestore-mobx" }
-    ],
-    "exclude": ["node_modules", "**/__tests__", "**/dist"]
+    "exclude": ["node_modules", "**/dist"]
 }

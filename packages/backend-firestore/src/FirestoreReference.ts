@@ -1,19 +1,13 @@
 import { LiveReference, LiveReferenceOptions } from '@data-weave/datamanager'
+import { FirestoreReferenceError } from './errors'
 import { DocumentData, Firestore, FirestoreReadMode, FirestoreTypes } from './firestoreTypes'
 import { checkIfReferenceExists } from './utils'
 
-export interface FirestoreReferenceContext {
-    path: string
-    id: string
-    readMode?: FirestoreReadMode
-    snapshotOptions?: FirestoreTypes.SnapshotOptions
-    type: 'reference'
-}
+export type { FirestoreReferenceContext } from './errors'
 
 export interface FirestoreReferenceOptions<T> extends LiveReferenceOptions<T> {
     readMode?: FirestoreReadMode
     snapshotOptions?: FirestoreTypes.SnapshotOptions
-    errorInterceptor?: (error: unknown, ctx: FirestoreReferenceContext) => void
 }
 
 export class FirestoreReference<T extends DocumentData, S extends DocumentData> extends LiveReference<T> {
@@ -29,7 +23,12 @@ export class FirestoreReference<T extends DocumentData, S extends DocumentData> 
 
     public async resolve(): Promise<T | undefined> {
         if (this.options?.readMode === 'realtime') {
-            return new Promise<T | undefined>((res, reject) => {
+            return new Promise<T | undefined>(res => {
+                // Unsubscribe from any existing snapshot listener
+                if (this.unsubscribeFromSnapshot) {
+                    this.unsubscribeFromSnapshot()
+                }
+
                 this.unsubscribeFromSnapshot = this.firestore.onSnapshot(
                     this.docRef,
                     documentSnapshot => {
@@ -40,12 +39,12 @@ export class FirestoreReference<T extends DocumentData, S extends DocumentData> 
                             res(this.value)
                         } catch (error) {
                             this.onError(error)
-                            reject(error)
+                            res(this.value)
                         }
                     },
                     error => {
                         this.onError(error)
-                        reject(error)
+                        res(this.value)
                     }
                 )
             })
@@ -55,7 +54,6 @@ export class FirestoreReference<T extends DocumentData, S extends DocumentData> 
             this.onUpdate(this.parseDocumentSnapshot(doc))
         } catch (error) {
             this.onError(error)
-            throw error
         }
         return this.value
     }
@@ -69,15 +67,14 @@ export class FirestoreReference<T extends DocumentData, S extends DocumentData> 
     }
 
     protected onError(error: unknown): void {
-        console.error(`FirestoreReference error ${this.docRef.path}`, error)
-        this.options?.errorInterceptor?.(error, {
+        const wrapped = new FirestoreReferenceError(error, {
             path: this.docRef.path,
             id: this.docRef.id,
             readMode: this.options?.readMode,
             snapshotOptions: this.options?.snapshotOptions,
             type: 'reference',
         })
-        super.onError(error)
+        super.onError(wrapped)
     }
 
     public unSubscribe() {

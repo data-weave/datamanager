@@ -1,4 +1,12 @@
-import { FieldValues, Firestore, FirestoreApp, FirestoreTypes } from './firestoreTypes'
+import {
+    type AggregateResult,
+    type AggregateSpec,
+    FieldValues,
+    Firestore,
+    FirestoreApp,
+    FirestoreTypes,
+} from '@data-weave/backend-firestore'
+import { AggregateField } from 'firebase-admin/firestore'
 
 /*
  *  FirestoreAdminAdapter creates an interface between modular and namespaced
@@ -25,6 +33,24 @@ export class FirestoreAdminAdapter extends Firestore {
 
     public getDocs(reference: any) {
         return reference.get()
+    }
+
+    public async getAggregateFromServer<Spec extends AggregateSpec>(
+        query: any,
+        spec: Spec
+    ): Promise<AggregateResult<Spec>> {
+        const adminSpec = Object.fromEntries(
+            Object.keys(spec).map(alias => {
+                const fieldSpec = spec[alias]
+                if (fieldSpec.type === 'count') {
+                    return [alias, AggregateField.count()]
+                }
+                return [alias, AggregateField[fieldSpec.type](fieldSpec.field)]
+            })
+        )
+
+        const snapshot = await query.aggregate(adminSpec).get()
+        return snapshot.data() as AggregateResult<Spec>
     }
 
     public getDoc(reference: any, path?: string) {
@@ -70,7 +96,7 @@ export class FirestoreAdminAdapter extends Firestore {
     public orderBy(orderBy: string, direction: FirestoreTypes.OrderByDirection) {
         return {
             type: 'orderBy',
-            orderBy,
+            field: orderBy,
             direction,
         }
     }

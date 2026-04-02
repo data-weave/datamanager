@@ -1,3 +1,4 @@
+export * from './errors'
 export * from './FirestoreAdminAdapter'
 export * from './FirestoreDataManager'
 export * from './FirestoreList'
