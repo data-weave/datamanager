@@ -6,7 +6,6 @@ import {
     Firestore,
     FirestoreTypes,
     InternalFirestoreDataConverter,
-    Transaction,
     WithFieldValue,
 } from './firestoreTypes'
 
@@ -127,9 +126,7 @@ export function createModularFirestoreAdapter(firestore: FirebaseFirestore): Fir
         doc,
         onSnapshot,
         increment,
-        // TODO: fix this
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        runTransaction: runTransaction as any,
+        runTransaction,
     }
 }
 
@@ -149,8 +146,8 @@ export const checkIfReferenceExists = (value: any): boolean => {
 
 export const withTransaction = (
     firestore: Firestore,
-    transaction: (transaction: Transaction) => Promise<void>,
+    transaction: (transaction: FirestoreTypes.Transaction) => Promise<void>,
     options?: FirestoreTypes.TransactionOptions
 ) => {
-    return firestore.runTransaction!(firestore.app, transaction, options)
+    return firestore.runTransaction(firestore.app, transaction, options)
 }

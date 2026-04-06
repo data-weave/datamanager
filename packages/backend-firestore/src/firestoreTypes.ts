@@ -2,11 +2,11 @@ import { WithoutId } from '@data-weave/datamanager'
 import type * as FirestoreTypes from '@firebase/firestore'
 import type { FieldPath, WithFieldValue as FirestoreWithFieldValue, QueryConstraint } from '@firebase/firestore'
 import type { HttpsCallable, HttpsCallableOptions } from '@firebase/functions-types'
-import type { FieldValue, Transaction } from '@google-cloud/firestore'
+import type { Transaction as AdminTransaction, FieldValue } from '@google-cloud/firestore'
 
 export type DocumentData = FirestoreTypes.DocumentData
 
-export { FieldValue, FirestoreTypes, Transaction }
+export { FieldValue, FirestoreTypes }
 
 /**
  * Same as Partial but all fields are required to be included
@@ -175,7 +175,7 @@ export abstract class FirestoreApp {
     public abstract settings?(settings: FirestoreAppSettings): void
     public abstract useEmulator?(host: string, port: number): void
     public abstract runTransaction?<T>(
-        updateFunction: (transaction: Transaction) => Promise<T>,
+        updateFunction: (transaction: AdminTransaction) => Promise<T>,
         options?: FirestoreTypes.TransactionOptions
     ): Promise<T>
 }
@@ -237,7 +237,7 @@ export abstract class Firestore {
     ): () => void
     public abstract runTransaction<T>(
         firestore: FirestoreApp,
-        transaction: (transaction: Transaction) => Promise<T>,
+        transaction: (transaction: FirestoreTypes.Transaction) => Promise<T>,
         options?: FirestoreTypes.TransactionOptions
     ): Promise<T>
 }

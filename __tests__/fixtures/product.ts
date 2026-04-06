@@ -103,17 +103,14 @@ export class FirebaseProductModel implements ProductModel {
 
     updateStockTwiceWithTransaction(id: string, addQty: number) {
         return withTransaction(this.db, async transaction => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            await this.datamanager.update(id, { qty: this.db.increment(addQty) }, { transaction: transaction as any })
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            await this.datamanager.update(id, { qty: this.db.increment(addQty) }, { transaction: transaction as any })
+            await this.datamanager.update(id, { qty: this.db.increment(addQty) }, { transaction })
+            await this.datamanager.update(id, { qty: this.db.increment(addQty) }, { transaction })
         })
     }
 
     updateStockWithTransactionWithError(id: string, addQty: number) {
         return withTransaction(this.db, async transaction => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            await this.datamanager.update(id, { qty: this.db.increment(addQty) }, { transaction: transaction as any })
+            await this.datamanager.update(id, { qty: this.db.increment(addQty) }, { transaction })
             throw new Error('Test transaction failure')
         })
     }

@@ -1,5 +1,4 @@
-import { Firestore } from '@data-weave/backend-firestore'
-import { FirestoreAdminAdapter } from '@data-weave/backend-firestore-admin'
+import { FirestoreAdminAdapter } from '@data-weave/backend-firestore'
 import { initializeAdmin_SDK, initializeJS_SDK } from './intitialize'
 
 export function sleep(milliseconds: number) {
@@ -11,7 +10,7 @@ export function getSDK() {
 
     if (sdkType === 'ADMIN_SDK') {
         const adminSdk = initializeAdmin_SDK()
-        return new FirestoreAdminAdapter(adminSdk.db, adminSdk.fieldValue) as Firestore
+        return new FirestoreAdminAdapter(adminSdk.db, adminSdk.fieldValue)
     } else {
         return initializeJS_SDK()
     }
