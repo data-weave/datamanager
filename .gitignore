@@ -4,6 +4,8 @@ build*
 /packages/*/dist
 serviceAccount.json
 firestore-debug.log
+firebase-debug.log
+emulator.log
 
 .turbo
 packages/*/.turbo
