@@ -47,7 +47,7 @@ export class LiveList<T> implements List<T> {
 
     public onValuesChange(): void {}
 
-    public unSubscribe(): void {}
+    public unsubscribe(): void {}
 
     protected onUpdate(): void {
         this._resolved = true

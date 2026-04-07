@@ -72,5 +72,5 @@ export class LiveReference<T> implements IdentifiableReference<T> {
 
     public onValueChange(): void {}
 
-    public unSubscribe(): void {}
+    public unsubscribe(): void {}
 }

@@ -73,7 +73,7 @@ export class FirestoreReference<T extends DocumentData, S extends DocumentData> 
         super.onError(wrapped)
     }
 
-    public unSubscribe() {
+    public unsubscribe() {
         this.unsubscribeFromSnapshot?.()
         this.setStale()
     }

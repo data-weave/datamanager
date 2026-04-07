@@ -86,7 +86,7 @@ export class FirestoreList<T extends DocumentData, S extends DocumentData> exten
         this.onUpdate()
     }
 
-    public unSubscribe() {
+    public unsubscribe() {
         this.unsubscribeFromSnapshot?.()
         this.setStale()
     }

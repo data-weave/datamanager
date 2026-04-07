@@ -7,7 +7,7 @@ export const ObservableReference = <T>(sourceReference: LiveReference<T>): LiveR
     const atom = createAtom(
         'ObservableReference',
         () => sourceReference.resolve(),
-        () => sourceReference.unSubscribe()
+        () => sourceReference.unsubscribe()
     )
 
     return new Proxy(sourceReference, {

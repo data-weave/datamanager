@@ -7,7 +7,7 @@ export const ObservableList = <T>(sourceList: LiveList<T>): LiveList<T> => {
     const atom = createAtom(
         'ObservableList',
         () => sourceList.resolve(),
-        () => sourceList.unSubscribe()
+        () => sourceList.unsubscribe()
     )
 
     return new Proxy(sourceList, {
