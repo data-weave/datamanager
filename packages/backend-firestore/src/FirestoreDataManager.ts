@@ -50,8 +50,8 @@ export interface FirebaseDataManagerOptions {
     readonly listCache?: Cache
     readonly refCache?: Cache
     readonly disableCache?: boolean
-    readonly ReferenceWrapper?: new <T>(reference: LiveReference<T>) => IdentifiableReference<T>
-    readonly ListWrapper?: new <T>(list: LiveList<T>) => List<T>
+    readonly ReferenceProxy?: <T>(reference: LiveReference<T>) => LiveReference<T>
+    readonly ListProxy?: <T>(list: LiveList<T>) => LiveList<T>
 }
 
 const defaultFirebaseDataManagerOptions: FirebaseDataManagerOptions = {
@@ -292,7 +292,7 @@ export class FirestoreDataManager<
             this.referenceOptions
         )
 
-        const ref = this.managerOptions.ReferenceWrapper ? new this.managerOptions.ReferenceWrapper(newRef) : newRef
+        const ref = this.managerOptions.ReferenceProxy ? this.managerOptions.ReferenceProxy(newRef) : newRef
 
         if (!this.managerOptions.disableCache) {
             this.refCache.set(id, ref)
@@ -326,7 +326,7 @@ export class FirestoreDataManager<
             ...params,
         })
 
-        const list = this.managerOptions.ListWrapper ? new this.managerOptions.ListWrapper(newList) : newList
+        const list = this.managerOptions.ListProxy ? this.managerOptions.ListProxy(newList) : newList
 
         if (!this.managerOptions.disableCache) {
             this.listCache.set(key, list)

@@ -16,7 +16,7 @@ let productModel: FirebaseProductModel
 beforeEach(() => {
     productModel = new FirebaseProductModel(sdk, productConverter, {
         readMode: 'realtime',
-        ReferenceWrapper: ObservableReference,
+        ReferenceProxy: ObservableReference,
     })
 })
 

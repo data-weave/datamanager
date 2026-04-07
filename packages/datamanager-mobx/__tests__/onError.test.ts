@@ -18,7 +18,7 @@ const jsOnlyTest = process.env.SDK_TYPE === 'ADMIN_SDK' ? test.skip : test
 beforeEach(() => {
     productModel = new FirebaseProductModel(sdk, productConverter, {
         readMode: 'realtime',
-        ListWrapper: ObservableList,
+        ListProxy: ObservableList,
     })
 
     restrictedProductModel = new FirebaseProductModel(
@@ -26,7 +26,7 @@ beforeEach(() => {
         productConverter,
         {
             readMode: 'realtime',
-            ListWrapper: ObservableList,
+            ListProxy: ObservableList,
         },
         'private_products_on_error'
     )
