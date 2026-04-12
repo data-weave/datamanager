@@ -12,6 +12,6 @@ module.exports = {
         '^@data-weave/([^/]+)$': '<rootDir>/packages/$1/dist',
         '^@data-weave/(.*)$': '<rootDir>/packages/$1',
     },
-    setupFilesAfterEnv: ['<rootDir>/packages/datamanager-firestore-mobx/__tests__/setup.ts'],
+    setupFilesAfterEnv: ['<rootDir>/packages/datamanager-mobx/__tests__/setup.ts'],
     transformIgnorePatterns: ['node_modules/(?!(uuid))'],
 }

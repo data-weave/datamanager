@@ -45,7 +45,9 @@ export class LiveList<T> implements List<T> {
         return this._error
     }
 
-    protected onValuesChange(): void {}
+    public onValuesChange(): void {}
+
+    public unsubscribe(): void {}
 
     protected onUpdate(): void {
         this._resolved = true

@@ -3,7 +3,7 @@ import { describe, test } from '@jest/globals'
 import { FirebaseProductModel, productConverter } from '@test-fixtures/product'
 import { getSDK, sleep } from '@test-fixtures/utils'
 import { autorun } from 'mobx'
-import { ObservableFirestoreList } from '../src'
+import { ObservableList } from '../src'
 
 let sdk: Firestore
 
@@ -16,7 +16,7 @@ let productModel: FirebaseProductModel
 beforeEach(() => {
     productModel = new FirebaseProductModel(sdk, productConverter, {
         readMode: 'realtime',
-        List: ObservableFirestoreList,
+        ListProxy: ObservableList,
     })
 })
 

@@ -1,4 +1,4 @@
-import { Reference } from './Reference'
+import { IdentifiableReference } from './Reference'
 
 export interface LiveReferenceOptions<T> {
     onUpdate?: (newValue: T | undefined) => void
@@ -10,7 +10,7 @@ export interface LiveReferenceOptions<T> {
     setUndefinedOnError?: boolean
 }
 
-export class LiveReference<T> implements Reference<T> {
+export class LiveReference<T> implements IdentifiableReference<T> {
     private _value: T | undefined
     private _resolved: boolean = false
     private _hasError: boolean = false
@@ -21,7 +21,10 @@ export class LiveReference<T> implements Reference<T> {
         throw new Error('Method not implemented.')
     }
 
-    constructor(readonly options: LiveReferenceOptions<T>) {
+    constructor(
+        readonly id: string,
+        options: LiveReferenceOptions<T>
+    ) {
         this._value = undefined
         this._resolved = false
         this._hasError = false
@@ -67,5 +70,7 @@ export class LiveReference<T> implements Reference<T> {
         this._options.onError?.(error)
     }
 
-    protected onValueChange(): void {}
+    public onValueChange(): void {}
+
+    public unsubscribe(): void {}
 }
