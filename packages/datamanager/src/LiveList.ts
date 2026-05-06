@@ -62,14 +62,17 @@ export class LiveList<T> implements List<T> {
 
     protected onUpdateAtIndex(index: number, value: T): void {
         this._values[index] = value
+        this.onUpdate()
     }
 
     protected onAddAtIndex(index: number, value: T): void {
         this._values.splice(index, 0, value)
+        this.onUpdate()
     }
 
     protected onRemoveAtIndex(index: number): void {
         this._values.splice(index, 1)
+        this.onUpdate()
     }
 
     protected onError(error: unknown): void {

@@ -6,7 +6,7 @@ import {
     Firestore,
     FirestoreApp,
     FirestoreTypes,
-} from './firestoreTypes'
+} from '@data-weave/backend-firestore'
 
 /*
  *  FirestoreAdminAdapter creates an interface between modular and namespaced

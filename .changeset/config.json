@@ -2,7 +2,14 @@
     "$schema": "https://unpkg.com/@changesets/config@3.1.2/schema.json",
     "changelog": "@changesets/cli/changelog",
     "commit": true,
-    "fixed": [["@data-weave/datamanager", "@data-weave/backend-firestore", "@data-weave/datamanager-mobx"]],
+    "fixed": [
+        [
+            "@data-weave/datamanager",
+            "@data-weave/backend-firestore",
+            "@data-weave/datamanager-mobx",
+            "@data-weave/firestore-admin-adapter"
+        ]
+    ],
     "linked": [],
     "access": "public",
     "baseBranch": "main",
