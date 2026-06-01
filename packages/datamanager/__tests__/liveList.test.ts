@@ -31,8 +31,8 @@ describe('LiveList index-based mutations notify subscribers', () => {
         list.onValuesChange = () => {
             onValuesChangeCalls += 1
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(list as any)._options.onUpdate = (vs: number[]) => {
+        // @ts-expect-error - _options is protected and we need to access it for the test
+        list._options.onUpdate = (vs: number[]) => {
             lastOnUpdateValues = [...vs]
         }
         list.seed([1, 2, 3])
@@ -52,8 +52,8 @@ describe('LiveList index-based mutations notify subscribers', () => {
         list.onValuesChange = () => {
             onValuesChangeCalls += 1
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(list as any)._options.onUpdate = (vs: number[]) => {
+        // @ts-expect-error - _options is protected and we need to access it for the test
+        list._options.onUpdate = (vs: number[]) => {
             lastOnUpdateValues = [...vs]
         }
         list.seed([1, 3])
@@ -73,8 +73,8 @@ describe('LiveList index-based mutations notify subscribers', () => {
         list.onValuesChange = () => {
             onValuesChangeCalls += 1
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(list as any)._options.onUpdate = (vs: number[]) => {
+        // @ts-expect-error - _options is protected and we need to access it for the test
+        list._options.onUpdate = (vs: number[]) => {
             lastOnUpdateValues = [...vs]
         }
         list.seed([1, 2, 3])

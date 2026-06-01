@@ -29,7 +29,7 @@ export const ObservableOptimisticReference = <T extends object>(
 
             if (prop === 'applyOptimistic' || prop === 'clearOptimistic') {
                 return (...args: unknown[]) => {
-                    const result = (value as (...args: unknown[]) => unknown).apply(target, args)
+                    const result = value.apply(target, args)
                     patchAtom.reportChanged()
                     return result
                 }

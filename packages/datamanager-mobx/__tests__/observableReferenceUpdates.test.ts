@@ -13,9 +13,7 @@ class TestRef<T> extends LiveReference<T> {
     }
 
     publish(value: T): void {
-        // `onUpdate` is protected on LiveReference but this subclass exposes
-        // it via `publish` so tests can simulate a snapshot landing.
-        ;(this as unknown as { onUpdate(v: T): void }).onUpdate(value)
+        this.onUpdate(value)
     }
 }
 

@@ -16,8 +16,6 @@ type Bridged<T> = LiveList<T> & { [observingAtoms]?: IAtom[] }
  * trap). Multiple wraps of the same source are supported: each wrap registers
  * its own atom and all of them are notified on every snapshot.
  */
-export type ObservableList<T> = LiveList<T>
-
 export const ObservableList = <T>(sourceList: LiveList<T>): LiveList<T> => {
     const atom = createAtom(
         'ObservableList',
@@ -25,19 +23,25 @@ export const ObservableList = <T>(sourceList: LiveList<T>): LiveList<T> => {
         () => sourceList.unsubscribe()
     )
 
-    // FirestoreList (and any LiveList) calls `this.onValuesChange()` on the
+    // LiveList calls `this.onValuesChange()` on the
     // bare instance from inside its snapshot callback (via `onUpdate` /
     // `onUpdateAll` / `onError`). The Proxy's get trap never sees that call,
     // so we install (once per source) a bridge on the bare method that fans
     // each call out to every registered atom.
     const bridged = sourceList as Bridged<T>
+
+    // setup the bridge if it's not already set up
     if (!bridged[observingAtoms]) {
         const atoms: IAtom[] = []
         bridged[observingAtoms] = atoms
+
         const original = sourceList.onValuesChange.bind(sourceList)
+
         sourceList.onValuesChange = () => {
             original()
-            for (const a of atoms) a.reportChanged()
+            for (const atom of atoms) {
+                atom.reportChanged()
+            }
         }
     }
     bridged[observingAtoms].push(atom)

@@ -5,8 +5,7 @@ import { ObservableList } from '../src/ObservableList'
 
 class TestList<T> extends LiveList<T> {
     constructor() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        super({} as any)
+        super({})
     }
 
     async resolve(): Promise<readonly T[]> {
@@ -14,13 +13,11 @@ class TestList<T> extends LiveList<T> {
     }
 
     publishAll(values: T[]): void {
-        // `onUpdateAll` is protected on LiveList; the test subclass exposes
-        // it via `publishAll` so tests can simulate a snapshot landing.
-        ;(this as unknown as { onUpdateAll(v: T[]): void }).onUpdateAll(values)
+        this.onUpdateAll(values)
     }
 
     publishError(error: unknown): void {
-        ;(this as unknown as { onError(e: unknown): void }).onError(error)
+        this.onError(error)
     }
 }
 
@@ -72,7 +69,7 @@ describe('ObservableList update propagation', () => {
 
     test('the bridge is idempotent across multiple wraps of the same source', () => {
         const list = new TestList<number>()
-        // Wrap twice; PATCHED guard should prevent double-bridging.
+
         const a = ObservableList(list)
         const b = ObservableList(list)
         const seenA: number[][] = []
@@ -100,8 +97,7 @@ describe('ObservableList update propagation', () => {
 
         class LifecycleList extends LiveList<number> {
             constructor() {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                super({} as any)
+                super({})
             }
 
             async resolve(): Promise<readonly number[]> {
