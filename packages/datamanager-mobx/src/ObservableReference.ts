@@ -5,18 +5,6 @@ const observingAtoms = Symbol('@data-weave/observableReference.observingAtoms')
 
 type Bridged<T> = LiveReference<T> & { [observingAtoms]?: IAtom[] }
 
-/**
- * Wraps a `LiveReference<T>` so that MobX reactions observing `value`,
- * `resolved`, `hasError`, or `error` re-run whenever the underlying source
- * publishes a new value. The atom drives `resolve` / `unsubscribe` via
- * `onBecomeObserved` / `onBecomeUnobserved`, and a one-time bridge installed
- * on the bare `onValueChange` method propagates source updates to every
- * wrapping atom (since `FirestoreReference` and other `LiveReference`
- * subclasses call `this.onValueChange()` on the bare instance, bypassing
- * this proxy's get trap). Multiple wraps of the same source are supported:
- * each wrap registers its own atom and all of them are notified on every
- * publish.
- */
 export const ObservableReference = <T>(sourceReference: LiveReference<T>): LiveReference<T> => {
     const atom = createAtom(
         'ObservableReference',

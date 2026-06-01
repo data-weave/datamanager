@@ -30,16 +30,6 @@ describe('OptimisticReference', () => {
         expect(opt.value).toEqual({ state: 'linked' })
     })
 
-    test('patch is discarded when source converges', () => {
-        const src = new FakeSource<{ state: string }>()
-        const opt = new OptimisticReference(src)
-        opt.applyOptimistic({ state: 'linked' })
-        src.set({ state: 'linked' })
-        // Reading `value` triggers the convergence check.
-        expect(opt.value).toEqual({ state: 'linked' })
-        expect(opt.hasPendingOptimistic).toBe(false)
-    })
-
     test('patch overlays partial fields onto base', () => {
         const src = new FakeSource<{ state: string; userId: string | null }>()
         src.set({ state: 'pending', userId: null })

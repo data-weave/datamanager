@@ -1,34 +1,58 @@
 import { LiveReference, OptimisticReference } from '@data-weave/datamanager'
-import { createAtom } from 'mobx'
-import { ObservableReference } from './ObservableReference'
+import { createAtom, IAtom } from 'mobx'
 
-export type ObservableOptimisticReference<T extends object> = OptimisticReference<T>
+const observingAtoms = Symbol('@data-weave/observableOptimisticLiveReference.observingAtoms')
+type Bridged<T> = OptimisticReference<T> & { [observingAtoms]?: IAtom[] }
 
-/**
- * Wraps a `LiveReference<T>` with optimistic patch support and MobX
- * reactivity. Source-value reactivity is provided by `ObservableReference`;
- * a separate atom owned by this factory tracks `_patch` mutations made via
- * `applyOptimistic` / `clearOptimistic` so that MobX reactions observing
- * `value` (or `hasPendingOptimistic`) re-run when the optimistic overlay
- * changes.
- */
-export const ObservableOptimisticReference = <T extends object>(source: LiveReference<T>): OptimisticReference<T> => {
-    const observableSource = ObservableReference(source)
-    const optimistic = new OptimisticReference<T>(observableSource)
-    const patchAtom = createAtom('ObservableOptimisticReference')
+export interface ObservableOptimisticLiveReferenceOptions {
+    clearOptimisticOnSourceUpdate?: boolean
+}
 
-    return new Proxy(optimistic, {
+export const ObservableOptimisticReference = <T>(sourceReference: LiveReference<T>, options?: ObservableOptimisticLiveReferenceOptions): OptimisticReference<T> & LiveReference<T> => {
+    const optimistic = new OptimisticReference<T>(sourceReference)
+    const atom = createAtom(
+        'ObservableOptimisticLiveReference',
+        () => sourceReference.resolve(),
+        () => sourceReference.unsubscribe()
+    )
+
+    const bridged = optimistic as Bridged<T>
+
+    // setup the bridge if it's not already set up
+    if (!bridged[observingAtoms]) {
+        const atoms: IAtom[] = []
+        bridged[observingAtoms] = atoms
+
+        const original = sourceReference.onValueChange.bind(sourceReference)
+        sourceReference.onValueChange = () => {
+            original()
+            if (options?.clearOptimisticOnSourceUpdate) {
+                optimistic.clearOptimistic()
+            }
+            for (const atom of atoms) {
+                atom.reportChanged()
+            }
+        }
+    }
+
+    bridged[observingAtoms].push(atom)
+
+    const liveOptimisticRefence = optimistic as LiveReference<T> & OptimisticReference<T>
+
+    return new Proxy(liveOptimisticRefence, {
         get(target, prop, receiver) {
-            if (prop === 'value' || prop === 'hasPendingOptimistic') {
-                patchAtom.reportObserved()
+            if (prop === 'value' || prop === 'resolved' || prop === 'hasError' || prop === 'error') {
+                atom.reportObserved()
             }
 
             const value = Reflect.get(target, prop, receiver)
 
-            if (prop === 'applyOptimistic' || prop === 'clearOptimistic') {
-                return (...args: unknown[]) => {
+            // Wrap mutating methods so the reaction fires AFTER the patch is
+            // applied/cleared, not when the method is merely accessed.
+            if ((prop === 'applyOptimistic' || prop === 'clearOptimistic') && typeof value === 'function') {
+                return (...args: Array<unknown>) => {
                     const result = value.apply(target, args)
-                    patchAtom.reportChanged()
+                    atom.reportChanged()
                     return result
                 }
             }
