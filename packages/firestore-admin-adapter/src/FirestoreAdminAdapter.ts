@@ -1,4 +1,3 @@
-import { AggregateField } from 'firebase-admin/firestore'
 import {
     type AggregateResult,
     type AggregateSpec,
@@ -7,6 +6,7 @@ import {
     FirestoreApp,
     FirestoreTypes,
 } from '@data-weave/backend-firestore'
+import { AggregateField } from 'firebase-admin/firestore'
 
 /*
  *  FirestoreAdminAdapter creates an interface between modular and namespaced

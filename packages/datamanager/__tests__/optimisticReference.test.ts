@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals'
-import type { Reference } from '../src/Reference'
 import { OptimisticReference } from '../src/OptimisticReference'
+import type { Reference } from '../src/Reference'
 
 class FakeSource<T extends object> implements Reference<T> {
     resolved = false

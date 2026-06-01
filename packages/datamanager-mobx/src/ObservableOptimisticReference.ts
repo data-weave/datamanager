@@ -12,9 +12,7 @@ export type ObservableOptimisticReference<T extends object> = OptimisticReferenc
  * `value` (or `hasPendingOptimistic`) re-run when the optimistic overlay
  * changes.
  */
-export const ObservableOptimisticReference = <T extends object>(
-    source: LiveReference<T>
-): OptimisticReference<T> => {
+export const ObservableOptimisticReference = <T extends object>(source: LiveReference<T>): OptimisticReference<T> => {
     const observableSource = ObservableReference(source)
     const optimistic = new OptimisticReference<T>(observableSource)
     const patchAtom = createAtom('ObservableOptimisticReference')

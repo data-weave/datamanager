@@ -17,8 +17,6 @@ type Bridged<T> = LiveReference<T> & { [observingAtoms]?: IAtom[] }
  * each wrap registers its own atom and all of them are notified on every
  * publish.
  */
-export type ObservableReference<T> = LiveReference<T>
-
 export const ObservableReference = <T>(sourceReference: LiveReference<T>): LiveReference<T> => {
     const atom = createAtom(
         'ObservableReference',

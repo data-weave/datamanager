@@ -56,7 +56,7 @@ describe('ObservableList update propagation', () => {
     test('autorun re-runs when source publishes an error', () => {
         const list = new TestList<number>()
         const reactive = ObservableList(list)
-        const errorSeen: unknown[] = [];
+        const errorSeen: unknown[] = []
 
         const dispose = autorun(() => {
             errorSeen.push(reactive.error)
