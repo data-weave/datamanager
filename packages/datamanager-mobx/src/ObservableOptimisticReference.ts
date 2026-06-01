@@ -8,7 +8,10 @@ export interface ObservableOptimisticLiveReferenceOptions {
     clearOptimisticOnSourceUpdate?: boolean
 }
 
-export const ObservableOptimisticReference = <T>(sourceReference: LiveReference<T>, options?: ObservableOptimisticLiveReferenceOptions): OptimisticReference<T> & LiveReference<T> => {
+export const ObservableOptimisticReference = <T>(
+    sourceReference: LiveReference<T>,
+    options?: ObservableOptimisticLiveReferenceOptions
+): OptimisticReference<T> & LiveReference<T> => {
     const optimistic = new OptimisticReference<T>(sourceReference)
     const atom = createAtom(
         'ObservableOptimisticLiveReference',
