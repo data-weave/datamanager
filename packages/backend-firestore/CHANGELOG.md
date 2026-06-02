@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.7.0
+
+### Minor Changes
+
+- e5da806: Cleanup and version alignment
+
 ## 2.0.0
 
 ### Minor Changes

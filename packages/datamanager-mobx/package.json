@@ -1,6 +1,6 @@
 {
     "name": "@data-weave/datamanager-mobx",
-    "version": "0.6.4",
+    "version": "0.7.0",
     "author": "",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -23,15 +23,15 @@
         "registry": "https://registry.npmjs.org/"
     },
     "dependencies": {
-        "@data-weave/backend-firestore": "~0.6.4",
-        "@data-weave/datamanager": "~0.6.4"
+        "@data-weave/backend-firestore": "~0.7.0",
+        "@data-weave/datamanager": "~0.7.0"
     },
     "peerDependencies": {
         "mobx": ">=6.0.0"
     },
     "devDependencies": {
-        "@data-weave/backend-firestore": "~0.6.4",
-        "@data-weave/datamanager": "~0.6.4",
+        "@data-weave/backend-firestore": "~0.7.0",
+        "@data-weave/datamanager": "~0.7.0",
         "mobx": "6.15.0",
         "typescript": "5.9.3"
     },
