@@ -17,17 +17,7 @@ export const ObservableOptimisticReference = <T>(sourceReference: LiveReference<
                 atom.reportObserved()
             }
 
-            const value = Reflect.get(target, prop, receiver)
-
-            if ((prop === 'applyOptimistic' || prop === 'clearOptimistic') && typeof value === 'function') {
-                return (...args: Array<unknown>) => {
-                    const result = value.apply(target, args)
-                    atom.reportChanged()
-                    return result
-                }
-            }
-
-            return value
+            return Reflect.get(target, prop, receiver)
         },
     })
 }
