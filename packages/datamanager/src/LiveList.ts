@@ -16,6 +16,7 @@ export class LiveList<T> implements List<T> {
     private _hasError: boolean = false
     private _error: unknown | undefined
     private _options: LiveListOptions<T>
+    private _listeners: (() => void)[] = []
 
     constructor(options: LiveListOptions<T>) {
         this._options = options
@@ -39,20 +40,19 @@ export class LiveList<T> implements List<T> {
 
     protected setStale() {
         this._resolved = false
+        this.notifyChange()
     }
 
     public get error() {
         return this._error
     }
 
-    public onValuesChange(): void {}
-
     public unsubscribe(): void {}
 
     protected onUpdate(): void {
         this._resolved = true
-        this.onValuesChange()
         this._options.onUpdate?.(this._values)
+        this.notifyChange()
     }
 
     protected onUpdateAll(values: T[]): void {
@@ -83,6 +83,14 @@ export class LiveList<T> implements List<T> {
             this._values = []
         }
         this._options.onError?.(error)
-        this.onValuesChange()
+        this.notifyChange()
+    }
+
+    protected notifyChange(): void {
+        this._listeners.forEach(listener => listener())
+    }
+
+    public registerOnChangeListener(onChange: () => void): void {
+        this._listeners.push(onChange)
     }
 }

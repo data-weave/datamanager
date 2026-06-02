@@ -75,7 +75,7 @@ export class FirestoreReference<T extends DocumentData, S extends DocumentData> 
 
     public unsubscribe() {
         this.unsubscribeFromSnapshot?.()
-        this.setStale()
+        this.onStale()
     }
 
     private parseDocumentSnapshot(docSnapshot: FirestoreTypes.DocumentSnapshot<T, S>): T | undefined {

@@ -1,23 +1,18 @@
 import { describe, expect, test } from '@jest/globals'
+import { LiveReference } from '../src/LiveReference'
 import { OptimisticReference } from '../src/OptimisticReference'
-import type { Reference } from '../src/Reference'
 
-class FakeSource<T extends object> implements Reference<T> {
-    resolved = false
-    hasError = false
-    error: unknown
-    private _value: T | undefined
-
-    get value(): T | undefined {
-        return this._value
+class FakeSource<T extends object> extends LiveReference<T> {
+    constructor() {
+        super('fake', {})
     }
 
     set(v: T | undefined): void {
-        this._value = v
+        this.onUpdate(v)
     }
 
     async resolve(): Promise<T | undefined> {
-        return this._value
+        return this.value
     }
 }
 
@@ -34,6 +29,7 @@ describe('OptimisticReference', () => {
         const src = new FakeSource<{ state: string; userId: string | null }>()
         src.set({ state: 'pending', userId: null })
         const opt = new OptimisticReference(src)
+        expect(opt.value).toEqual({ state: 'pending', userId: null })
         opt.applyOptimistic({ state: 'linked', userId: 'u1' })
         expect(opt.value).toEqual({ state: 'linked', userId: 'u1' })
     })
