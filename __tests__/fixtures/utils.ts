@@ -1,4 +1,4 @@
-import { FirestoreAdminAdapter } from '@data-weave/backend-firestore'
+import { FirestoreAdminAdapter } from '@data-weave/firestore-admin-adapter'
 import { initializeAdmin_SDK, initializeJS_SDK } from './intitialize'
 
 export function sleep(milliseconds: number) {

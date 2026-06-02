@@ -14,12 +14,12 @@
         "noImplicitAny": true,
         "isolatedModules": true,
         "skipLibCheck": true,
-        "baseUrl": ".",
         "paths": {
-            "@data-weave/datamanager": ["packages/datamanager/src"],
-            "@data-weave/backend-firestore": ["packages/backend-firestore/src"],
-            "@data-weave/datamanager-mobx": ["packages/datamanager-mobx/src"],
-            "@test-fixtures/*": ["__tests__/fixtures/*"]
+            "@data-weave/datamanager": ["./packages/datamanager/src"],
+            "@data-weave/backend-firestore": ["./packages/backend-firestore/src"],
+            "@data-weave/datamanager-mobx": ["./packages/datamanager-mobx/src"],
+            "@data-weave/firestore-admin-adapter": ["./packages/firestore-admin-adapter/src"],
+            "@test-fixtures/*": ["./__tests__/fixtures/*"]
         }
     },
     "exclude": ["node_modules", "**/dist"]

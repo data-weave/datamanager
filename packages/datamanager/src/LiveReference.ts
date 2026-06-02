@@ -16,6 +16,7 @@ export class LiveReference<T> implements IdentifiableReference<T> {
     private _hasError: boolean = false
     private _error: unknown | undefined
     private _options: LiveReferenceOptions<T>
+    private _listeners: (() => void)[] = []
 
     resolve(): Promise<T | undefined> {
         throw new Error('Method not implemented.')
@@ -47,16 +48,17 @@ export class LiveReference<T> implements IdentifiableReference<T> {
         return this._error
     }
 
-    protected setStale() {
+    protected onStale() {
         this._resolved = false
+        this.notifyChange()
     }
 
     protected onUpdate(data: T | undefined): void {
         this._value = data
         this._resolved = true
         this._hasError = false
-        this.onValueChange()
         this._options.onUpdate?.(this._value)
+        this.notifyChange()
     }
 
     protected onError(error: unknown) {
@@ -66,11 +68,17 @@ export class LiveReference<T> implements IdentifiableReference<T> {
         }
         this._resolved = true
         this._error = error
-        this.onValueChange()
         this._options.onError?.(error)
+        this.notifyChange()
     }
 
-    public onValueChange(): void {}
-
     public unsubscribe(): void {}
+
+    protected notifyChange(): void {
+        this._listeners.forEach(listener => listener())
+    }
+
+    public registerOnChangeListener(onChange: () => void): void {
+        this._listeners.push(onChange)
+    }
 }

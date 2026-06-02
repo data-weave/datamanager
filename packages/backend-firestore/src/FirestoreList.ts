@@ -72,6 +72,10 @@ export class FirestoreList<T extends DocumentData, S extends DocumentData> exten
     }
 
     protected handleSubsequentDataChanges(changes: FirestoreTypes.DocumentChange<T, S>[]) {
+        // Each index-based mutation on `LiveList` already fires `onUpdate`
+        // (and therefore `onValuesChange` and the `options.onUpdate`
+        // callback). No trailing notification is needed; consumers see one
+        // notification per change in the batch.
         changes.forEach(change => {
             if (change.type === 'added') {
                 this.onAddAtIndex(change.newIndex, change.doc.data())
@@ -81,9 +85,6 @@ export class FirestoreList<T extends DocumentData, S extends DocumentData> exten
                 this.onRemoveAtIndex(change.oldIndex)
             }
         })
-
-        // TODO: handle onUpdate in the parent class - make sure it's only called once after all changes are processed
-        this.onUpdate()
     }
 
     public unsubscribe() {
