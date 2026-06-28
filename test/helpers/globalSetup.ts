@@ -18,7 +18,7 @@ export async function globalSetup(): Promise<void> {
     globalThis.__FIRESTORE_CONTAINER__ = container
     console.log(`[test] Firestore emulator ready at ${process.env.FIRESTORE_EMULATOR_HOST}`)
 
-    const rulesPath = path.resolve(process.cwd(), 'firestore.rules')
+    const rulesPath = path.resolve(process.cwd(), 'test/fixtures/firestore.rules')
     const resp = await fetch(
         `http://${process.env.FIRESTORE_EMULATOR_HOST}/emulator/v1/projects/${PROJECT_ID}:securityRules`,
         {
