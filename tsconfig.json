@@ -19,7 +19,7 @@
             "@data-weave/backend-firestore": ["./packages/backend-firestore/src"],
             "@data-weave/datamanager-mobx": ["./packages/datamanager-mobx/src"],
             "@data-weave/firestore-admin-adapter": ["./packages/firestore-admin-adapter/src"],
-            "@test-fixtures/*": ["./__tests__/fixtures/*"]
+            "@test-fixtures/*": ["./test/fixtures/*"]
         }
     },
     "exclude": ["node_modules", "**/dist"]

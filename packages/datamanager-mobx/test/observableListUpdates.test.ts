@@ -1,6 +1,7 @@
 import { LiveList } from '@data-weave/datamanager'
-import { describe, expect, test } from '@jest/globals'
 import { autorun } from 'mobx'
+import assert from 'node:assert/strict'
+import { describe, test } from 'node:test'
 import { ObservableList } from '../src/ObservableList'
 
 class TestList<T> extends LiveList<T> {
@@ -36,7 +37,7 @@ describe('ObservableList update propagation', () => {
 
         dispose()
 
-        expect(seen).toEqual([[], [{ n: 1 }], [{ n: 1 }, { n: 2 }]])
+        assert.deepEqual(seen, [[], [{ n: 1 }], [{ n: 1 }, { n: 2 }]])
     })
 
     test('autorun re-runs when `resolved` flips to true after first snapshot', () => {
@@ -50,7 +51,7 @@ describe('ObservableList update propagation', () => {
         list.publishAll([1, 2, 3])
         dispose()
 
-        expect(resolvedSeen).toEqual([false, true])
+        assert.deepEqual(resolvedSeen, [false, true])
     })
 
     test('autorun re-runs when source publishes an error', () => {
@@ -64,7 +65,7 @@ describe('ObservableList update propagation', () => {
         list.publishError(new Error('boom'))
         dispose()
 
-        expect(errorSeen).toEqual([undefined, new Error('boom')])
+        assert.deepEqual(errorSeen, [undefined, new Error('boom')])
     })
 
     test('the bridge is idempotent across multiple wraps of the same source', () => {
@@ -87,8 +88,8 @@ describe('ObservableList update propagation', () => {
         disposeA()
         disposeB()
 
-        expect(seenA.at(-1)).toEqual([1])
-        expect(seenB.at(-1)).toEqual([1])
+        assert.deepEqual(seenA.at(-1), [1])
+        assert.deepEqual(seenB.at(-1), [1])
     })
 
     test('subscribe/unsubscribe lifecycle is driven by the atom', () => {
@@ -116,10 +117,10 @@ describe('ObservableList update propagation', () => {
         const dispose = autorun(() => {
             void reactive.values
         })
-        expect(resolveCalls).toBe(1)
-        expect(unsubscribeCalls).toBe(0)
+        assert.equal(resolveCalls, 1)
+        assert.equal(unsubscribeCalls, 0)
 
         dispose()
-        expect(unsubscribeCalls).toBe(1)
+        assert.equal(unsubscribeCalls, 1)
     })
 })

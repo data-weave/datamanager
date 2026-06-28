@@ -1,11 +1,12 @@
-import { Firestore } from '@data-weave/backend-firestore/src'
-import { beforeAll, beforeEach, describe, expect, test } from '@jest/globals'
+import { Firestore } from '@data-weave/backend-firestore'
 import { FirebaseProductModel, productConverter } from '@test-fixtures/product'
 import { getSDK } from '@test-fixtures/utils'
+import assert from 'node:assert/strict'
+import { before, beforeEach, describe, test } from 'node:test'
 
 let sdk: Firestore
 
-beforeAll(() => {
+before(() => {
     sdk = getSDK()
 })
 
@@ -22,7 +23,7 @@ describe('sum', () => {
         await productModel.createProduct({ name: 'C', desciption: 'c', qty: 30 })
 
         const total = await productModel.sumQty()
-        expect(total).toEqual(60)
+        assert.equal(total, 60)
     })
 
     test('sums with filters', async () => {
@@ -32,12 +33,12 @@ describe('sum', () => {
         await productModel.createProduct({ name: 'other', desciption: 'other', qty: 1 })
 
         const total = await productModel.sumQty({ filters: [['name', '==', 'match']] })
-        expect(total).toEqual(tag * 2)
+        assert.equal(total, tag * 2)
     })
 
     test('returns 0 on empty collection', async () => {
         const total = await productModel.sumQty()
-        expect(total).toEqual(0)
+        assert.equal(total, 0)
     })
 })
 
@@ -48,7 +49,7 @@ describe('count', () => {
         await productModel.createProduct({ name: 'C', desciption: 'c', qty: 3 })
 
         const total = await productModel.countProducts()
-        expect(total).toEqual(3)
+        assert.equal(total, 3)
     })
 
     test('counts with filters', async () => {
@@ -57,7 +58,7 @@ describe('count', () => {
         await productModel.createProduct({ name: 'gadget', desciption: 'g', qty: 100 })
 
         const total = await productModel.countProducts({ filters: [['name', '==', 'widget']] })
-        expect(total).toEqual(2)
+        assert.equal(total, 2)
     })
 
     test('counts with greater than filter', async () => {
@@ -67,12 +68,12 @@ describe('count', () => {
         await productModel.createProduct({ name: 'D', desciption: 'd', qty: 35 })
 
         const total = await productModel.countProducts({ filters: [['qty', '>', 10]] })
-        expect(total).toEqual(3)
+        assert.equal(total, 3)
     })
 
     test('returns 0 on empty collection', async () => {
         const total = await productModel.countProducts()
-        expect(total).toEqual(0)
+        assert.equal(total, 0)
     })
 })
 
@@ -83,12 +84,12 @@ describe('average', () => {
         await productModel.createProduct({ name: 'C', desciption: 'c', qty: 30 })
 
         const avg = await productModel.averageQty()
-        expect(avg).toEqual(20)
+        assert.equal(avg, 20)
     })
 
     test('returns null on empty collection', async () => {
         const avg = await productModel.averageQty()
-        expect(avg).toBeNull()
+        assert.equal(avg, null)
     })
 })
 
@@ -99,12 +100,12 @@ describe('min', () => {
         await productModel.createProduct({ name: 'C', desciption: 'c', qty: 25 })
 
         const result = await productModel.minQty()
-        expect(result).toEqual(5)
+        assert.equal(result, 5)
     })
 
     test('returns null on empty collection', async () => {
         const result = await productModel.minQty()
-        expect(result).toBeNull()
+        assert.equal(result, null)
     })
 })
 
@@ -115,11 +116,11 @@ describe('max', () => {
         await productModel.createProduct({ name: 'C', desciption: 'c', qty: 25 })
 
         const result = await productModel.maxQty()
-        expect(result).toEqual(50)
+        assert.equal(result, 50)
     })
 
     test('returns null on empty collection', async () => {
         const result = await productModel.maxQty()
-        expect(result).toBeNull()
+        assert.equal(result, null)
     })
 })

@@ -1,12 +1,13 @@
 import { Firestore, FirestoreReferenceError } from '@data-weave/backend-firestore'
-import { beforeAll, beforeEach, describe, expect, test } from '@jest/globals'
 import { FirebaseProductModel, productConverter } from '@test-fixtures/product'
 import { getSDK } from '@test-fixtures/utils'
-import { ObservableList } from '../src'
+import assert from 'node:assert/strict'
+import { before, beforeEach, describe, test } from 'node:test'
+import { FirestoreListError, ObservableList } from '../src'
 
 let sdk: Firestore
 
-beforeAll(() => {
+before(() => {
     sdk = getSDK()
 })
 
@@ -37,23 +38,22 @@ describe('Firebase typed error tests', () => {
         const ref = productModel.getProduct('non-existent-id')
         await ref.resolve()
 
-        expect(ref.hasError).toBe(true)
-        expect(ref.error).toBeInstanceOf(FirestoreReferenceError)
+        assert.equal(ref.hasError, true)
+        assert.ok(ref.error instanceof FirestoreReferenceError)
 
-        const refError = ref.error as FirestoreReferenceError
-        expect(refError.context.type).toBe('reference')
-        expect(refError.context.path).toContain('products')
-        expect(refError.context.id).toBe('non-existent-id')
-        expect(refError.context.readMode).toBe('realtime')
-        expect(refError.cause).toBeInstanceOf(Error)
+        assert.equal(ref.error.context.type, 'reference')
+        assert.ok(ref.error.context.path.includes('products'))
+        assert.equal(ref.error.context.id, 'non-existent-id')
+        assert.equal(ref.error.context.readMode, 'realtime')
+        assert.ok(ref.error.cause instanceof Error)
     })
 
     test('should resolve without error for valid list reference', async () => {
         const list = productModel.getProductList()
         const values = await list.resolve()
 
-        expect(values).toBeDefined()
-        expect(list.hasError).toBe(false)
+        assert.ok(values)
+        assert.equal(list.hasError, false)
     })
 
     jsOnlyTest('should wrap error with FirestoreListError for complex list query', async () => {
@@ -64,19 +64,15 @@ describe('Firebase typed error tests', () => {
             ],
             orderBy: [['desciption', 'asc']],
         })
-        expect(list.hasError).toBe(false)
+        assert.equal(list.hasError, false)
         await list.resolve()
-        expect(list.hasError).toBe(true)
-        expect(list.error).toEqual(expect.objectContaining({ name: 'FirestoreListError' }))
+        assert.equal(list.hasError, true)
 
-        const listError = list.error as {
-            context: { type: 'list'; query: unknown; readMode?: string }
-            cause: unknown
-        }
-        expect(listError.context.type).toBe('list')
-        expect(listError.context.query).toBeDefined()
-        expect(listError.context.readMode).toBe('realtime')
-        expect(listError.cause).toBeInstanceOf(Error)
+        assert.ok(list.error instanceof FirestoreListError)
+        assert.equal(list.error.context.type, 'list')
+        assert.ok(list.error.context.query)
+        assert.equal(list.error.context.readMode, 'realtime')
+        assert.ok(list.error.cause instanceof Error)
     })
 
     jsOnlyTest('should wrap error with FirestoreListError for restricted query', async () => {
@@ -84,18 +80,14 @@ describe('Firebase typed error tests', () => {
             filters: [['__deleted', '==', true]],
         })
 
-        expect(list.hasError).toBe(false)
+        assert.equal(list.hasError, false)
         await list.resolve()
-        expect(list.hasError).toBe(true)
-        expect(list.error).toEqual(expect.objectContaining({ name: 'FirestoreListError' }))
+        assert.equal(list.hasError, true)
+        assert.ok(list.error instanceof FirestoreListError)
 
-        const listError = list.error as {
-            context: { type: 'list'; query: unknown; readMode?: string }
-            cause: unknown
-        }
-        expect(listError.context.type).toBe('list')
-        expect(listError.context.query).toBeDefined()
-        expect(listError.context.readMode).toBe('realtime')
-        expect(listError.cause).toBeInstanceOf(Error)
+        assert.equal(list.error.context.type, 'list')
+        assert.ok(list.error.context.query)
+        assert.equal(list.error.context.readMode, 'realtime')
+        assert.ok(list.error.cause instanceof Error)
     })
 })

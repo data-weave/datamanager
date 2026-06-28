@@ -1,4 +1,5 @@
-import { describe, expect, test } from '@jest/globals'
+import assert from 'node:assert/strict'
+import { describe, test } from 'node:test'
 import { LiveList } from '../src/LiveList'
 
 class TestList<T> extends LiveList<T> {
@@ -40,9 +41,9 @@ describe('LiveList index-based mutations notify subscribers', () => {
 
         list.updateAt(1, 20)
 
-        expect(list.values).toEqual([1, 20, 3])
-        expect(notifyChangeCalls).toBe(baseline + 1)
-        expect(lastOnUpdateValues).toEqual([1, 20, 3])
+        assert.deepEqual(list.values, [1, 20, 3])
+        assert.equal(notifyChangeCalls, baseline + 1)
+        assert.deepEqual(lastOnUpdateValues, [1, 20, 3])
     })
 
     test('onAddAtIndex fires callback and the options callback', () => {
@@ -61,9 +62,9 @@ describe('LiveList index-based mutations notify subscribers', () => {
 
         list.addAt(1, 2)
 
-        expect(list.values).toEqual([1, 2, 3])
-        expect(notifyChangeCalls).toBe(baseline + 1)
-        expect(lastOnUpdateValues).toEqual([1, 2, 3])
+        assert.deepEqual(list.values, [1, 2, 3])
+        assert.equal(notifyChangeCalls, baseline + 1)
+        assert.deepEqual(lastOnUpdateValues, [1, 2, 3])
     })
 
     test('onRemoveAtIndex fires callback and the options callback', () => {
@@ -82,8 +83,8 @@ describe('LiveList index-based mutations notify subscribers', () => {
 
         list.removeAt(1)
 
-        expect(list.values).toEqual([1, 3])
-        expect(notifyChangeCalls).toBe(baseline + 1)
-        expect(lastOnUpdateValues).toEqual([1, 3])
+        assert.deepEqual(list.values, [1, 3])
+        assert.equal(notifyChangeCalls, baseline + 1)
+        assert.deepEqual(lastOnUpdateValues, [1, 3])
     })
 })
