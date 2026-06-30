@@ -1,5 +1,6 @@
 import { LiveReference, LiveReferenceOptions } from '@data-weave/datamanager'
 import { FirestoreReferenceError } from './errors'
+import { FIRESTORE_KEYS } from './FirestoreMetadata'
 import { DocumentData, Firestore, FirestoreReadMode, FirestoreTypes } from './firestoreTypes'
 import { checkIfReferenceExists } from './utils'
 
@@ -8,6 +9,12 @@ export type { FirestoreReferenceContext } from './errors'
 export interface FirestoreReferenceOptions<T> extends LiveReferenceOptions<T> {
     readMode?: FirestoreReadMode
     snapshotOptions?: FirestoreTypes.SnapshotOptions
+    /**
+     * When true, documents flagged as soft-deleted (`__deleted === true`) are treated as
+     * non-existent and resolve to `undefined`. Set by the data manager when running in
+     * `deleteMode: 'soft'` so single-document reads stay consistent with list queries.
+     */
+    filterDeleted?: boolean
 }
 
 export class FirestoreReference<T extends DocumentData, S extends DocumentData> extends LiveReference<T> {
@@ -80,6 +87,10 @@ export class FirestoreReference<T extends DocumentData, S extends DocumentData> 
 
     private parseDocumentSnapshot(docSnapshot: FirestoreTypes.DocumentSnapshot<T, S>): T | undefined {
         if (!checkIfReferenceExists(docSnapshot)) throw new Error(`Document does not exist ${this.docRef.path}`)
-        return docSnapshot.data(this.options?.snapshotOptions)
+        const data = docSnapshot.data(this.options?.snapshotOptions)
+        if (this.options?.filterDeleted && (data as { [FIRESTORE_KEYS.DELETED]?: boolean })?.deleted === true) {
+            return undefined
+        }
+        return data
     }
 }

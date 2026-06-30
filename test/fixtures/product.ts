@@ -69,6 +69,10 @@ export class FirebaseProductModel implements ProductModel {
         return this.datamanager.getRef(id)
     }
 
+    readProduct(id: string) {
+        return this.datamanager.read(id)
+    }
+
     getProductList(params?: QueryParams<Product>) {
         return this.datamanager.getList(params)
     }

@@ -42,13 +42,33 @@ describe('Firebase static tests', () => {
         assert.notDeepEqual(productAfterUpdate?.updatedAt, product?.updatedAt)
     })
 
-    test('Product delete soft', async () => {
+    test('Product delete soft is not fetchable by reference', async () => {
         const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
         await sleep(500)
         await productModel.deleteProduct(productRef.id)
 
         const product = await productRef.resolve()
-        assert.equal(product?.deleted, true)
+        assert.equal(product, undefined)
+    })
+
+    test('Product delete soft is not fetchable via read', async () => {
+        const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        await sleep(500)
+        await productModel.deleteProduct(productRef.id)
+
+        const product = await productModel.readProduct(productRef.id)
+        assert.equal(product, undefined)
+    })
+
+    test('Product delete soft is excluded from list', async () => {
+        const qty = Math.floor(Math.random() * 1000 + 20000)
+        const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty })
+        await sleep(500)
+        await productModel.deleteProduct(productRef.id)
+
+        const listRef = productModel.getProductList({ filters: [['qty', '==', qty]] })
+        await listRef.resolve()
+        assert.equal(listRef.values.length, 0)
     })
 
     test('Product delete hard', async () => {

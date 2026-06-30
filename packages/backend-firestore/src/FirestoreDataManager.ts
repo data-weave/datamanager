@@ -104,6 +104,7 @@ export class FirestoreDataManager<
         this.referenceOptions = {
             readMode: this.managerOptions.readMode,
             snapshotOptions: this.managerOptions.snapshotOptions,
+            filterDeleted: this.managerOptions.deleteMode === 'soft',
         }
     }
 
@@ -117,7 +118,11 @@ export class FirestoreDataManager<
         if (options?.transaction) {
             const snapshot = await options.transaction.get(this.firestore.doc(this.collection, id))
             if (!checkIfReferenceExists(snapshot)) return undefined
-            return snapshot.data(this.referenceOptions.snapshotOptions)
+            const data = snapshot.data(this.referenceOptions.snapshotOptions)
+            if (this.managerOptions.deleteMode === 'soft' && data?.deleted === true) {
+                return undefined
+            }
+            return data
         }
         return await ref.resolve()
     }
