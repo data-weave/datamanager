@@ -88,7 +88,8 @@ export class FirestoreReference<T extends DocumentData, S extends DocumentData> 
     private parseDocumentSnapshot(docSnapshot: FirestoreTypes.DocumentSnapshot<T, S>): T | undefined {
         if (!checkIfReferenceExists(docSnapshot)) throw new Error(`Document does not exist ${this.docRef.path}`)
         const data = docSnapshot.data(this.options?.snapshotOptions)
-        if (this.options?.filterDeleted && (data as { [FIRESTORE_KEYS.DELETED]?: boolean })?.deleted === true) {
+        const deletedFlag = data?.[FIRESTORE_KEYS.DELETED]
+        if (this.options?.filterDeleted && deletedFlag === true) {
             return undefined
         }
         return data
