@@ -23,7 +23,12 @@ beforeEach(() => {
 
 describe('Firebase observable reference tests', () => {
     test('Reference initialization', async () => {
-        const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        const productRef = await productModel.createProduct({
+            name: 'test',
+            desciption: 'test',
+            qty: 1,
+            data: { a: 1 },
+        })
         // it should not resolve, if just checking the value
         assert.equal(productRef.resolved, false)
         await sleep(500)
@@ -56,7 +61,12 @@ describe('Firebase observable reference tests', () => {
     })
 
     test('Reference realtime updates', async () => {
-        const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        const productRef = await productModel.createProduct({
+            name: 'test',
+            desciption: 'test',
+            qty: 1,
+            data: { a: 1 },
+        })
 
         const dispose = autorun(function () {
             return productRef.value
@@ -72,7 +82,12 @@ describe('Firebase observable reference tests', () => {
     })
 
     test('Product transaction', async () => {
-        const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        const productRef = await productModel.createProduct({
+            name: 'test',
+            desciption: 'test',
+            qty: 1,
+            data: { a: 1 },
+        })
         await sleep(500)
         await productModel.updateStockTwiceWithTransaction(productRef.id, 10)
         await productRef.resolve()
@@ -81,7 +96,12 @@ describe('Firebase observable reference tests', () => {
     })
 
     test('Product transaction with realtime updates', async () => {
-        const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        const productRef = await productModel.createProduct({
+            name: 'test',
+            desciption: 'test',
+            qty: 1,
+            data: { a: 1 },
+        })
         const dispose = autorun(function () {
             return productRef.value
         })
@@ -95,7 +115,12 @@ describe('Firebase observable reference tests', () => {
     })
 
     test('Product transaction on failed transaction', async () => {
-        const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        const productRef = await productModel.createProduct({
+            name: 'test',
+            desciption: 'test',
+            qty: 1,
+            data: { a: 1 },
+        })
         await sleep(500)
         await assert.rejects(productModel.updateStockWithTransactionWithError(productRef.id, 10))
         await productRef.resolve()

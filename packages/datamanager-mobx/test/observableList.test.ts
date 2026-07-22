@@ -27,7 +27,7 @@ describe('Firebase observable list tests', () => {
     })
 
     test('List initialization', async () => {
-        await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1, data: { a: 1 } })
         const productList = productModel.getProductList()
         // it should not resolve by itself
         assert.equal(productList.resolved, false)
@@ -76,7 +76,7 @@ describe('Firebase observable list tests', () => {
             return productList.values
         })
 
-        await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1, data: { a: 1 } })
         await sleep(500)
 
         assert.ok(productList.values.length > originalLength)

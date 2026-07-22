@@ -18,7 +18,12 @@ beforeEach(() => {
 
 describe('Firebase static tests', () => {
     test('Product creation', async () => {
-        const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        const productRef = await productModel.createProduct({
+            name: 'test',
+            desciption: 'test',
+            qty: 1,
+            data: { a: 1 },
+        })
         const product = await productRef.resolve()
 
         assert.equal(product?.name, 'test')
@@ -27,7 +32,12 @@ describe('Firebase static tests', () => {
     })
 
     test('Product updates', async () => {
-        const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        const productRef = await productModel.createProduct({
+            name: 'test',
+            desciption: 'test',
+            qty: 1,
+            data: { a: 1 },
+        })
         const product = await productRef.resolve()
 
         await sleep(500)
@@ -42,13 +52,70 @@ describe('Firebase static tests', () => {
         assert.notDeepEqual(productAfterUpdate?.updatedAt, product?.updatedAt)
     })
 
-    test('Product delete soft', async () => {
-        const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+    test('Product delete soft is not fetchable by reference', async () => {
+        const productRef = await productModel.createProduct({
+            name: 'test',
+            desciption: 'test',
+            qty: 1,
+            data: { a: 1 },
+        })
         await sleep(500)
         await productModel.deleteProduct(productRef.id)
 
         const product = await productRef.resolve()
-        assert.equal(product?.deleted, true)
+        assert.equal(product, undefined)
+    })
+
+    test('Product delete soft preserves map fields', async () => {
+        const productRef = await productModel.createProduct({
+            name: 'test',
+            desciption: 'test',
+            qty: 1,
+            data: { a: 1 },
+        })
+        await sleep(500)
+
+        const productBeforeDelete = await productRef.resolve()
+        assert.deepEqual(productBeforeDelete?.data, { a: 1 })
+
+        await productModel.deleteProduct(productRef.id)
+
+        // Read the raw document (including soft-deleted) via a hard-delete model on the same
+        // collection so the soft-deleted doc is not filtered out on read.
+        const rawReader = new FirebaseProductModel(
+            sdk,
+            productConverter,
+            { deleteMode: 'hard', readMode: 'static' },
+            productModel.getCollectionName()
+        )
+        const rawProduct = await rawReader.readProduct(productRef.id)
+
+        assert.deepEqual(rawProduct?.data, { a: 1 })
+    })
+
+    test('Product delete soft is not fetchable via read', async () => {
+        const productRef = await productModel.createProduct({
+            name: 'test',
+            desciption: 'test',
+            qty: 1,
+            data: { a: 1 },
+        })
+        await sleep(500)
+        await productModel.deleteProduct(productRef.id)
+
+        const product = await productModel.readProduct(productRef.id)
+        assert.equal(product, undefined)
+    })
+
+    test('Product delete soft is excluded from list', async () => {
+        const qty = Math.floor(Math.random() * 1000 + 20000)
+        const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty, data: { a: 1 } })
+        await sleep(500)
+        await productModel.deleteProduct(productRef.id)
+
+        const listRef = productModel.getProductList({ filters: [['qty', '==', qty]] })
+        await listRef.resolve()
+        assert.equal(listRef.values.length, 0)
     })
 
     test('Product delete hard', async () => {
@@ -57,7 +124,12 @@ describe('Firebase static tests', () => {
             readMode: 'static',
         })
 
-        const productRef = await productModelHardDelete.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        const productRef = await productModelHardDelete.createProduct({
+            name: 'test',
+            desciption: 'test',
+            qty: 1,
+            data: { a: 1 },
+        })
         await sleep(1000)
         const productBeforeDelete = await productRef.resolve()
         assert.notEqual(productBeforeDelete, undefined)
@@ -73,21 +145,26 @@ describe('Firebase static tests', () => {
 
     test('Product query', async () => {
         const qty = Math.floor(Math.random() * 1000 + 10000)
-        await productModel.createProduct({ name: 'test', desciption: 'test', qty })
+        await productModel.createProduct({ name: 'test', desciption: 'test', qty, data: { a: 1 } })
 
         const listRef = productModel.getProductList({ filters: [['qty', '==', qty]] })
         await listRef.resolve()
 
         assert.equal(listRef.values.length, 1)
-        await productModel.createProduct({ name: 'test', desciption: 'test', qty })
-        await productModel.createProduct({ name: 'test', desciption: 'test', qty })
+        await productModel.createProduct({ name: 'test', desciption: 'test', qty, data: { a: 1 } })
+        await productModel.createProduct({ name: 'test', desciption: 'test', qty, data: { a: 1 } })
 
         await listRef.resolve()
         assert.equal(listRef.values.length, 3)
     })
 
     test('Product transaction static', async () => {
-        const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        const productRef = await productModel.createProduct({
+            name: 'test',
+            desciption: 'test',
+            qty: 1,
+            data: { a: 1 },
+        })
         await sleep(500)
         await productModel.updateStockTwiceWithTransaction(productRef.id, 10)
         await productRef.resolve()
@@ -96,7 +173,12 @@ describe('Firebase static tests', () => {
     })
 
     test('Product transaction on failed transaction', async () => {
-        const productRef = await productModel.createProduct({ name: 'test', desciption: 'test', qty: 1 })
+        const productRef = await productModel.createProduct({
+            name: 'test',
+            desciption: 'test',
+            qty: 1,
+            data: { a: 1 },
+        })
         await sleep(500)
         await assert.rejects(productModel.updateStockWithTransactionWithError(productRef.id, 10))
         await productRef.resolve()

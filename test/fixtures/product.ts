@@ -13,6 +13,9 @@ interface Product {
     name: string
     desciption: string
     qty: number
+    data: {
+        a?: number
+    }
 }
 
 // type SerializedProduct = Product & { temp: boolean }
@@ -26,6 +29,9 @@ export const productConverter: FirestoreDataConverter<Product> = {
             name: modelObject.name,
             desciption: modelObject.desciption,
             qty: modelObject.qty,
+            data: {
+                a: modelObject.data?.a as number,
+            },
         }
     },
     fromFirestore: function (snapshot, options): Product {
@@ -34,6 +40,9 @@ export const productConverter: FirestoreDataConverter<Product> = {
             name: data.name,
             desciption: data.desciption,
             qty: data.qty,
+            data: {
+                a: data.data?.a as number,
+            },
         }
     },
 }
@@ -61,12 +70,20 @@ export class FirebaseProductModel implements ProductModel {
         this.datamanager = new FirestoreDataManager<Product>(db, this.collectionName, converter, options)
     }
 
+    getCollectionName() {
+        return this.collectionName
+    }
+
     createProduct(p: Product) {
         return this.datamanager.create(p)
     }
 
     getProduct(id: string) {
         return this.datamanager.getRef(id)
+    }
+
+    readProduct(id: string) {
+        return this.datamanager.read(id)
     }
 
     getProductList(params?: QueryParams<Product>) {
