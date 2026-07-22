@@ -30,9 +30,10 @@ export class FirestoreMetadataConverter implements InternalFirestoreDataConverte
     Metadata,
     FirestoreSerializedMetadata
 > {
-    toFirestore(data: WithFieldValue<WithoutId<Metadata>>) {
+    toFirestore(data: Partial<WithFieldValue<WithoutId<Metadata>>>) {
         return {
-            [FIRESTORE_INTERAL_KEYS.DELETED]: data[FIRESTORE_KEYS.DELETED],
+            // Cast: value may be absent on partial metadata writes; Firestore strips undefined fields
+            [FIRESTORE_INTERAL_KEYS.DELETED]: data[FIRESTORE_KEYS.DELETED] as boolean,
             // Cast: Firestore handles conversion from Date to Timestamp internally
             [FIRESTORE_INTERAL_KEYS.CREATED_AT]: data[FIRESTORE_KEYS.CREATED_AT] as unknown as FirestoreTypes.Timestamp,
             [FIRESTORE_INTERAL_KEYS.UPDATED_AT]: data[FIRESTORE_KEYS.UPDATED_AT] as unknown as FirestoreTypes.Timestamp,
