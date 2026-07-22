@@ -70,6 +70,7 @@ export class FirestoreDataManager<
     SerializedT extends FirestoreTypes.DocumentData = T,
 > implements DataManager<T> {
     private mergedConverter: InternalFirestoreDataConverter<T & Metadata, SerializedT & FirestoreSerializedMetadata>
+    private metadataConverter: FirestoreMetadataConverter
     private collection: FirestoreTypes.CollectionReference<T & Metadata, SerializedT & FirestoreSerializedMetadata>
     private collectionQuery: FirestoreTypes.Query<T & Metadata, SerializedT & FirestoreSerializedMetadata>
     private managerOptions: FirebaseDataManagerOptions
@@ -85,8 +86,9 @@ export class FirestoreDataManager<
         private readonly converter: FirestoreDataConverter<T, SerializedT>,
         private readonly opts?: Partial<FirebaseDataManagerOptions>
     ) {
+        this.metadataConverter = new FirestoreMetadataConverter()
         // @ts-expect-error - Force merge FirestoreDataConverter and InternalFirestoreDataConverter
-        this.mergedConverter = new MergeConverters(this.converter, new FirestoreMetadataConverter())
+        this.mergedConverter = new MergeConverters(this.converter, this.metadataConverter)
         this.managerOptions = this.validateOptions({ ...defaultFirebaseDataManagerOptions, ...this.opts })
 
         this.refCache = this.managerOptions.refCache || new MapCache(100)
@@ -104,6 +106,7 @@ export class FirestoreDataManager<
         this.referenceOptions = {
             readMode: this.managerOptions.readMode,
             snapshotOptions: this.managerOptions.snapshotOptions,
+            filterDeleted: this.managerOptions.deleteMode === 'soft',
         }
     }
 
@@ -117,7 +120,11 @@ export class FirestoreDataManager<
         if (options?.transaction) {
             const snapshot = await options.transaction.get(this.firestore.doc(this.collection, id))
             if (!checkIfReferenceExists(snapshot)) return undefined
-            return snapshot.data(this.referenceOptions.snapshotOptions)
+            const data = snapshot.data(this.referenceOptions.snapshotOptions)
+            if (this.managerOptions.deleteMode === 'soft' && data?.deleted === true) {
+                return undefined
+            }
+            return data
         }
         return await ref.resolve()
     }
@@ -169,6 +176,28 @@ export class FirestoreDataManager<
         }
         // Firestore update method doesn't call converter like setDoc does, so we need to serialize the data manually.
         const serializedData = this.mergedConverter.toFirestore(extendedData)
+
+        const ref = this.firestore.doc(this.collection, id)
+
+        if (options?.transaction) {
+            return options.transaction.update<DocumentData, DocumentData>(ref, serializedData)
+        }
+        return this.firestore.updateDoc(ref, serializedData)
+    }
+
+    /**
+     * Update only the internal metadata fields of a document.
+     *
+     * Unlike {@link _update}, this bypasses the user-provided converter so it never re-serializes
+     * (and therefore never clobbers) user data. This matters because the user converter rebuilds the
+     * full document shape, which turns absent fields into `undefined` and can overwrite existing map
+     * fields with empty objects when Firestore strips the undefined values.
+     */
+    private async _updateMetadata(id: string, metadata: Partial<Metadata>, options?: FirestoreWriteOptions) {
+        const serializedData = this.metadataConverter.toFirestore({
+            ...metadata,
+            [FIRESTORE_KEYS.UPDATED_AT]: this.firestore.serverTimestamp() as unknown as Date,
+        })
 
         const ref = this.firestore.doc(this.collection, id)
 
@@ -264,14 +293,7 @@ export class FirestoreDataManager<
 
     public async delete(id: string, options?: FirestoreWriteOptions) {
         if (this.managerOptions.deleteMode === 'soft') {
-            await this._update(
-                id,
-                {
-                    ...({} as Partial<T>),
-                    [FIRESTORE_KEYS.DELETED]: true,
-                },
-                options
-            )
+            await this._updateMetadata(id, { [FIRESTORE_KEYS.DELETED]: true }, options)
             return
         }
         if (options?.transaction) {

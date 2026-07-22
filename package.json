@@ -1,6 +1,6 @@
 {
     "name": "data-weave",
-    "version": "0.6.1",
+    "version": "0.7.2",
     "publishConfig": {
         "registry": "https://registry.npmjs.org/"
     },
@@ -14,13 +14,12 @@
         "publish-packages": "turbo run build && changeset version && changeset publish",
         "lint": "npm run lint:packages",
         "lint:packages": "eslint packages/* --max-warnings=0",
-        "test": "./scripts/test-with-emulator.sh",
-        "test:js-sdk": "export FIRESTORE_EMULATOR_HOST=localhost:8080 && SDK_TYPE=JS_SDK jest",
-        "test:admin-sdk": "export FIRESTORE_EMULATOR_HOST=localhost:8080 && SDK_TYPE=ADMIN_SDK jest",
-        "test:watch": "export FIRESTORE_EMULATOR_HOST=localhost:8080 && jest --watch",
-        "test:watch-js": "export FIRESTORE_EMULATOR_HOST=localhost:8080 && SDK_TYPE=JS_SDK jest --watch",
-        "test:watch-admin": "export FIRESTORE_EMULATOR_HOST=localhost:8080 && SDK_TYPE=ADMIN_SDK jest --watch",
-        "test:emulator": "./scripts/test-with-emulator.sh"
+        "test": "yarn test:js-sdk && yarn test:admin-sdk",
+        "test:js-sdk": "SDK_TYPE=JS_SDK TSX_TSCONFIG_PATH=./tsconfig.test.json node --import tsx --test --test-global-setup=./test/helpers/globalSetup.ts --test-concurrency=1 --test-timeout=30000 --test-force-exit \"packages/*/test/**/*.test.ts\"",
+        "test:admin-sdk": "SDK_TYPE=ADMIN_SDK TSX_TSCONFIG_PATH=./tsconfig.test.json node --import tsx --test --test-global-setup=./test/helpers/globalSetup.ts --test-concurrency=1 --test-timeout=30000 --test-force-exit \"packages/*/test/**/*.test.ts\"",
+        "test:watch": "SDK_TYPE=JS_SDK TSX_TSCONFIG_PATH=./tsconfig.test.json node --import tsx --test --watch --test-global-setup=./test/helpers/globalSetup.ts \"packages/*/test/**/*.test.ts\"",
+        "test:watch-js": "SDK_TYPE=JS_SDK TSX_TSCONFIG_PATH=./tsconfig.test.json node --import tsx --test --watch --test-global-setup=./test/helpers/globalSetup.ts \"packages/*/test/**/*.test.ts\"",
+        "test:watch-admin": "SDK_TYPE=ADMIN_SDK TSX_TSCONFIG_PATH=./tsconfig.test.json node --import tsx --test --watch --test-global-setup=./test/helpers/globalSetup.ts \"packages/*/test/**/*.test.ts\""
     },
     "keywords": [],
     "author": "",
@@ -31,7 +30,7 @@
         "@commitlint/cli": "^19.8.1",
         "@commitlint/config-conventional": "^19.8.1",
         "@eslint/js": "^9.17.0",
-        "@types/jest": "^29.5.14",
+        "@testcontainers/gcloud": "^12.0.2",
         "@types/node": "^22.10.2",
         "eslint": "^8.57.1",
         "eslint-config-prettier": "^10.1.5",
@@ -41,23 +40,24 @@
         "eslint-plugin-promise": "^7.2.1",
         "firebase": "^11.9.0",
         "firebase-admin": "^13.0.2",
-        "firebase-tools": "^13.30.2",
         "genversion": "^3.2.0",
         "husky": "^9.1.7",
-        "jest": "^29.7.0",
         "lerna": "^8.2.2",
         "lint-staged": "^15.3.0",
         "madge": "8.0.0",
         "prettier": "^3.4.2",
         "prettier-plugin-organize-imports": "^4.1.0",
-        "ts-jest": "^29.2.5",
         "ts-node": "^10.9.2",
+        "tsx": "^4.22.4",
         "turbo": "^2.6.3",
         "typescript": "^5.9.3",
         "typescript-eslint": "^8.19.0",
         "uuid": "^11.1.0"
     },
     "private": true,
+    "engines": {
+        "node": ">=24.0"
+    },
     "workspaces": [
         "packages/*"
     ],

@@ -4,6 +4,11 @@ import { initializeApp as initializeAdminApp } from 'firebase-admin/app'
 import { FirebaseApp, getApp, getApps, initializeApp } from 'firebase/app'
 import { initializeFirestore } from 'firebase/firestore'
 
+const emulatorHost = process.env.FIRESTORE_EMULATOR_HOST
+if (!emulatorHost) {
+    throw new Error('FIRESTORE_EMULATOR_HOST is not set; test global setup did not run.')
+}
+
 export const initializeJS_SDK = () => {
     let firebaseApp: FirebaseApp
     if (getApps().length === 0) {
@@ -16,7 +21,7 @@ export const initializeJS_SDK = () => {
 
     const db = initializeFirestore(firebaseApp, {
         ignoreUndefinedProperties: true,
-        host: 'localhost:8080',
+        host: emulatorHost,
         ssl: false,
     })
 
@@ -34,7 +39,7 @@ export const initializeAdmin_SDK = () => {
 
     db.settings({
         ignoreUndefinedProperties: true,
-        host: 'localhost:8080',
+        host: emulatorHost,
         ssl: false,
     })
 

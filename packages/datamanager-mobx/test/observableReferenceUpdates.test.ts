@@ -1,6 +1,7 @@
 import { LiveReference } from '@data-weave/datamanager'
-import { describe, expect, test } from '@jest/globals'
 import { autorun } from 'mobx'
+import assert from 'node:assert/strict'
+import { describe, test } from 'node:test'
 import { ObservableReference } from '../src/ObservableReference'
 
 class TestRef<T> extends LiveReference<T> {
@@ -28,7 +29,7 @@ describe('ObservableReference update propagation', () => {
         ref.publish({ n: 1 })
         ref.publish({ n: 2 })
         dispose()
-        expect(seen).toEqual([undefined, { n: 1 }, { n: 2 }])
+        assert.deepEqual(seen, [undefined, { n: 1 }, { n: 2 }])
     })
 
     test('the bridge is idempotent across multiple wraps of the same source', () => {
@@ -50,7 +51,7 @@ describe('ObservableReference update propagation', () => {
         disposeA()
         disposeB()
 
-        expect(seenA.at(-1)).toBe(1)
-        expect(seenB.at(-1)).toBe(1)
+        assert.equal(seenA.at(-1), 1)
+        assert.equal(seenB.at(-1), 1)
     })
 })
