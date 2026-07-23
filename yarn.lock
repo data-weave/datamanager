@@ -499,11 +499,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@data-weave/backend-firestore@npm:~0.7.0, @data-weave/backend-firestore@workspace:packages/backend-firestore":
+"@data-weave/backend-firestore@npm:~0.7.2, @data-weave/backend-firestore@workspace:packages/backend-firestore":
   version: 0.0.0-use.local
   resolution: "@data-weave/backend-firestore@workspace:packages/backend-firestore"
   dependencies:
-    "@data-weave/datamanager": "npm:~0.7.0"
+    "@data-weave/datamanager": "npm:~0.7.2"
     "@firebase/firestore": "npm:^4.7.8"
     "@firebase/functions-types": "npm:^0.6.3"
     "@google-cloud/firestore": "npm:^7.11.1"
@@ -517,8 +517,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@data-weave/datamanager-mobx@workspace:packages/datamanager-mobx"
   dependencies:
-    "@data-weave/backend-firestore": "npm:~0.7.0"
-    "@data-weave/datamanager": "npm:~0.7.0"
+    "@data-weave/backend-firestore": "npm:~0.7.2"
+    "@data-weave/datamanager": "npm:~0.7.2"
     mobx: "npm:6.15.0"
     typescript: "npm:5.9.3"
   peerDependencies:
@@ -526,7 +526,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@data-weave/datamanager@npm:~0.7.0, @data-weave/datamanager@workspace:packages/datamanager":
+"@data-weave/datamanager@npm:~0.7.2, @data-weave/datamanager@workspace:packages/datamanager":
   version: 0.0.0-use.local
   resolution: "@data-weave/datamanager@workspace:packages/datamanager"
   dependencies:
@@ -538,8 +538,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@data-weave/firestore-admin-adapter@workspace:packages/firestore-admin-adapter"
   dependencies:
-    "@data-weave/backend-firestore": "npm:~0.7.0"
-    "@data-weave/datamanager": "npm:~0.7.0"
+    "@data-weave/backend-firestore": "npm:~0.7.2"
+    "@data-weave/datamanager": "npm:~0.7.2"
     "@types/node": "npm:^22.10.2"
     firebase-admin: "npm:^13.0.0"
     typescript: "npm:5.9.3"
