@@ -16,10 +16,8 @@ jobs:
                   fetch-depth: 0
                   token: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Enable Corepack and set Yarn to latest stable
-              run: |
-                  corepack enable
-                  yarn set version berry
+            - name: Enable Corepack
+              run: corepack enable
 
             - name: Setup Node.js
               uses: actions/setup-node@v4
