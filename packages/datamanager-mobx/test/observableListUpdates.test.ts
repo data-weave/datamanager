@@ -68,6 +68,22 @@ describe('ObservableList update propagation', () => {
         assert.deepEqual(errorSeen, [undefined, new Error('boom')])
     })
 
+    test('a successful update after an error clears hasError and error', () => {
+        const list = new TestList<number>()
+        const reactive = ObservableList(list)
+        const seen: [boolean, unknown][] = []
+
+        const dispose = autorun(() => {
+            seen.push([reactive.hasError, reactive.error])
+        })
+        list.publishError(new Error('boom'))
+        list.publishAll([1])
+        dispose()
+
+        assert.deepEqual(seen.at(-1), [false, undefined])
+        assert.deepEqual(reactive.values, [1])
+    })
+
     test('the bridge is idempotent across multiple wraps of the same source', () => {
         const list = new TestList<number>()
 

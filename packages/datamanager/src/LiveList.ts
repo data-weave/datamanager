@@ -51,6 +51,8 @@ export class LiveList<T> implements List<T> {
 
     protected onUpdate(): void {
         this._resolved = true
+        this._hasError = false
+        this._error = undefined
         this._options.onUpdate?.(this._values)
         this.notifyChange()
     }

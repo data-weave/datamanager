@@ -57,6 +57,7 @@ export class LiveReference<T> implements IdentifiableReference<T> {
         this._value = data
         this._resolved = true
         this._hasError = false
+        this._error = undefined
         this._options.onUpdate?.(this._value)
         this.notifyChange()
     }
