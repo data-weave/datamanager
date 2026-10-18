@@ -52,6 +52,36 @@ describe('Firebase static tests', () => {
         assert.notDeepEqual(productAfterUpdate?.updatedAt, product?.updatedAt)
     })
 
+    for (const preventOverwriteOnCreate of [true, false]) {
+        test(`Product upsert keeps createdAt when preventOverwriteOnCreate is ${preventOverwriteOnCreate ? 'on' : 'off'}`, async () => {
+            const upsertModel = new FirebaseProductModel(sdk, productConverter, {
+                readMode: 'static',
+                preventOverwriteOnCreate,
+            })
+            await upsertModel.upsertProduct('upserted', {
+                name: 'test',
+                desciption: 'test',
+                qty: 1,
+                data: { a: 1 },
+            })
+            const product = await upsertModel.readProduct('upserted')
+
+            await sleep(1000)
+
+            await upsertModel.upsertProduct('upserted', {
+                name: 'test',
+                desciption: 'test',
+                qty: 2,
+                data: { a: 1 },
+            })
+            const productAfterUpsert = await upsertModel.readProduct('upserted')
+
+            assert.equal(productAfterUpsert?.qty, 2)
+            assert.deepEqual(productAfterUpsert?.createdAt, product?.createdAt)
+            assert.notDeepEqual(productAfterUpsert?.updatedAt, product?.updatedAt)
+        })
+    }
+
     test('Product delete soft is not fetchable by reference', async () => {
         const productRef = await productModel.createProduct({
             name: 'test',

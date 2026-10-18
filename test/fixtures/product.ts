@@ -94,6 +94,10 @@ export class FirebaseProductModel implements ProductModel {
         return this.datamanager.update(id, params)
     }
 
+    upsertProduct(id: string, p: Product) {
+        return this.datamanager.upsert(id, p)
+    }
+
     deleteProduct(id: string) {
         return this.datamanager.delete(id)
     }
