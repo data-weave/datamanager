@@ -16,6 +16,10 @@ class TestRef<T> extends LiveReference<T> {
     publish(value: T): void {
         this.onUpdate(value)
     }
+
+    publishError(error: unknown): void {
+        this.onError(error)
+    }
 }
 
 describe('ObservableReference update propagation', () => {
@@ -30,6 +34,22 @@ describe('ObservableReference update propagation', () => {
         ref.publish({ n: 2 })
         dispose()
         assert.deepEqual(seen, [undefined, { n: 1 }, { n: 2 }])
+    })
+
+    test('a successful update after an error clears hasError and error', () => {
+        const ref = new TestRef<number>('x')
+        const reactive = ObservableReference(ref)
+        const seen: [boolean, unknown][] = []
+
+        const dispose = autorun(() => {
+            seen.push([reactive.hasError, reactive.error])
+        })
+        ref.publishError(new Error('boom'))
+        ref.publish(1)
+        dispose()
+
+        assert.deepEqual(seen.at(-1), [false, undefined])
+        assert.equal(reactive.value, 1)
     })
 
     test('the bridge is idempotent across multiple wraps of the same source', () => {
