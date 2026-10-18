@@ -55,16 +55,9 @@ export class MergeConverters<
         options?: FirestoreTypes.SetOptions
     ) {
         try {
-            if (options) {
-                return {
-                    ...this.converter1.toFirestore(modelObject, options),
-                    ...this.converter2.toFirestore(modelObject, options),
-                }
-            } else {
-                return {
-                    ...this.converter1.toFirestore(modelObject),
-                    ...this.converter2.toFirestore(modelObject),
-                }
+            return {
+                ...this.converter1.toFirestore(modelObject, options),
+                ...this.converter2.toFirestore(modelObject, options),
             }
         } catch (error) {
             throw new ConverterError(`Failed to convert model object to firestore: ${error}`)
@@ -144,10 +137,8 @@ export const checkIfReferenceExists = (value: any): boolean => {
     return value.exists
 }
 
-export const withTransaction = (
+export const withTransaction = <T>(
     firestore: Firestore,
-    transaction: (transaction: FirestoreTypes.Transaction) => Promise<void>,
+    transaction: (transaction: FirestoreTypes.Transaction) => Promise<T>,
     options?: FirestoreTypes.TransactionOptions
-) => {
-    return firestore.runTransaction(firestore.app, transaction, options)
-}
+) => firestore.runTransaction(firestore.app, transaction, options)

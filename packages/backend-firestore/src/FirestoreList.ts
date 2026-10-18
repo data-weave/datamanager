@@ -6,6 +6,7 @@ export type { FirestoreListContext } from './errors'
 
 export interface FirestoreListOptions<T> extends LiveListOptions<T> {
     readMode?: FirestoreReadMode
+    snapshotOptions?: FirestoreTypes.SnapshotOptions
 }
 
 export class FirestoreList<T extends DocumentData, S extends DocumentData> extends LiveList<T> {
@@ -36,9 +37,7 @@ export class FirestoreList<T extends DocumentData, S extends DocumentData> exten
                                 initialLoad = false
                                 this.handleInitialDataChange(querySnapshot.docs)
                             } else {
-                                // handle every change as inital dataload
-                                this.handleInitialDataChange(querySnapshot.docs)
-                                // this.handleSubsequentDataChanges(querySnapshot.docChanges())
+                                this.handleSubsequentDataChanges(querySnapshot.docChanges())
                             }
                             // TODO: When calling ".resolve()" with realtime listener,
                             // the snapshot data might be stale from cache.
@@ -54,37 +53,29 @@ export class FirestoreList<T extends DocumentData, S extends DocumentData> exten
                     }
                 )
             })
-        } else {
-            try {
-                const snapshot = await this.firestore.getDocs(this.query)
-                this.handleInitialDataChange(snapshot.docs)
-                return this.values
-            } catch (error) {
-                this.onError(error)
-            }
+        }
+        try {
+            const snapshot = await this.firestore.getDocs(this.query)
+            this.handleInitialDataChange(snapshot.docs)
+        } catch (error) {
+            this.onError(error)
         }
         return this.values
     }
 
     protected handleInitialDataChange(values: FirestoreTypes.QueryDocumentSnapshot<T, S>[]) {
-        const newValues = values.map(v => v.data())
+        const newValues = values.map(v => v.data(this.options?.snapshotOptions))
         this.onUpdateAll(newValues)
     }
 
     protected handleSubsequentDataChanges(changes: FirestoreTypes.DocumentChange<T, S>[]) {
-        // Each index-based mutation on `LiveList` already fires `onUpdate`
-        // (and therefore `onValuesChange` and the `options.onUpdate`
-        // callback). No trailing notification is needed; consumers see one
-        // notification per change in the batch.
-        changes.forEach(change => {
-            if (change.type === 'added') {
-                this.onAddAtIndex(change.newIndex, change.doc.data())
-            } else if (change.type === 'modified') {
-                this.onUpdateAtIndex(change.newIndex, change.doc.data())
-            } else if (change.type === 'removed') {
-                this.onRemoveAtIndex(change.oldIndex)
-            }
-        })
+        const values = [...this.values]
+        for (const change of changes) {
+            if (change.oldIndex !== -1) values.splice(change.oldIndex, 1)
+            if (change.newIndex !== -1)
+                values.splice(change.newIndex, 0, change.doc.data(this.options?.snapshotOptions))
+        }
+        this.onUpdateAll(values)
     }
 
     public unsubscribe() {
@@ -96,6 +87,7 @@ export class FirestoreList<T extends DocumentData, S extends DocumentData> exten
         const wrapped = new FirestoreListError(error, {
             query: this.query,
             readMode: this.options?.readMode,
+            snapshotOptions: this.options?.snapshotOptions,
             type: 'list',
         })
         super.onError(wrapped)

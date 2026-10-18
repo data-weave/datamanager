@@ -2,7 +2,7 @@ import { FirestoreEmulatorContainer, type StartedFirestoreEmulatorContainer } fr
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 
-const GCLOUD_EMULATOR_IMAGE = 'gcr.io/google.com/cloudsdktool/cloud-sdk:475.0.0-emulators'
+const GCLOUD_EMULATOR_IMAGE = 'gcr.io/google.com/cloudsdktool/google-cloud-cli:586.0.0-emulators'
 const PROJECT_ID = 'demo-test-project'
 
 declare global {

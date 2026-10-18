@@ -1,42 +1,48 @@
+import type { AggregateResult, AggregateSpec, Firestore } from '@data-weave/backend-firestore'
 import {
-    type AggregateResult,
-    type AggregateSpec,
-    FieldValues,
-    Firestore,
-    FirestoreApp,
-    FirestoreTypes,
-} from '@data-weave/backend-firestore'
-import { AggregateField } from 'firebase-admin/firestore'
+    AggregateField,
+    type Firestore as AdminFirestore,
+    type CollectionReference,
+    type DocumentData,
+    type DocumentReference,
+    type DocumentSnapshot,
+    type FieldPath,
+    type FieldValue,
+    type OrderByDirection,
+    type Query,
+    type QuerySnapshot,
+    type ReadOnlyTransactionOptions,
+    type ReadWriteTransactionOptions,
+    type SetOptions,
+    type Transaction,
+    type UpdateData,
+    type WhereFilterOp,
+} from 'firebase-admin/firestore'
+
+/** Query constraint built by `where`/`orderBy`/`limit` and applied by `query`. */
+type Constraint = (query: Query) => Query
 
 /*
  *  FirestoreAdminAdapter creates an interface between modular and namespaced
  *  firestore libraries.
  *   - admin sdk doesn't support modular imports
  */
-
-// TODO: add types
-/* eslint-disable @typescript-eslint/no-explicit-any */
-export class FirestoreAdminAdapter extends Firestore {
-    public app: FirestoreApp
+class AdminAdapter implements Record<keyof Firestore, unknown> {
     constructor(
-        readonly firestore: FirestoreApp,
-        readonly fieldValues: FieldValues
-    ) {
-        super()
-        this.app = firestore
-        this.fieldValues = fieldValues
-    }
+        readonly app: AdminFirestore,
+        readonly fieldValues: typeof FieldValue
+    ) {}
 
-    public collection(reference: any, path: string) {
+    public collection(reference: AdminFirestore | DocumentReference, path: string) {
         return reference.collection(path)
     }
 
-    public getDocs(reference: any) {
-        return reference.get()
+    public getDocs(query: Query) {
+        return query.get()
     }
 
     public async getAggregateFromServer<Spec extends AggregateSpec>(
-        query: any,
+        query: Query,
         spec: Spec
     ): Promise<AggregateResult<Spec>> {
         const adminSpec = Object.fromEntries(
@@ -53,8 +59,8 @@ export class FirestoreAdminAdapter extends Firestore {
         return snapshot.data() as AggregateResult<Spec>
     }
 
-    public getDoc(reference: any, path?: string) {
-        return reference.get(path)
+    public getDoc(reference: DocumentReference) {
+        return reference.get()
     }
 
     public serverTimestamp() {
@@ -65,70 +71,59 @@ export class FirestoreAdminAdapter extends Firestore {
         return this.fieldValues.increment(n)
     }
 
-    public query(reference: any, filter: any) {
-        if (filter.type === 'where') {
-            return reference.where(filter.field, filter.op, filter.value)
-        }
-        if (filter.type === 'orderBy') {
-            return reference.orderBy(filter.field, filter.direction)
-        }
-        if (filter.type === 'limit') {
-            return reference.limit(filter.limit)
-        }
+    public query(query: Query, ...constraints: Constraint[]) {
+        return constraints.reduce((q, constraint) => constraint(q), query)
     }
 
-    public where(field: string | FirestoreTypes.FieldPath, op: string, value: unknown): any {
-        return {
-            type: 'where',
-            field,
-            op,
-            value,
-        }
+    public where(field: string | FieldPath, op: WhereFilterOp, value: unknown): Constraint {
+        return query => query.where(field, op, value)
     }
 
-    public limit(limit: number) {
-        return {
-            type: 'limit',
-            limit,
-        }
+    public limit(limit: number): Constraint {
+        return query => query.limit(limit)
     }
 
-    public orderBy(orderBy: string, direction: FirestoreTypes.OrderByDirection) {
-        return {
-            type: 'orderBy',
-            field: orderBy,
-            direction,
-        }
+    public orderBy(field: string | FieldPath, direction?: OrderByDirection): Constraint {
+        return query => query.orderBy(field, direction)
     }
 
-    public setDoc(reference: any, data: any, options?: FirestoreTypes.SetOptions) {
+    public setDoc(reference: DocumentReference, data: DocumentData, options: SetOptions = {}) {
         return reference.set(data, options)
     }
 
-    public updateDoc(reference: any, data: any) {
+    public updateDoc(reference: DocumentReference, data: UpdateData<DocumentData>) {
         return reference.update(data)
     }
 
-    public deleteDoc(reference: any) {
+    public deleteDoc(reference: DocumentReference) {
         return reference.delete()
     }
 
-    public doc(reference: any, path?: string) {
-        if (!path) return reference.doc()
-        return reference.doc(path)
+    public doc(reference: CollectionReference, path?: string) {
+        return path ? reference.doc(path) : reference.doc()
     }
 
-    public onSnapshot(reference: any, onNext: (snapshot: any) => void, onError?: (error: Error) => void) {
+    public onSnapshot(
+        reference: DocumentReference | Query,
+        onNext: (snapshot: DocumentSnapshot | QuerySnapshot) => void,
+        onError?: (error: Error) => void
+    ) {
         return reference.onSnapshot(onNext, onError)
     }
 
     public runTransaction<T>(
-        firestore: FirestoreApp,
-        transaction: (transaction: FirestoreTypes.Transaction) => Promise<T>,
-        options?: FirestoreTypes.TransactionOptions
+        firestore: AdminFirestore,
+        transaction: (transaction: Transaction) => Promise<T>,
+        options?: ReadWriteTransactionOptions | ReadOnlyTransactionOptions
     ) {
-        // firestore.runTransaction is Admin SDK specific
-        return firestore.runTransaction!(transaction as any, options) as Promise<T>
+        // Reading queries in a transaction and `runTransaction` on the db handle are Admin SDK specific
+        return firestore.runTransaction(transaction, options)
     }
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
+
+// `Firestore` is typed with the modular SDK; the refs, queries and snapshots it passes through here are Admin SDK ones.
+export const FirestoreAdminAdapter = AdminAdapter as unknown as new (
+    app: AdminFirestore,
+    fieldValues: typeof FieldValue
+) => Firestore
+export type FirestoreAdminAdapter = Firestore

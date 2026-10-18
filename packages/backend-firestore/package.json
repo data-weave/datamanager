@@ -25,7 +25,6 @@
     "devDependencies": {
         "@data-weave/datamanager": "~0.7.2",
         "@firebase/firestore": "^4.7.8",
-        "@firebase/functions-types": "^0.6.3",
         "@google-cloud/firestore": "^7.11.1",
         "@types/node": "^22.10.2",
         "firebase": "^11.9.0",

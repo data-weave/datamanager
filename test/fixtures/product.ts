@@ -118,6 +118,14 @@ export class FirebaseProductModel implements ProductModel {
         return this.datamanager.max('qty', params)
     }
 
+    createProductsWithTransaction(products: Product[]) {
+        return withTransaction(this.db, async transaction => {
+            for (const p of products) {
+                await this.datamanager.create(p, { transaction })
+            }
+        })
+    }
+
     updateStockTwiceWithTransaction(id: string, addQty: number) {
         return withTransaction(this.db, async transaction => {
             await this.datamanager.update(id, { qty: this.db.increment(addQty) }, { transaction })

@@ -18,11 +18,13 @@ import { FirestoreList } from './FirestoreList'
 import {
     FIRESTORE_KEYS,
     FirestoreMetadataConverter,
+    FirestoreMetadataWrite,
     FirestoreSerializedMetadata,
     queryNotDeleted,
 } from './FirestoreMetadata'
 import { FirestoreReference, FirestoreReferenceOptions } from './FirestoreReference'
 import {
+    AggregateFieldSpec,
     DocumentData,
     FilterBy,
     FirebaseCreateOptions,
@@ -101,7 +103,7 @@ export class FirestoreDataManager<
 
         this.collectionQuery =
             this.managerOptions.deleteMode === 'soft'
-                ? queryNotDeleted(this.collection, this.firestore.query, this.firestore.where)
+                ? queryNotDeleted(this.firestore, this.collection)
                 : this.collection
 
         this.referenceOptions = {
@@ -131,12 +133,7 @@ export class FirestoreDataManager<
     }
 
     public async create(data: WithFieldValue<WithoutId<T>>, options?: FirebaseCreateOptions) {
-        let id: string | undefined = undefined
-        if (options?.id) {
-            id = options?.id
-        } else if (this.managerOptions?.idResolver) {
-            id = this.managerOptions.idResolver()
-        }
+        const id = options?.id || this.managerOptions.idResolver?.()
 
         let docRef: FirestoreTypes.DocumentReference
         let docExists: boolean = false
@@ -183,7 +180,7 @@ export class FirestoreDataManager<
         if (options?.transaction) {
             return options.transaction.update<DocumentData, DocumentData>(ref, serializedData)
         }
-        return this.firestore.updateDoc(ref, serializedData)
+        return this.firestore.updateDoc<DocumentData, DocumentData>(ref, serializedData)
     }
 
     /**
@@ -194,10 +191,14 @@ export class FirestoreDataManager<
      * full document shape, which turns absent fields into `undefined` and can overwrite existing map
      * fields with empty objects when Firestore strips the undefined values.
      */
-    private async _updateMetadata(id: string, metadata: Partial<Metadata>, options?: FirestoreWriteOptions) {
+    private async _updateMetadata(
+        id: string,
+        metadata: Pick<FirestoreMetadataWrite, FIRESTORE_KEYS.DELETED>,
+        options?: FirestoreWriteOptions
+    ) {
         const serializedData = this.metadataConverter.toFirestore({
             ...metadata,
-            [FIRESTORE_KEYS.UPDATED_AT]: this.firestore.serverTimestamp() as unknown as Date,
+            [FIRESTORE_KEYS.UPDATED_AT]: this.firestore.serverTimestamp(),
         })
 
         const ref = this.firestore.doc(this.collection, id)
@@ -216,12 +217,28 @@ export class FirestoreDataManager<
         await this.create(data, { ...options, id, merge: true })
     }
 
+    private async _aggregate(spec: AggregateFieldSpec, params?: QueryParams<SerializedT>) {
+        const { result } = await this.firestore.getAggregateFromServer(this._getFilteredQuery(params), { result: spec })
+        return result
+    }
+
+    private async _firstValue<K extends string & keyof T>(
+        field: K,
+        direction: FirestoreTypes.OrderByDirection,
+        params?: QueryParams<SerializedT>
+    ): Promise<T[K] | null> {
+        const query = this.firestore.query(
+            this._getFilteredQuery(params),
+            this.firestore.orderBy(field, direction),
+            this.firestore.limit(1)
+        )
+        const snapshot = await this.firestore.getDocs(query)
+        if (snapshot.empty) return null
+        return snapshot.docs[0].get(field) ?? null
+    }
+
     public async count(params?: QueryParams<SerializedT>): Promise<number> {
-        const compoundQuery = this._getFilteredQuery(params)
-        const result = await this.firestore.getAggregateFromServer(compoundQuery, {
-            result: { type: 'count' },
-        })
-        return result.result ?? 0
+        return (await this._aggregate({ type: 'count' }, params)) ?? 0
     }
 
     /**
@@ -231,11 +248,7 @@ export class FirestoreDataManager<
      * If user model fields differ from serialized fields, this can target a different field than expected.
      */
     public async sum(field: NumericKeys<T>, params?: QueryParams<SerializedT>): Promise<number> {
-        const compoundQuery = this._getFilteredQuery(params)
-        const result = await this.firestore.getAggregateFromServer(compoundQuery, {
-            result: { type: 'sum', field },
-        })
-        return result.result ?? 0
+        return (await this._aggregate({ type: 'sum', field }, params)) ?? 0
     }
 
     /**
@@ -245,11 +258,7 @@ export class FirestoreDataManager<
      * If user model fields differ from serialized fields, this can target a different field than expected.
      */
     public async average(field: NumericKeys<T>, params?: QueryParams<SerializedT>): Promise<number | null> {
-        const compoundQuery = this._getFilteredQuery(params)
-        const result = await this.firestore.getAggregateFromServer(compoundQuery, {
-            result: { type: 'average', field },
-        })
-        return result.result ?? null
+        return (await this._aggregate({ type: 'average', field }, params)) ?? null
     }
 
     /**
@@ -259,14 +268,7 @@ export class FirestoreDataManager<
      * If user model fields differ from serialized fields, this can target a different field than expected.
      */
     public async min<K extends string & keyof T>(field: K, params?: QueryParams<SerializedT>): Promise<T[K] | null> {
-        const compoundQuery = this._getFilteredQuery(params)
-        const limitedQuery = this.firestore.query(
-            this.firestore.query(compoundQuery, this.firestore.orderBy(field, 'asc')),
-            this.firestore.limit(1)
-        )
-        const snapshot = await this.firestore.getDocs(limitedQuery)
-        if (snapshot.empty) return null
-        return (snapshot.docs[0].get(field) as T[K]) ?? null
+        return this._firstValue(field, 'asc', params)
     }
 
     /**
@@ -276,14 +278,7 @@ export class FirestoreDataManager<
      * If user model fields differ from serialized fields, this can target a different field than expected.
      */
     public async max<K extends string & keyof T>(field: K, params?: QueryParams<SerializedT>): Promise<T[K] | null> {
-        const compoundQuery = this._getFilteredQuery(params)
-        const limitedQuery = this.firestore.query(
-            this.firestore.query(compoundQuery, this.firestore.orderBy(field, 'desc')),
-            this.firestore.limit(1)
-        )
-        const snapshot = await this.firestore.getDocs(limitedQuery)
-        if (snapshot.empty) return null
-        return (snapshot.docs[0].get(field) as T[K]) ?? null
+        return this._firstValue(field, 'desc', params)
     }
 
     public async exists(id: string) {
@@ -353,6 +348,7 @@ export class FirestoreDataManager<
         }
         const newList = new FirestoreList(this.firestore, compoundQuery, {
             readMode: this.managerOptions.readMode,
+            snapshotOptions: this.managerOptions.snapshotOptions,
             ...params,
         })
 

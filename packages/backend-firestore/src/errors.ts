@@ -11,6 +11,7 @@ export interface FirestoreReferenceContext {
 export interface FirestoreListContext {
     query: FirestoreTypes.Query<unknown>
     readMode?: FirestoreReadMode
+    snapshotOptions?: FirestoreTypes.SnapshotOptions
     type: 'list'
 }
 
