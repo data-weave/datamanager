@@ -1,57 +1,63 @@
-import { WithoutId } from '@data-weave/datamanager'
+import type { CreateOptions, WithoutId } from '@data-weave/datamanager'
 import type * as FirestoreTypes from '@firebase/firestore'
-import type { FieldPath, WithFieldValue as FirestoreWithFieldValue, QueryConstraint } from '@firebase/firestore'
-import type { HttpsCallable, HttpsCallableOptions } from '@firebase/functions-types'
-import type { Transaction as AdminTransaction, FieldValue } from '@google-cloud/firestore'
+import type { Firestore as AdminFirestore, FieldValue } from '@google-cloud/firestore'
+
+type ModularSdk = typeof import('@firebase/firestore')
 
 export type DocumentData = FirestoreTypes.DocumentData
 
 export { FieldValue, FirestoreTypes }
 
 /**
- * Same as Partial but all fields are required to be included
+ * Object-only form of the SDK's `WithFieldValue`. The SDK type is a conditional that stays unresolved
+ * for a generic `T`, so it can neither be spread nor merged with the metadata fields (TS2698).
  */
+export type WithFieldValue<T> = {
+    [K in keyof T]: FirestoreTypes.WithFieldValue<T[K]> | FirestoreTypes.FieldValue
+}
+
+/** `WithFieldValue` whose values may also be `undefined` (partial writes; Firestore drops them). */
+export type WithFieldValueOrUndefined<T> = {
+    [K in keyof T]: FirestoreTypes.WithFieldValue<T[K]> | FirestoreTypes.FieldValue | undefined
+}
+
+/** Same as Partial but every key must be present (as a value or `undefined`). */
 type OptionallyUndefined<T> = { [P in keyof T]: T[P] | undefined }
 
-export declare interface InternalFirestoreDataConverter<
+export type FirestoreReadMode = 'realtime' | 'static'
+
+/**
+ * Converter used inside the data manager. Unlike the public {@link FirestoreDataConverter} it also
+ * receives partial objects (`update` serializes through it) and never sees `id`.
+ */
+export interface InternalFirestoreDataConverter<
     T extends DocumentData,
     SerializedT extends DocumentData = DocumentData,
 > {
     toFirestore(
         modelObject: Partial<WithFieldValue<WithoutId<T>>>,
         options?: FirestoreTypes.SetOptions
-    ): WithFieldValue<WithoutId<SerializedT>>
+    ): WithFieldValueOrUndefined<WithoutId<SerializedT>>
     fromFirestore(
         snapshot: FirestoreTypes.QueryDocumentSnapshot<T, SerializedT>,
         options?: FirestoreTypes.SnapshotOptions
     ): T
 }
 
-export type WithTimestamps<T> = {
-    [K in keyof T]: T[K] extends Date
-        ? FirestoreTypes.Timestamp
-        : T[K] extends Date | null
-          ? FirestoreTypes.Timestamp | null
-          : T[K] extends Date | undefined
-            ? FirestoreTypes.Timestamp | undefined
-            : T[K] extends Date | null | undefined
-              ? FirestoreTypes.Timestamp | null | undefined
-              : T[K] extends object
-                ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  T[K] extends any[]
-                    ? T[K] extends (infer U)[]
-                        ? WithTimestamps<U>[]
-                        : T[K]
-                    : WithTimestamps<T[K]>
-                : T[K]
-}
+/** `Date` fields become Firestore `Timestamp`s, recursively - the shape of raw document data. */
+export type WithTimestamps<T> = T extends Date
+    ? FirestoreTypes.Timestamp
+    : T extends FirestoreTypes.Timestamp
+      ? T
+      : T extends object
+        ? { [K in keyof T]: WithTimestamps<T[K]> }
+        : T
 
 /**
- * Converts data between model and serialized data. Differs from InternalFirestoreDataConverter
- * by using `OptionallyUndefined` and `Required` to ensure that all fields are included in de/serialization
- * even if some model defined properties are optional.
+ * Converts between the model and its serialized form. `Required` + `OptionallyUndefined` force every
+ * serialized key to be listed, so optional model fields are never silently dropped.
  */
-export declare interface FirestoreDataConverter<ModelObject, SerializedModelObject = ModelObject> {
+export interface FirestoreDataConverter<ModelObject, SerializedModelObject = ModelObject> {
     toFirestore(
         modelObject: WithoutId<ModelObject>,
         options?: FirestoreTypes.SetOptions
@@ -62,16 +68,6 @@ export declare interface FirestoreDataConverter<ModelObject, SerializedModelObje
     ): ModelObject
 }
 
-export type FirestoreQuery<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData> = (
-    reference: FirestoreTypes.Query<AppModelType, DbModelType>,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    filter: any
-) => FirestoreTypes.Query<AppModelType, DbModelType>
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type FirestoreWhere = (field: string | FieldPath, op: string, value: unknown) => any
-
-export type FirestoreReadMode = 'realtime' | 'static'
-
 export interface FirestoreReadOptions {
     readonly transaction?: FirestoreTypes.Transaction
 }
@@ -81,14 +77,7 @@ export interface FirestoreWriteOptions {
     readonly batcher?: FirestoreTypes.WriteBatch
 }
 
-export interface FirebaseCreateOptions extends FirestoreWriteOptions {
-    id?: string
-    merge?: boolean
-}
-
-export declare type WithFieldValue<T> = {
-    [K in keyof T]: FirestoreWithFieldValue<T[K]> | FirestoreTypes.FieldValue
-}
+export type FirebaseCreateOptions = FirestoreWriteOptions & CreateOptions
 
 type GenNode<K extends string, IsRoot extends boolean> = IsRoot extends true ? `${K}` : `.${K}`
 
@@ -149,115 +138,41 @@ export type AggregateResult<T extends AggregateSpec> = {
     [K in keyof T]: number | null
 }
 
-export abstract class FieldValues {
-    public abstract serverTimestamp(): FirestoreTypes.FieldValue
-    public abstract delete(): FirestoreTypes.FieldValue
-    public abstract increment(n: number): FirestoreTypes.FieldValue
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public abstract arrayUnion(...elements: any[]): FirestoreTypes.FieldValue
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public abstract arrayRemove(...elements: any[]): FirestoreTypes.FieldValue
-}
+/** The SDK database handle an adapter wraps: modular client SDK or Admin SDK. */
+export type FirestoreApp = FirestoreTypes.Firestore | AdminFirestore
 
-export interface FirestoreAppSettings {
-    persistence?: boolean
-    cacheSizeBytes?: number
-    host?: string
-    ssl?: boolean
-    ignoreUndefinedProperties?: boolean
-    serverTimestampBehavior?: 'estimate' | 'previous' | 'none'
-}
-
-export abstract class FirestoreApp {
-    public abstract type?: string
-    public abstract toJSON?(): object
-    public abstract terminate?(): Promise<void>
-    public abstract settings?(settings: FirestoreAppSettings): void
-    public abstract useEmulator?(host: string, port: number): void
-    public abstract runTransaction?<T>(
-        updateFunction: (transaction: AdminTransaction) => Promise<T>,
-        options?: FirestoreTypes.TransactionOptions
-    ): Promise<T>
-}
-
-export abstract class Firestore {
-    public abstract app: FirestoreApp
+/**
+ * SDK-neutral surface the data manager talks to. Query, read and write members carry the modular
+ * SDK's own signatures, so `createModularFirestoreAdapter` passes the SDK functions through
+ * unchanged, and `FirestoreAdminAdapter` maps them onto the Admin SDK. The constraints returned by
+ * `where`/`orderBy`/`limit` are opaque: only `query` of the same adapter understands them.
+ */
+export interface Firestore extends Pick<
+    ModularSdk,
+    | 'getDocs'
+    | 'getDoc'
+    | 'serverTimestamp'
+    | 'increment'
+    | 'query'
+    | 'where'
+    | 'limit'
+    | 'orderBy'
+    | 'setDoc'
+    | 'updateDoc'
+    | 'deleteDoc'
+    | 'doc'
+    | 'onSnapshot'
+> {
+    readonly app: FirestoreApp
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public abstract collection(reference: FirestoreTypes.CollectionReference | FirestoreApp, path: string): any
-    public abstract getDocs<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
-        reference: FirestoreTypes.Query<AppModelType, DbModelType>
-    ): Promise<FirestoreTypes.QuerySnapshot<AppModelType, DbModelType>>
-    public abstract getAggregateFromServer<Spec extends AggregateSpec>(
+    collection(reference: FirestoreTypes.CollectionReference | FirestoreApp, path: string): any
+    getAggregateFromServer<Spec extends AggregateSpec>(
         query: FirestoreTypes.Query,
         spec: Spec
     ): Promise<AggregateResult<Spec>>
-    public abstract getDoc<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
-        reference: FirestoreTypes.DocumentReference<AppModelType, DbModelType>,
-        path?: string
-    ): Promise<FirestoreTypes.DocumentSnapshot<AppModelType, DbModelType>>
-    public abstract serverTimestamp(): FirestoreTypes.FieldValue
-    public abstract increment(n: number): FirestoreTypes.FieldValue
-    public abstract query<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
-        reference: FirestoreTypes.Query<AppModelType, DbModelType>,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        filter: any
-    ): FirestoreTypes.Query<AppModelType, DbModelType>
-    public abstract where(field: string | FieldPath, op: string, value: unknown): QueryConstraint
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public abstract limit(limit: number): any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public abstract orderBy(orderBy: string, direction: FirestoreTypes.OrderByDirection): any
-    public abstract setDoc<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
-        reference: FirestoreTypes.DocumentReference<AppModelType, DbModelType>,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        data: any,
-        options?: FirestoreTypes.SetOptions
-    ): Promise<void>
-    public abstract updateDoc<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
-        reference: FirestoreTypes.DocumentReference<AppModelType, DbModelType>,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        data: any
-    ): Promise<void>
-    public abstract doc<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
-        reference: FirestoreTypes.Query<AppModelType, DbModelType>,
-        path?: string
-    ): FirestoreTypes.DocumentReference<AppModelType, DbModelType>
-    public abstract deleteDoc<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
-        reference: FirestoreTypes.DocumentReference<AppModelType, DbModelType>
-    ): Promise<void>
-    public abstract onSnapshot<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
-        reference: FirestoreTypes.DocumentReference<AppModelType, DbModelType>,
-        onNext: (snapshot: FirestoreTypes.DocumentSnapshot<AppModelType, DbModelType>) => void,
-        onError?: (error: Error) => void
-    ): () => void
-    public abstract onSnapshot<AppModelType = DocumentData, DbModelType extends DocumentData = DocumentData>(
-        reference: FirestoreTypes.Query<AppModelType, DbModelType>,
-        onNext: (snapshot: FirestoreTypes.QuerySnapshot<AppModelType, DbModelType>) => void,
-        onError?: (error: Error) => void
-    ): () => void
-    public abstract runTransaction<T>(
+    runTransaction<T>(
         firestore: FirestoreApp,
-        transaction: (transaction: FirestoreTypes.Transaction) => Promise<T>,
+        updateFunction: (transaction: FirestoreTypes.Transaction) => Promise<T>,
         options?: FirestoreTypes.TransactionOptions
     ): Promise<T>
-}
-
-export abstract class FirestoreSettings {
-    public abstract readMode: FirestoreReadMode
-}
-
-export abstract class FirestoreFunctions {
-    public abstract httpsCallable(name: string, options?: HttpsCallableOptions): HttpsCallable
-    public abstract useEmulator(host: string, port: number): void
-    public abstract useFunctionsEmulator(origin: string): void
-}
-
-export class DummyFirestoreFunctions implements FirestoreFunctions {
-    public httpsCallable(): HttpsCallable {
-        return () => {
-            throw new Error('httpsCallable not implemented - DummyFirestoreFunctions')
-        }
-    }
-    public useEmulator() {}
-    public useFunctionsEmulator() {}
 }

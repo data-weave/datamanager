@@ -1,14 +1,7 @@
-import { Metadata, WithoutId } from '@data-weave/datamanager'
-import {
-    DocumentData,
-    FirestoreQuery,
-    FirestoreTypes,
-    FirestoreWhere,
-    InternalFirestoreDataConverter,
-    WithFieldValue,
-} from './firestoreTypes'
+import { Metadata } from '@data-weave/datamanager'
+import { DocumentData, Firestore, FirestoreTypes, InternalFirestoreDataConverter } from './firestoreTypes'
 
-enum FIRESTORE_INTERAL_KEYS {
+enum FIRESTORE_INTERNAL_KEYS {
     DELETED = '__deleted',
     CREATED_AT = '__createdAt',
     UPDATED_AT = '__updatedAt',
@@ -21,22 +14,27 @@ export enum FIRESTORE_KEYS {
 }
 
 export type FirestoreSerializedMetadata = {
-    [FIRESTORE_INTERAL_KEYS.DELETED]: boolean
-    [FIRESTORE_INTERAL_KEYS.CREATED_AT]: FirestoreTypes.Timestamp
-    [FIRESTORE_INTERAL_KEYS.UPDATED_AT]: FirestoreTypes.Timestamp
+    [FIRESTORE_INTERNAL_KEYS.DELETED]: boolean
+    [FIRESTORE_INTERNAL_KEYS.CREATED_AT]: FirestoreTypes.Timestamp
+    [FIRESTORE_INTERNAL_KEYS.UPDATED_AT]: FirestoreTypes.Timestamp
+}
+
+/** What the data manager writes: the timestamps are always `serverTimestamp()`, never a `Date`. */
+export type FirestoreMetadataWrite = {
+    [FIRESTORE_KEYS.DELETED]?: boolean
+    [FIRESTORE_KEYS.CREATED_AT]?: FirestoreTypes.FieldValue
+    [FIRESTORE_KEYS.UPDATED_AT]?: FirestoreTypes.FieldValue
 }
 
 export class FirestoreMetadataConverter implements InternalFirestoreDataConverter<
     Metadata,
     FirestoreSerializedMetadata
 > {
-    toFirestore(data: Partial<WithFieldValue<WithoutId<Metadata>>>) {
+    toFirestore(data: FirestoreMetadataWrite) {
         return {
-            // Cast: value may be absent on partial metadata writes; Firestore strips undefined fields
-            [FIRESTORE_INTERAL_KEYS.DELETED]: data[FIRESTORE_KEYS.DELETED] as boolean,
-            // Cast: Firestore handles conversion from Date to Timestamp internally
-            [FIRESTORE_INTERAL_KEYS.CREATED_AT]: data[FIRESTORE_KEYS.CREATED_AT] as unknown as FirestoreTypes.Timestamp,
-            [FIRESTORE_INTERAL_KEYS.UPDATED_AT]: data[FIRESTORE_KEYS.UPDATED_AT] as unknown as FirestoreTypes.Timestamp,
+            [FIRESTORE_INTERNAL_KEYS.DELETED]: data[FIRESTORE_KEYS.DELETED],
+            [FIRESTORE_INTERNAL_KEYS.CREATED_AT]: data[FIRESTORE_KEYS.CREATED_AT],
+            [FIRESTORE_INTERNAL_KEYS.UPDATED_AT]: data[FIRESTORE_KEYS.UPDATED_AT],
         }
     }
     fromFirestore(
@@ -47,15 +45,14 @@ export class FirestoreMetadataConverter implements InternalFirestoreDataConverte
         return {
             id: snapshot.ref.id,
             // TODO: add warning in case data type is not as expected
-            createdAt: data[FIRESTORE_INTERAL_KEYS.CREATED_AT]?.toDate() ?? new Date(),
-            updatedAt: data[FIRESTORE_INTERAL_KEYS.UPDATED_AT]?.toDate() ?? new Date(),
-            deleted: data[FIRESTORE_INTERAL_KEYS.DELETED],
+            createdAt: data[FIRESTORE_INTERNAL_KEYS.CREATED_AT]?.toDate() ?? new Date(),
+            updatedAt: data[FIRESTORE_INTERNAL_KEYS.UPDATED_AT]?.toDate() ?? new Date(),
+            deleted: data[FIRESTORE_INTERNAL_KEYS.DELETED],
         }
     }
 }
 
 export const queryNotDeleted = <T extends DocumentData, SerializedT extends DocumentData>(
-    query: FirestoreTypes.Query<T, SerializedT>,
-    firestoreQuery: FirestoreQuery<T, SerializedT>,
-    firestoreWhere: FirestoreWhere
-) => firestoreQuery(query, firestoreWhere(FIRESTORE_INTERAL_KEYS.DELETED, '==', false))
+    firestore: Firestore,
+    query: FirestoreTypes.Query<T, SerializedT>
+) => firestore.query(query, firestore.where(FIRESTORE_INTERNAL_KEYS.DELETED, '==', false))
